@@ -27,8 +27,6 @@ def plot_clt(dist, n_samples, sample_size, **params):
    
     plt.figure(figsize=(15, 7))
     sns.histplot(sample_means, bins=30, kde=False, color='blue', label="Steekproefgemiddelden")
-    # plt.axvline(np.mean(sample_means), color='red', linestyle='dashed', label=f'Mean: {np.mean(sample_means):.2f}')
-    # plt.suptitle(f"Centrale limietstelling: gemiddelden van {dist} verdeelde kansvariabelen")
     plt.title(f'Steekproefgrootte = {sample_size}, aantal steekproeven = {n_samples}')
     plt.xlabel("Steekproefgemiddelde")
     plt.ylabel("Frequentie")
