@@ -32,7 +32,7 @@ def plot_clt(dist, n_samples, sample_size, **params):
     plt.xlabel("Steekproefgemiddelde")
     plt.ylabel("Frequentie")
     plt.legend()
-    st.pyplot()
+    st.pyplot(plt)
 
 # Headers
 st.sidebar.header("Sliders voor parameters")
