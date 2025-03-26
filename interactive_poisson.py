@@ -15,7 +15,7 @@ def plot_distributions(lmbda, n):
     poisson_probs = poisson.pmf(k_values, lmbda)
     
     # Create the figure with two subplots
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(24, 10))
     
     # Plot the Binomial distribution
     axes[0].stem(k_values, binom_probs, linefmt='b-', markerfmt='bo', basefmt=' ')
