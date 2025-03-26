@@ -43,7 +43,7 @@ st.sidebar.header("Sliders voor parameters")
 
 # Streamlit widgets for user input
 dist_selector = st.sidebar.selectbox("Kansverdeling:", ["normaal", "uniform", "exponentieel", "binomiaal", "Poisson"])
-sample_size_slider = st.sidebar.slider("Steekproefgrootte:", min_value=1, max_value=500, step=1, value=30)
+sample_size_slider = st.sidebar.slider("Steekproefgrootte:", min_value=1, max_value=100, step=1, value=30)
 n_samples_slider = st.sidebar.slider("Aantal steekproeven:", min_value=1, max_value=100_000, step=1, value=1000)
  
 # Specific sliders for each distribution
