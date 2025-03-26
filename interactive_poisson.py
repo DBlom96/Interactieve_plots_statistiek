@@ -42,7 +42,7 @@ def plot_distributions(lmbda, n):
 
 # Add sliders for lmbda and n
 lmbda = st.sidebar.slider("$\\lambda$", min_value=1.0, max_value=20.0, value=5.0, step=0.1)
-n = st.sidebar.slider("Aantal Bernoulli-experimenten $n$:", min_value=5, max_value=500, value=50, step=1)
+n = st.sidebar.slider("Aantal Bernoulli-experimenten $n$:", min_value=1, max_value=int(lmbda), value=1, step=1)
 
 # Call the plot function
 st.subheader("Interactieve plot: connectie tussen de binomiale en Poissonverdeling")
