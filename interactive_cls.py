@@ -32,11 +32,10 @@ def plot_clt(dist, n_samples, sample_size, **params):
     plt.xlabel("Steekproefgemiddelde")
     plt.ylabel("Frequentie")
     plt.legend()
-    st.sidebar.pyplot(plt)
+    st.pyplot()
 
 # Headers
 st.sidebar.header("Sliders voor parameters")
-
 
 # Streamlit widgets for user input
 dist_selector = st.sidebar.selectbox("Kansverdeling:", ["normaal", "uniform", "exponentieel", "binomiaal", "Poisson"])
@@ -60,5 +59,6 @@ elif dist_selector == "binomiaal":
     p_slider = st.sidebar.slider("Succeskans $p$:", min_value=0.0, max_value=1.0, step=0.01, value=0.5)
     params = {"n": n_slider, "p": p_slider}
 
+# Plots the distribution's sample means using the chosen parameters
 st.subheader("Interactieve plot: de centrale limietstelling")
 plot_clt(dist_selector, n_samples_slider, sample_size_slider, **params)
