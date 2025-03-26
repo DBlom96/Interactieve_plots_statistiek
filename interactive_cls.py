@@ -31,8 +31,10 @@ def plot_clt(dist, n_samples, sample_size, **params):
     plt.title(f'Steekproefgrootte = {sample_size}, aantal steekproeven = {n_samples}')
     plt.xlabel("Steekproefgemiddelde")
     plt.ylabel("Frequentie")
-    plt.legend()
-    st.pyplot(plt)
+
+    # Adjust layout to avoid overlap
+    plt.tight_layout(pad=3.0)
+    st.pyplot()
 
 # Headers
 st.sidebar.header("Sliders voor parameters")
