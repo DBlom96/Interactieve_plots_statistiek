@@ -32,28 +32,33 @@ def plot_clt(dist, n_samples, sample_size, **params):
     plt.xlabel("Steekproefgemiddelde")
     plt.ylabel("Frequentie")
     plt.legend()
-    st.pyplot(plt)
+    st.sidebar.pyplot(plt)
+
+# Headers
+st.subheader("Interactieve plot: de centrale limietstelling")
+st.sidebar.header("Sliders voor parameters")
+
 
 # Streamlit widgets for user input
-dist_selector = st.selectbox("Kansverdeling:", ["normaal", "uniform", "exponentieel", "binomiaal", "Poisson"])
-sample_size_slider = st.slider("Steekproefgrootte:", min_value=1, max_value=500, step=1, value=30)
-n_samples_slider = st.slider("Aantal steekproeven:", min_value=1, max_value=100_000, step=10, value=1000)
+dist_selector = st.sidebar.selectbox("Kansverdeling:", ["normaal", "uniform", "exponentieel", "binomiaal", "Poisson"])
+sample_size_slider = st.sidebar.slider("Steekproefgrootte:", min_value=1, max_value=500, step=1, value=30)
+n_samples_slider = st.sidebar.slider("Aantal steekproeven:", min_value=1, max_value=100_000, step=10, value=1000)
  
 # Specific sliders for each distribution
 if dist_selector == "normaal":
-    mu_slider = st.slider("Gemiddelde $\\mu$:", min_value=-10.0, max_value=10.0, step=0.5, value=0.0)
-    sigma_slider = st.slider("Standaardafwijking $\\sigma$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
+    mu_slider = st.sidebar.slider("Gemiddelde $\\mu$:", min_value=-10.0, max_value=10.0, step=0.5, value=0.0)
+    sigma_slider = st.sidebar.slider("Standaardafwijking $\\sigma$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
     params = {"mu": mu_slider, "sigma": sigma_slider}
 elif dist_selector == "uniform":
-    a_slider = st.slider("Ondergrens $a$:", min_value=-10.0, max_value=0.0, step=0.5, value=-5.0)
-    b_slider = st.slider("Bovengrens $b$:", min_value=0.0, max_value=10.0, step=0.5, value=5.0)
+    a_slider = st.sidebar.slider("Ondergrens $a$:", min_value=-10.0, max_value=0.0, step=0.5, value=-5.0)
+    b_slider = st.sidebar.slider("Bovengrens $b$:", min_value=0.0, max_value=10.0, step=0.5, value=5.0)
     params = {"a": a_slider, "b": b_slider}
 elif dist_selector in ["Poisson", "exponentieel"]:
-    lambda_slider = st.slider("$\\lambda$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
+    lambda_slider = st.sidebar.slider("$\\lambda$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
     params = {"lambda_": lambda_slider}
 elif dist_selector == "binomiaal":
-    n_slider = st.slider("Aantal Bernoulli-experimenten $n$:", min_value=1, max_value=100, step=1, value=10)
-    p_slider = st.slider("Succeskans $p$:", min_value=0.0, max_value=1.0, step=0.01, value=0.5)
+    n_slider = st.sidebar.slider("Aantal Bernoulli-experimenten $n$:", min_value=1, max_value=100, step=1, value=10)
+    p_slider = st.sidebar.slider("Succeskans $p$:", min_value=0.0, max_value=1.0, step=0.01, value=0.5)
     params = {"n": n_slider, "p": p_slider}
 
 plot_clt(dist_selector, n_samples_slider, sample_size_slider, **params)
