@@ -8,7 +8,8 @@ st.set_page_config(layout="wide")
 def plot_distributions(lmbda, n):
     p = lmbda / n  # Define p for Binomial
     k_values = np.arange(0, max(2 * lmbda, 20))  # Range of k-values for visualization
-    
+    xticklabels = np.arange(0, len(k_values), max(1, len(k_values) / 10))
+
     # Binomial probabilities
     binom_probs = binom.pmf(k_values, n, p)
     
@@ -27,14 +28,14 @@ def plot_distributions(lmbda, n):
         axes[0].set_title(f"Binomiaal($n={n}$; $p=\\frac{{\\lambda}}{{n}} \\approx {(lmbda / n):.4f}$)")
     axes[0].set_xlabel("$k$")
     axes[0].set_ylabel("Kansfunctie $f(k)$")
-    axes[0].set_xticks(k_values)  # Ensure only integer ticks
+    axes[0].set_xticks(xticklabels)  # Ensure only integer ticks
     
     # Plot the Poisson distribution
     axes[1].stem(k_values, poisson_probs, linefmt='b-', markerfmt='bo', basefmt=' ')
     axes[1].set_title(f"Poisson($\\lambda={lmbda}$)")
     axes[1].set_xlabel("$k$")
     axes[1].set_ylabel("Kansfunctie $f(k)$")
-    axes[1].set_xticks(k_values)  # Ensure only integer ticks
+    axes[1].set_xticks(xticklabels)  # Ensure only integer ticks
     
     plt.tight_layout()
     st.empty()
