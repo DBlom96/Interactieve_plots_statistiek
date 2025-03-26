@@ -40,8 +40,8 @@ sample_size_slider = st.slider("Sample Size:", min_value=1, max_value=500, step=
 n_samples_slider = st.slider("Number of Samples:", min_value=1, max_value=100_000, step=10, value=1000)
  
 # Specific sliders for each distribution
-mu_slider = st.slider("Mean $\\mu$:", min_value=-10, max_value=10, step=0.5, value=0)
-sigma_slider = st.slider("Standard Deviation $\\sigma$:", min_value=0.1, max_value=5, step=0.1, value=1)
+mu_slider = st.slider("Mean $mu$:", min_value=-10, max_value=10, step=0.5, value=0)
+sigma_slider = st.slider("Standard Deviation $sigma$:", min_value=0.1, max_value=5, step=0.1, value=1)
 a_slider = st.slider("Uniform $a$:", min_value=-10, max_value=0, step=0.5, value=-5)
 b_slider = st.slider("Uniform $b$:", min_value=0, max_value=10, step=0.5, value=5)
 lambda_slider = st.slider("Exponential $\\lambda$:", min_value=0.1, max_value=5, step=0.1, value=1)
