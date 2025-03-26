@@ -80,4 +80,5 @@ ax.set_ylabel("Kansdichtheid")
 ax.legend()
 
 # **Toon de plot in de gereserveerde ruimte**
+plt.tight_layout(pad=1)  # Adjust padding between subplots and edges
 plot_placeholder.pyplot(fig)
