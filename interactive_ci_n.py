@@ -68,3 +68,9 @@ ax.legend()
 
 # **Toon de plot in de gereserveerde ruimte**
 plot_placeholder.pyplot(fig)
+
+# Weergave van samenvattende statistieken onder de grafiek
+st.markdown("### Samenvattende Statistieken")
+st.write(f"📌 **Ondergrens betrouwbaarheidsinterval:** {ci_left:.4f}")
+st.write(f"📌 **Bovengrens betrouwbaarheidsinterval:** {ci_right:.4f}")
+st.write(f"📌 **Breedte van het betrouwbaarheidsinterval:** {(ci_right-ci_left):.4f}")
