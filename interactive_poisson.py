@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import binom, poisson
 import streamlit as st
+st.set_page_config(layout="wide")
 
 # Function to plot Binomial and Poisson distributions
 def plot_distributions(lmbda, n):
