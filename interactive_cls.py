@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from scipy.stats import norm, uniform, expon, binom, poisson
- 
+st.set_page_config(layout="wide")
+
 # Function to generate sample means
 def generate_sample_means(dist, n_samples, sample_size, **params):
     if dist == "normaal":

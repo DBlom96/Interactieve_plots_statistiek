@@ -37,6 +37,7 @@ def plot_distributions(lmbda, n):
     axes[1].set_xticks(k_values)  # Ensure only integer ticks
     
     plt.tight_layout()
+    st.empty()
     st.pyplot(fig)
 
 # Add sliders for lmbda and n
