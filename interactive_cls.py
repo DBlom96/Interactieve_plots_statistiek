@@ -34,7 +34,7 @@ def plot_clt(dist, n_samples, sample_size, **params):
 
     # Adjust layout to avoid overlap
     plt.tight_layout(pad=3.0)
-    st.pyplot()
+    st.pyplot(plt)
 
 # Headers
 st.sidebar.header("Sliders voor parameters")
