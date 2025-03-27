@@ -4,3 +4,4 @@ seaborn
 scipy
 streamlit
 ipywidgets
+mplcyberpunk
