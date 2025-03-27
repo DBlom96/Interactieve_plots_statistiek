@@ -26,19 +26,20 @@ def plot_binomiale_verdeling(n, p):
     binom_pmf = binom.pmf(x, n, p)  # Binomiale kansfunctie
 
     # Maak de plot
-    fig, ax = create_figure(figsize=(10, 6))
-    plt.style.use('cyberpunk')
-    ax.stem(x, binom_pmf, linefmt='b-', markerfmt='bo', basefmt=" ")
+    fig, ax = create_figure(figsize=(10, 6), 
+                            title=f'Binomiale verdeling met parameters $n={n}$ en $p={p:.2f}$',
+                            xlabel='Aantal successen $k$',
+                            ylabel='Kansfunctie $f(k)$'
+                        )
+    ax.stem(x, binom_pmf, linefmt='-', markerfmt='o', basefmt=" ")
 
-    # Labels en legenda
-    ax.set_xlabel('Aantal successen $k$')
-    ax.set_ylabel('Kansfunctie $f(k)$')
-    ax.set_title(f'Binomiale verdeling met parameters $n={n}$ en $p={p:.2f}$')
+    # legenda
     ax.legend()
 
     # Plot weergeven in Streamlit
-    plt.tight_layout()
     st.empty()
+    mplcyberpunk.make_lines_glow()
+    plt.tight_layout()
     st.pyplot(fig)
 
 # Genereer de plot met de geselecteerde waarden
