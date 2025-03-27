@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
+import mplcyberpunk
 from scipy.stats import binom
 from plot_utils import create_figure, add_sidebar, colors
 
@@ -26,6 +27,7 @@ def plot_binomiale_verdeling(n, p):
 
     # Maak de plot
     fig, ax = create_figure(figsize=(10, 6))
+    plt.style.use('cyberpunk')
     ax.stem(x, binom_pmf, linefmt='b-', markerfmt='bo', basefmt=" ")
 
     # Labels en legenda
