@@ -33,7 +33,8 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
     mu_upper = ci_right  # Grootste μ waarbij x̄ net binnen het interval valt
 
     # X-waarden genereren voor de normale verdelingen
-    x_range = np.linspace(mu_lower - 4 * sigma, mu_upper + 4 * sigma, 1000)
+    axes[0].set_xlim(30, 120)
+    x_range = np.linspace(30, 120, 1_000) #mu_lower - 4 * sigma, mu_upper + 4 * sigma, 1000)
     y_lower = norm.pdf(x_range, loc=mu_lower, scale=sample_std)
     y_upper = norm.pdf(x_range, loc=mu_upper, scale=sample_std)
 
@@ -74,7 +75,7 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
     color = color_cycle[idx]
     axes[0].plot([mu_lower, mu_upper], [yval, yval], color=color, lw=1)
     axes[0].plot([], [], ' ', color=color, label=f"Intervalbreedte: {(mu_upper-mu_lower):.4f}")
-
+    
     # axes[0].legend()
 
 def add_sidebar_ci_n():
@@ -82,9 +83,9 @@ def add_sidebar_ci_n():
         st.header("Sliders voor parameters")
     
         # Schuifbalken voor parameters
-        sigma = st.slider("Standaardafwijking ($\\sigma$)", min_value=0.1, max_value=20.0, value=8.0, step=0.1)
+        sigma = st.slider("Standaardafwijking ($\\sigma$)", min_value=1, max_value=20, value=8, step=1)
         xbar = st.slider("Steekproefgemiddelde ($\\bar{x}$)", min_value=60.0, max_value=90.0, value=73.48, step=0.01)
-        n = st.slider("Steekproefgrootte ($n$)", min_value=1, max_value=100, value=1, step=1)
+        n = st.slider("Steekproefgrootte ($n$)", min_value=1, max_value=100, value=30, step=1)
         alpha = st.slider("Significantieniveau ($\\alpha$)", min_value=0.01, max_value=0.1, value=0.05, step=0.01)
 
     slider_dict = {"sigma": sigma, "sample_mean": xbar, "n": n, "alpha": alpha}
