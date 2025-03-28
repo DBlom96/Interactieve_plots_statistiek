@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import norm
-from plot_utils import generate_streamlit_page
+from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
 
 # Paginalay-out instellen op breed
 st.set_page_config(layout="wide")
@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 # Titel en uitleg
 # st.markdown("### Betrouwbaarheidsinterval voor het populatiegemiddelde ($\\mu$)")
 # st.write("""
-# Deze app berekent het **betrouwbaarheidsinterval** voor het populatiegemiddelde $\\mu$
+# Deze interactieve plot berekent het **betrouwbaarheidsinterval** voor het populatiegemiddelde $\\mu$
 # gegeven een steekproefgemiddelde $\\bar{x}$, standaardafwijking $\\sigma$, en steekproefgrootte $n$.
 # Daarnaast toont het de twee grensgevallen waarin $\\bar{x}$ net binnen het voorspellingsinterval ligt.
 # """)
@@ -46,21 +46,10 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
     st.subheader(suptitle)
     plt.suptitle(title)
 
-    # Get the current color cycle from matplotlib after applying the cyberpunk style
-    cyberpunk_colors = [
-        "#ff00ff",  # Magenta
-        "#00ff00",  # Neon Green
-        "#00ffff",  # Cyan
-        "#ff4500",  # Orange-Red
-        "#ff1493",  # Deep Pink
-        "#7fff00",  # Chartreuse Green
-        "#ff6347",  # Tomato Red
-        "#ffd700",  # Gold
-        "#ff69b4",  # Hot Pink
-        "#ffff00"   # Yellow
-    ]    
+    # Get the current color cycle from matplotlib after applying the cyberpunk style   
     idx = 0
-    color = cyberpunk_colors[idx]
+    color_cycle = cyberpunk_color_cycle()
+    color = color_cycle[idx]
     
     axes[0].scatter(xbar, 0, marker="x", color="red", label=f"$\\bar{{x}}: {xbar}$")
 
@@ -73,7 +62,7 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
 
     # **Normale verdeling voor de bovenste grens**
     idx += 1
-    color = cyberpunk_colors[idx]
+    color = color_cycle[idx]
     axes[0].plot(x_range, y_upper, color=color)
     axes[0].plot([mu_upper, mu_upper], [0, norm.pdf(mu_upper, mu_upper, sample_std)], color=color, linestyle="--")
     axes[0].plot([mu_upper, mu_upper], [yval+epsilon, yval-epsilon], color=color, linestyle="-")
@@ -82,7 +71,7 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
 
     # draw horizontal line indicating the confidence interval
     idx += 1
-    color = cyberpunk_colors[idx]
+    color = color_cycle[idx]
     axes[0].plot([mu_lower, mu_upper], [yval, yval], color=color, lw=1)
     axes[0].plot([], [], ' ', color=color, label=f"Intervalbreedte: {(mu_upper-mu_lower):.4f}")
 

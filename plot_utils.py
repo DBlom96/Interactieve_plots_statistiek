@@ -4,6 +4,21 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import mplcyberpunk
 
+def cyberpunk_color_cycle():
+    # Get the current color cycle from matplotlib after applying the cyberpunk style
+    return [
+        "#ff00ff",  # Magenta
+        "#00ff00",  # Neon Green
+        "#00ffff",  # Cyan
+        "#ff4500",  # Orange-Red
+        "#ff1493",  # Deep Pink
+        "#7fff00",  # Chartreuse Green
+        "#ff6347",  # Tomato Red
+        "#ffd700",  # Gold
+        "#ff69b4",  # Hot Pink
+        "#ffff00"   # Yellow
+    ]    
+
 # Define a function to create a consistent figure style
 def create_figure(figsize, title, xlabel, ylabel, subplot_dims):
     """
