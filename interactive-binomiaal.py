@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import binom
-from plot_utils import create_figure, add_sidebar, colors
+from plot_utils import generate_streamlit_page
 
 # Define parameters for the sidebar
 sidebar_params = {
@@ -11,36 +11,21 @@ sidebar_params = {
     "p": {"label": "Succeskans $p$", "min": 0.01, "max": 0.99, "value": 0.5, "step": 0.01}
 }
 
-# Get user-selected values from the sidebar
-user_inputs = add_sidebar(sidebar_params)
-print(user_inputs)
-n = user_inputs["n"]
-p = user_inputs["p"]
+# Function to plot the binomial distribution
+def plot_binomiale_verdeling(ax, user_inputs):
+    n = user_inputs["n"]
+    p = user_inputs["p"]
 
-# Streamlit App Titel
-st.subheader("Binomiale verdeling")
-
-# Functie om de binomiale verdeling te plotten
-def plot_binomiale_verdeling(n, p):
     x = np.arange(0, n + 1)  # Mogelijke uitkomsten
     binom_pmf = binom.pmf(x, n, p)  # Binomiale kansfunctie
 
     # Maak de plot
-    fig, ax = create_figure(figsize=(10, 6), 
-                            title=f'Binomiale verdeling met parameters $n={n}$ en $p={p:.2f}$',
-                            xlabel='Aantal successen $k$',
-                            ylabel='Kansfunctie $f(k)$'
-                        )
-    ax.stem(x, binom_pmf, linefmt='-', markerfmt='o', basefmt=" ")
-
-    # legenda
+    ax.stem(x, binom_pmf, linefmt='-', markerfmt='o', basefmt=" ", label="Kansfunctie")
     ax.legend()
 
-    # Plot weergeven in Streamlit
-    st.empty()
-    mplcyberpunk.make_lines_glow()
-    plt.tight_layout()
-    st.pyplot(fig)
+# Generate the Streamlit page with the sidebar and plot
+title="Interactieve plot: de binomiale verdeling"
+xlabel="Aantal successen $k$"
+ylabel="Kansfunctie $f(k)$"
 
-# Genereer de plot met de geselecteerde waarden
-plot_binomiale_verdeling(n, p)
+generate_streamlit_page(sidebar_params, plot_binomiale_verdeling, title=title, xlabel=xlabel, ylabel=ylabel)
