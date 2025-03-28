@@ -21,6 +21,7 @@ Deze plot is bedoeld om te illustreren dat bij een gegeven betrouwbaarheidsnivea
 de kans dat bij een volgende steekproef het betrouwbaarheidsinterval de echte populatieparameter $\\mu$ zou bevatten gelijk is aan $1-\\alpha$.  
 """)
 st.markdown("### Interactieve plot: conceptuele betekenis van betrouwbaarheid'")
+
 # Sidebar function for getting user input
 def add_sidebar_confidence_interval():
     with st.sidebar:
