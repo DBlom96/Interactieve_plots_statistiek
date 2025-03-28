@@ -33,6 +33,7 @@ Merk het volgende op:
     - als de steekproefgrootte $n$ groter wordt, wordt de type-II fout $\\beta$ kleiner.
     - als het significantieniveau $\\alpha$ (en daarmee dus de type-I fout) groter gekozen wordt, dan wordt de type-II fout $\\beta$ kleiner."""
 )
+
 def add_sidebar_hypothesis_testing():
     with st.sidebar:
         st.header("Sliders voor parameters")

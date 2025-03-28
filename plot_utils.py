@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import mplcyberpunk
 
+plt.style.use("cyberpunk")
+
 def cyberpunk_color_cycle():
     # Get the current color cycle from matplotlib after applying the cyberpunk style
     return [
@@ -38,7 +40,6 @@ def create_figure(figsize, title, xlabel, ylabel, subplot_dims):
 
     fig, axes = plt.subplots(*subplot_dims, figsize=figsize)
     fig.suptitle(title, fontsize=14, fontweight='bold')
-    plt.style.use("cyberpunk")
 
     # Ensure axes is iterable (works for both single and multiple subplots)
     if isinstance(axes, np.ndarray):
