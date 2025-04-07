@@ -16,7 +16,7 @@ def add_sidebar_chi2():
         alpha = 0.1
         alpha_2_percentile = chi2.ppf(alpha/2, df=df)
         one_minus_alpha_2_percentile = chi2.ppf(1 - alpha / 2, df=df)
-
+        print(one_minus_alpha_2_percentile)
         x_max = max(10, chi2.ppf(0.99, df=df) + 1)
 
         if method == "Absoluut":
@@ -46,8 +46,8 @@ def plot_chi2_distribution(axes, user_inputs):
     axes[0].fill_between(x, y, where=(x>=links)&(x<=rechts), color=fill_color, alpha=0.3)
     axes[0].set_xlim(0, x_max)
     axes[0].set_title(f"Chi-kwadraatverdeling (met df$={df}$ vrijheidsgraden)")
-    axes[0].set_xlabel("$x$")
-    axes[0].set_ylabel("Kansdichtheid $f(x)$")
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("Kansdichtheid f(x)")
 
     ytext = -0.05 * axes[0].get_ylim()[1]
     axes[0].text(links, ytext, f"{links:.4f}", ha="center", va="center", fontsize=9, color=fill_color)
