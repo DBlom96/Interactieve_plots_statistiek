@@ -13,12 +13,16 @@ def add_sidebar_chi2():
         # Specific sliders for each distribution
         df = st.slider(label="Aantal vrijheidsgraden (df)", min_value=1, max_value=100, value=5)
         method = st.selectbox("Selecteer method voor grenzen", ["Absoluut", "Percentiel"])
-        x_max = max(10, df + 5 * np.sqrt(df))
+        alpha = 0.1
+        alpha_2_percentile = chi2.ppf(alpha/2, df=df)
+        one_minus_alpha_2_percentile = chi2.ppf(1 - alpha / 2, df=df)
+
+        x_max = max(10, chi2.ppf(0.99, df=df) + 1)
 
         if method == "Absoluut":
             # Grenzen zijn absolute getallen
-            links = st.number_input(label="Linkergrens $g_{{L}}$", format="%.3f", min_value=0.0, max_value=float(x_max), value=0.5*df, step=0.01)
-            rechts = st.number_input(label="Rechtergrens $g_{{R}}$", format="%.3f", min_value=links, max_value=float(x_max), value=2.5*df)
+            links = st.number_input(label="Linkergrens $g_{{L}}$", format="%.3f", min_value=0.0, max_value=float(x_max), value=alpha_2_percentile)
+            rechts = st.number_input(label="Rechtergrens $g_{{R}}$", format="%.3f", min_value=links, max_value=float(x_max), value=one_minus_alpha_2_percentile)
         else:
             p_min = st.number_input("Linkergrens (percentiel)", format="%.3f", min_value=0.0, max_value=1.0, value=0.025, step=0.005)
             p_max = st.number_input("Rechtergrens (percentiel)", format="%.3f", min_value=p_min, max_value=1.0, value=0.975, step=0.005)
