@@ -2,87 +2,114 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
-from scipy.stats import norm, t
+from sklearn.linear_model import LinearRegression
 from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
 
-# Function to add sliders and plot settings in the sidebar
+# Initialize session state for storing points
+if "points" not in st.session_state:
+    st.session_state["points"] = {"x": {}, "y": {}}
+
+# Function to handle sidebar input
 def add_sidebar_regression():
+
     with st.sidebar:
-        st.header("Sliders voor parameters")
+        st.header("Invoer voor lineaire regressie:")
 
-        # Define sliders for the range of the plot
-        minx = st.number_input(label="Minimum $x$", value=0)
-        maxx = st.number_input(label="Maximum $x$", value=100)
-        miny = st.number_input(label="Minimum $y$", value=0)
-        maxy = st.number_input(label="Maximum $y$", value=100)
+        point_input = st.sidebar.text_input(f"Voer een punt x, y in (voorbeeld: 2.5, 5.1)", value="0.0, 0.0")
+        add_point_button = st.sidebar.button("Punt toevoegen")
+
+        if add_point_button:
+            # Parse the input and add the point to session state
+            try:
+                x, y = map(float, point_input.split(","))
+                if st.session_state["points"]["x"] == {}:
+                    idx_x = 0
+                    idx_y = 0
+                else:
+                    idx_x = max(st.session_state["points"]["x"]) + 1
+                    idx_y = max(st.session_state["points"]["y"]) + 1
+        
+                st.session_state["points"]["x"][idx_x] = x
+                st.session_state["points"]["y"][idx_y] = y
+                    
+            except ValueError:
+                st.sidebar.error("Schrijf het punt als twee getallen gescheiden door een komma. Gebruik een punt voor decimalen.")
     
-    slider_dict = {'minx': minx, 'maxx': maxx, 'miny': miny, 'maxy': maxy}
-    return slider_dict
+    return st.session_state["points"]
 
-# Function to generate the plot with points and regression line
-def plot_regression_plotly(user_inputs):
-    xmin, xmax, ymin, ymax = user_inputs.values()
+def plot_regression(axes, user_inputs):
+    """Plots the scatter points and regression line."""
+    x_data, y_data = user_inputs["x"], user_inputs["y"]
+    if x_data != {}:
+        print(x_data, y_data)
+        xcoords = list(x_data.values())
+        ycoords = list(y_data.values()) 
+        st.write(xcoords)
 
-# Initialize session state to store points
-if 'points' not in st.session_state:
-    st.session_state.points = []
+        # Set colors for the different parts of the regression plot
+        color_cycle = cyberpunk_color_cycle()
+        point_color = color_cycle[2] # "cyan"
+        regression_line_color = color_cycle[1] # neon green"
+        error_color = color_cycle[6] # "tomato red"
 
-# Function to handle mouse click events on the plot
-def on_click(event):
-    # Only add points if the mouse is clicked inside the axes
-    if event.inaxes:
-        x = event.xdata
-        y = event.ydata
-        st.session_state.points.append((x, y))
-        update_plot()
+        # Perform linear regression if there are at least two points
+        if len(ycoords) >= 2:
+            xmin = min(xcoords) - 0.1 * (max(xcoords) - min(xcoords))
+            xmax = max(xcoords) + 0.1 * (max(xcoords) - min(xcoords))
+            ymin = min(ycoords) - 0.1 * (max(ycoords) - min(ycoords))
+            ymax = max(ycoords) + 0.1 * (max(ycoords) - min(ycoords))
+            axes[0].set_xlim(xmin, xmax)
+            axes[0].set_ylim(ymin, ymax)
 
-# Function to update the plot
-def update_plot():
-    # Create a figure and axis for plotting
-    fig, ax = plt.subplots()
-    
-    # Extract points from session state
-    xcoords, ycoords = zip(*st.session_state.points) if st.session_state.points else ([], [])
-    
-    # Plot the points
-    ax.scatter(xcoords, ycoords, color='blue', label='Data Points')
+            xcoords = np.array(xcoords).reshape(-1, 1)
+            ycoords = np.array(ycoords)
 
-    # Optionally, you can add a regression line if there are enough points
-    if len(xcoords) > 1:
-        # Fit a simple linear regression line
-        slope, intercept = np.polyfit(xcoords, ycoords, 1)
-        line_x = np.linspace(min(xcoords), max(xcoords), 100)
-        line_y = slope * line_x + intercept
-        ax.plot(line_x, line_y, color='red', label='Regression Line')
+            # Scatter plot for the data points
+            axes[0].scatter(xcoords, ycoords, color=point_color, label= "Datapunten", s=50)
 
-    # Add title and labels
-    ax.set_title('Click to Add Points')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    
-    # Show the legend
-    ax.legend()
+            model = LinearRegression()
+            model.fit(xcoords.reshape(-1, 1), ycoords)
+            x_range = np.linspace(xmin, xmax, 1_000)
+            y_pred = model.predict(x_range.reshape(-1, 1))
 
-    # Display the plot in Streamlit
-    st.pyplot(fig)
+            # Add regression line to the plot
+            slope = model.coef_[0]
+            intercept = model.intercept_
+            axes[0].plot(x_range, y_pred, color=regression_line_color, linewidth=2)
+            st.write(f"Regressielijn: Y = {slope:.2f}X+{intercept:.2f}")
 
-# Create a plot and add the click event handler
-fig, ax = plt.subplots()
-fig.canvas.mpl_connect('button_press_event', on_click)
+            for x, y in zip(xcoords, ycoords):
+                axes[0].plot([x, x], [y, slope * x + intercept], linestyle="--", color=error_color)
 
-# Display initial empty plot
-update_plot()
+    # Customize the plot
+    st.header("Interactieve plot: lineaire regressie")
+    axes[0].set_xlabel("X") #Interactieve plot: lineaire regressie", fontweight='bold')
+    axes[0].set_ylabel("Y") #"Interactieve plot: lineaire regressie", fontweight='bold')
 
-# Sidebar setup for sliders
-slider_dict = add_sidebar_regression()
+def display_points_table(user_inputs):
+    """Displays a table of added points."""
+    if user_inputs["x"] and user_inputs["y"]:  # Ensure points exist before showing table
+        st.write("### Lijst met toegevoegde punten:")
+        points_table = {
+            "X": user_inputs["x"].values(),
+            "Y": user_inputs["y"].values()
+        }
+        st.table(points_table)  # Display the table in Streamlit
 
-title="Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met df vrijheidsgraden"
-xlabel="$x$"
-ylabel="Kansdichtheid $f(x)$"
+user_inputs = add_sidebar_regression()
+title="" #Interactieve plot: lineaire regressie"
+xlabel=""#r"$X$"
+ylabel=""#r"$Y$"
+
+# Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
-    slider_dict,
-    plot_regression_plotly,
-    title=title,
-    xlabel=xlabel,
+    user_inputs, 
+    plot_regression, 
+    title=title, 
+    xlabel=xlabel, 
     ylabel=ylabel,
-    subplot_dims=(1,1))
+    subplot_dims=(1, 1)  # Single plot (1x1)
+)
+
+# Display the points table
+display_points_table(user_inputs)
