@@ -20,6 +20,8 @@ def plot_t_distribution(axes, user_inputs):
     """Plots the standard normal and Student's t-distribution."""
     df = user_inputs["df"]
     alpha = 0.05
+    confidence = 1-alpha
+    confidence_percentage = int(100 * confidence)
     color_cycle = cyberpunk_color_cycle()
 
     normal_color = color_cycle[2] # "cyan"
@@ -42,23 +44,21 @@ def plot_t_distribution(axes, user_inputs):
     axes[0].plot([-z_critical, -z_critical], [0, norm.pdf(-z_critical)], color=normal_color, linestyle='--')
     axes[0].plot([z_critical, z_critical], [0, norm.pdf(z_critical)], color=normal_color, linestyle='--')
 
-    
-    axes[0].plot(x, t_pdf, label=f"$t$-verdeling $t(df={df})$", color=t_color, lw=2)
-    if df >= 3:
-        axes[0].plot([-t_critical, -t_critical], [0, t.pdf(-t_critical, df=df)], color=t_color, linestyle='--')
-        axes[0].plot([t_critical, t_critical], [0, t.pdf(t_critical,df=df)], color=t_color, linestyle='--')
-
-    # title and legend
     if df == 1:
-        plt.suptitle(f"Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met 1 vrijheidsgraad")
+        axes[0].plot(x, t_pdf, label=f"$t$-verdeling met 1 vrijheidsgraad", color=t_color, lw=2)
+        plt.suptitle(f"Standaardnormale verdeling $N(0,1)$ versus de $t$-verdeling met 1 vrijheidsgraad")
+
     else:
-        plt.suptitle(f"Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met {df} vrijheidsgraden")
+        axes[0].plot(x, t_pdf, label=f"$t$-verdeling met $df={df}$ vrijheidsgraden", color=t_color, lw=2)
+        plt.suptitle(f"Standaardnormale verdeling $N(0,1)$ versus de $t$-verdeling met {df} vrijheidsgraden")
+
+        if df >= 3:
+            axes[0].plot([-t_critical, -t_critical], [0, t.pdf(-t_critical, df=df)], color=t_color, linestyle='--')
+            axes[0].plot([t_critical, t_critical], [0, t.pdf(t_critical,df=df)], color=t_color, linestyle='--')
     
-    
-    
-    plt.title( \
-        f"{1-alpha}-voorspellingsinterval voor $N(0,1)$:\t$[{-z_critical:.2f}, {z_critical:.2f}]$\n{1-alpha}-voorspellingsinterval voor $t(df={df})$:\t$[{-t_critical:.2f}, {t_critical:.2f}]$"
-    )
+    title_normal = f"{confidence_percentage}%-voorspellingsinterval voor $N(0,1)$:\t$[{-z_critical:.4f}, {z_critical:.4f}]$"
+    title_t = f"{confidence_percentage}%-voorspellingsinterval voor $t(df={df})$:\t$[{-t_critical:.4f}, {t_critical:.4f}]$"
+    plt.title(title_normal + "\n" + title_t)
     axes[0].legend()
     
     # Apply cyberpunk glow effect
@@ -68,11 +68,12 @@ def plot_t_distribution(axes, user_inputs):
 slider_dict = add_sidebar_t_distribution()
 
 title="Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met df vrijheidsgraden"
-xlabel="$x$"
-ylabel="Kansdichtheid $f(x)$"
+xlabel=r"$x$"
+ylabel=r"Kansdichtheid $f(x)$"
 generate_streamlit_page(
     slider_dict,
     plot_t_distribution,
+    figsize=(10,5),
     title=title,
     xlabel=xlabel,
     ylabel=ylabel,

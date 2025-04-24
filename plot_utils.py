@@ -79,5 +79,5 @@ def generate_streamlit_page(sliders, plot_function, figsize=(8, 5), title="Inter
     plot_function(axes, sliders)
 
     mplcyberpunk.make_lines_glow()
-    plt.tight_layout()
+    # plt.tight_layout()
     st.pyplot(fig)
