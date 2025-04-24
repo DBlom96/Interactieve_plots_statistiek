@@ -3,6 +3,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import mplcyberpunk
+from utils.explanation_utils import show_explanation
 
 plt.style.use("cyberpunk")
 
@@ -58,7 +59,7 @@ def create_figure(figsize, title, xlabel, ylabel, subplot_dims):
 
     return fig, axes
 
-def generate_streamlit_page(sliders, plot_function, figsize=(8, 5), title="Interactieve plot", xlabel="$x$", ylabel="$y$", subplot_dims=(1,1)):
+def generate_streamlit_page(sliders, plot_function, figsize=(8, 5), title="Interactieve plot", xlabel="$x$", ylabel="$y$", explanation_md="", subplot_dims=(1,1)):
     """
     Generates a Streamlit page with a dynamic sidebar and a main plot area.
 
@@ -71,6 +72,9 @@ def generate_streamlit_page(sliders, plot_function, figsize=(8, 5), title="Inter
         ylabel (str): Label for the y-axis.
         subplot_dims (tuple): Tuple (rows, cols) defining the subplot grid.
     """
+
+    # Create explanation markdown
+    show_explanation("Uitleg:", explanation_md)
 
     # Create figure and axes
     fig, axes = create_figure(figsize, title, xlabel, ylabel, subplot_dims=subplot_dims)

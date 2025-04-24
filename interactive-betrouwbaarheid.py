@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from scipy.stats import norm
 import mplcyberpunk
-from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
+from utils.plot_utils import cyberpunk_color_cycle, generate_streamlit_page
 
 # Setting up the page layout to wide
 st.set_page_config(layout="wide")

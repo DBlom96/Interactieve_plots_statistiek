@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import norm, t
-from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
+from utils.plot_utils import cyberpunk_color_cycle, generate_streamlit_page
+from utils.explanation_utils import show_explanation
 
 # Set Streamlit page layout
 st.set_page_config(layout="wide")
@@ -58,7 +59,8 @@ def plot_t_distribution(axes, user_inputs):
     
     title_normal = f"{confidence_percentage}%-voorspellingsinterval voor $N(0,1)$:\t$[{-z_critical:.4f}, {z_critical:.4f}]$"
     title_t = f"{confidence_percentage}%-voorspellingsinterval voor $t(df={df})$:\t$[{-t_critical:.4f}, {t_critical:.4f}]$"
-    plt.title(title_normal + "\n" + title_t)
+    plt.suptitle(f"{title_normal}\n{title_t}")
+    plt.tight_layout(rect=[0,0,1,0.92])
     axes[0].legend()
     
     # Apply cyberpunk glow effect
@@ -70,6 +72,22 @@ slider_dict = add_sidebar_t_distribution()
 title="Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met df vrijheidsgraden"
 xlabel=r"$x$"
 ylabel=r"Kansdichtheid $f(x)$"
+
+explanation_md = r"""
+### 📊 Uitleg: Vergelijking tussen de standaardnormale verdeling en de $t$-verdeling
+
+De standaardnormale verdeling $ N(0,1) $ is een theoretisch model met een vaste vorm: symmetrisch, klokvormig, en met gemiddelde 0 en standaardafwijking 1.
+
+De **$t$-verdeling** heeft dikkere staarten. Bij lage vrijheidsgraden is deze breder; bij hoge df lijkt hij steeds meer op $ N(0,1) $.
+
+- **Blauw** = kansdichtheidsfunctie van de standaardnormale verdeling $N(0,1)$
+- **Goud** = kansdichtheidsfunctie van de $t$-verdeling met $df={df}$ vrijheidsgraden
+- Stippellijnen = grenzen van 95%-betrouwbaarheidsintervallen
+
+🧠 *Gebruik t-verdeling bij kleine steekproeven (onbekende σ).*
+"""
+
+# show_explanation("Uitleg: normale vs. t-verdeling", explanation_md)
 generate_streamlit_page(
     slider_dict,
     plot_t_distribution,
@@ -77,4 +95,5 @@ generate_streamlit_page(
     title=title,
     xlabel=xlabel,
     ylabel=ylabel,
+    explanation_md=explanation_md,
     subplot_dims=(1,1))
