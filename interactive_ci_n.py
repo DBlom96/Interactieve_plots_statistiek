@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import norm
-from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
+from utils.streamlit_utils import generate_streamlit_page
 
 # Paginalay-out instellen op breed
 st.set_page_config(layout="wide")
@@ -61,7 +61,7 @@ def plot_confidence_interval_given_sample_size(axes, user_inputs):
     
     plt.suptitle(title)
 
-    color_cycle = iter(cyberpunk_color_cycle())
+    color_cycle = iter(["red", "blue", "green"])
 
     axes[0].set_xlim(X_LIM_MIN, X_LIM_MAX)
     axes[0].set_xlabel("Mogelijke waarden van het populatiegemiddelde ($\\mu$)")

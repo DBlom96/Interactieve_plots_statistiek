@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import binom, poisson
 import streamlit as st
-from plot_utils import generate_streamlit_page
+# from plot_utils import generate_streamlit_page
+from utils import generate_streamlit_page
 
 st.set_page_config(layout="wide")
 
