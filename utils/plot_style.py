@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import mplcyberpunk
 
 def set_plot_style(style_name: str = "cyberpunk") -> None:
     """Stelt de gewenste matplotlib stijl in."""

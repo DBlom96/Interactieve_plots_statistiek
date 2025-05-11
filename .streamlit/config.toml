@@ -3,5 +3,5 @@ base="dark"
 
 primaryColor="#a8dadc"  # Blue primary color
 secondaryBackgroundColor="#1d3557"  # blue background for sidebar
-backgroundColor="#457b9d"  # Lightblue color
+backgroundColor="#212946" #"#457b9d"  # Lightblue color
 textColor="#f1faee"  # Light greyblue text color

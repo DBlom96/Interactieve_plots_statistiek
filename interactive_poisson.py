@@ -2,10 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import binom, poisson
 import streamlit as st
-# from plot_utils import generate_streamlit_page
 from utils import generate_streamlit_page
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Connectie tussen de binomiale en Poissonverdeling",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
 
 # Function to plot Binomial and Poisson distributions
 def plot_binomial_poisson(axes, user_inputs):
@@ -57,6 +60,68 @@ slider_dict = add_sidebar_poisson_verdeling()
 title="Interactieve plot: connectie tussen de binomiale en Poissonverdeling"
 xlabel="Aantal successen $k$", 
 ylabel="Kansfunctie $f(k)$"
+explanation_md=r"""
+### 📌 1. De binomiale verdeling in het kort
+
+De **binomiale verdeling** beschrijft de kansvariabele $X$ die het aantal successen telt in een vast aantal onafhankelijke Bernoulli-experimenten (*n*).
+Een Bernoulli-experiment is een kansexperiment met een uitkomstenruimte bestaande uit twee mogelijke uitkomsten (succes (1) of mislukking (0)).
+De succeskans bij elk afzonderlijk Bernoulli-experiment is constant en gelijk aan (*p*). De kansfunctie die de binomiale kansverdeling beschrijft is:
+
+$$P(X = k) = \binom{n}{k} \cdot p^k \cdot (1 - p)^{n - k}$$
+
+waarbij:
+- *n*: aantal onafhankelijke Bernoulli-experimenten   
+- *p*: succeskans per Bernoulli-experiment  
+- *k*: aantal successen  
+
+---
+
+### 📌 2. De Poissonverdeling in het kort
+
+De **Poissonverdeling** beschrijft het aantal gebeurtenissen gedurende een vaste meeteenheid (vaak tijd of ruimte), wanneer deze gebeurtenissen:
+- onafhankelijk van elkaar plaatsvinden,
+- met een constante gemiddelde snelheid ($\lambda$ per meeteenheid) optreden.
+
+De kansfunctie die de Poissonverdeling beschrijft is:
+
+\[
+P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}
+\]
+
+waarbij:
+- *\lambda*: gemiddeld aantal gebeurtenissen  
+- *k*: aantal gebeurtenissen  
+
+---
+
+### 🔗 3. De connectie tussen binomiaal en Poisson
+
+De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de volgende voorwaarden:
+- *n* is groot  
+- *p* is klein  
+- *λ = n · p* is constant
+
+In de limiet geldt:
+
+\[
+\text{Binomiaal}(n, p) \longrightarrow \text{Poisson}(\lambda)
+\]
+
+**Voorbeeld:**  
+Bij 10.000 producten en een kans van 0.0002 op een defect:
+\[
+\lambda = n \cdot p = 10.000 \cdot 0.0002 = 2
+\]
+Dan kan het aantal defecten worden gemodelleerd met een Poissonverdeling met $\lambda = 2$.
+
+---
+
+### ✅ Waarom deze benadering nuttig is
+
+- Wanneer het aantal experimenten *n* groot wordt, zijn binomiaalco\"effici\"enten $\binom{n}{k}$ heel lastig te berekenen.  
+- Kansen uitrekenen met de Poissonverdeling is wiskundig eenvoudiger  
+- Veel praktische toepassingen voldoen aan de voorwaarden voor deze benadering
+"""
 
 # Call generate_streamlit_page with the plot_binomial_poisson function
 generate_streamlit_page(
@@ -64,7 +129,8 @@ generate_streamlit_page(
     plot_binomial_poisson, 
     title=title, 
     xlabel=xlabel, 
-    ylabel=ylabel, 
+    ylabel=ylabel,
+    explanation_md=explanation_md, 
     subplot_dims=(1,2)  # Generate two subplots side by side
 )
 
