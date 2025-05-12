@@ -11,7 +11,6 @@ def create_figure(
     plot_title: str,
     xlabel: str,
     ylabel: str,
-    explanation_md: Tuple[str, str] = ("Uitleg:", ""),
     subplot_dims: Tuple[int, int] = (1, 1)
 ) -> Tuple[plt.Figure, List[plt.Axes]]:
     """
@@ -31,7 +30,6 @@ def create_figure(
     fig, axes = plt.subplots(*subplot_dims, figsize=figsize)
     st.header(page_header)#, fontsize=14, fontweight='bold')
     fig.suptitle(plot_title)
-    show_explanation(*explanation_md)
 
     if isinstance(axes, np.ndarray):
         axes = axes.ravel()

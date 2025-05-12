@@ -38,9 +38,12 @@ def generate_streamlit_page(
 
     # show_explanation(*explanation_md)
 
-    fig, axes = create_figure(figsize, page_header, plot_title, xlabel, ylabel, explanation_md, subplot_dims=subplot_dims)
+    fig, axes = create_figure(figsize, page_header, plot_title, xlabel, ylabel, subplot_dims=subplot_dims)
 
     plot_function(axes, sliders)
+
+    show_explanation(*explanation_md)
+
     # if style.lower() == "cyberpunk":
     mplcyberpunk.make_lines_glow()
     st.pyplot(fig)
