@@ -1,13 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 from matplotlib.ticker import MaxNLocator
 from typing import Tuple, List
+from utils import show_explanation
 
 def create_figure(
     figsize: Tuple[int, int],
-    title: str,
+    page_header: str,
+    plot_title: str,
     xlabel: str,
     ylabel: str,
+    explanation_md: Tuple[str, str] = ("Uitleg:", ""),
     subplot_dims: Tuple[int, int] = (1, 1)
 ) -> Tuple[plt.Figure, List[plt.Axes]]:
     """
@@ -25,7 +29,9 @@ def create_figure(
         axes: Een lijst van Axes objecten.
     """
     fig, axes = plt.subplots(*subplot_dims, figsize=figsize)
-    fig.suptitle(title, fontsize=14, fontweight='bold')
+    st.header(page_header)#, fontsize=14, fontweight='bold')
+    fig.suptitle(plot_title)
+    show_explanation(*explanation_md)
 
     if isinstance(axes, np.ndarray):
         axes = axes.ravel()

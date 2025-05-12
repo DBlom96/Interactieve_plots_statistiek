@@ -12,10 +12,11 @@ def generate_streamlit_page(
     sliders: Dict[str, Any],
     plot_function: Callable[[Any, Dict[str, Any]], None],
     figsize: Tuple[int, int] = (8, 5),
-    title: str = "Interactieve plot",
+    page_header: str = "Interactieve plot",
+    plot_title: str = "Interactieve plot",
     xlabel: str = "$x$",
     ylabel: str = "$y$",
-    explanation_md: str = "",
+    explanation_md: Tuple[str, str] = ("Uitleg:", ""),
     subplot_dims: Tuple[int, int] = (1, 1),
 ) -> None:
     """
@@ -25,7 +26,8 @@ def generate_streamlit_page(
         sliders: Ingevoerde waarden via sliders.
         plot_function: Functie die een plot tekent op de assen.
         figsize: Grootte van de figuur.
-        title: Titel van de figuur.
+        page_header: header van de gehele pagina.
+        plot_title: Titel van de figuur.
         xlabel: X-as label.
         ylabel: Y-as label.
         explanation_md: Markdown tekst voor uitleg.
@@ -34,9 +36,9 @@ def generate_streamlit_page(
 
     set_plot_style("cyberpunk")
 
-    show_explanation("Uitleg:", explanation_md)
+    # show_explanation(*explanation_md)
 
-    fig, axes = create_figure(figsize, title, xlabel, ylabel, subplot_dims=subplot_dims)
+    fig, axes = create_figure(figsize, page_header, plot_title, xlabel, ylabel, explanation_md, subplot_dims=subplot_dims)
 
     plot_function(axes, sliders)
     # if style.lower() == "cyberpunk":
