@@ -34,7 +34,7 @@ slider_dict = add_sidebar_binomiale_verdeling()
 page_header="📊 Interactieve plot: de binomiale verdeling"
 plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
 xlabel="Aantal successen $k$"
-ylabel="Kansfunctie $f(k)$"
+ylabel="Kansfunctie $p(k)=P(X=k)$"
 explanation_title = "# :book: Uitleg: binomiale verdeling"
 explanation_markdown = """
     De **binomiale verdeling** is een discrete kansverdeling die het aantal successen telt in een reeks onafhankelijke Bernoulli-experimenten.
