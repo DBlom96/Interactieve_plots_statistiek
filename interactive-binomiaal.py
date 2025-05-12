@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 from scipy.stats import binom
-from utils import generate_streamlit_page
+from utils.streamlit_utils import generate_streamlit_page
 
 st.set_page_config(layout="wide")
 
