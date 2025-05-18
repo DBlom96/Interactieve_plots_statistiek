@@ -34,6 +34,7 @@ slider_dict = add_sidebar_binomiale_verdeling()
 page_header="📊 Interactieve plot: de binomiale verdeling"
 plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
 xlabel="Aantal successen $k$"
+<<<<<<< Updated upstream
 ylabel="Kansfunctie $p(k)=P(X=k)$"
 explanation_title = "# :book: Uitleg: binomiale verdeling"
 explanation_markdown = """
@@ -82,6 +83,20 @@ explanation_markdown = """
         P(X=6) = \\binom{10}{6} \cdot (0.5)^6 \cdot (0.5)^4 \\approx 0,2051
     $$
 """
+=======
+ylabel="Kansfunctie $f(k)$"
+explanation_md = """
+    De binomiale verdeling beschrijft de kansverdeling van het aantal successen in $n$ onafhankelijke Bernoulli-experimenten, waarbij elke proef een kans $p$ heeft op succes.
+    De kansfunctie wordt gegeven door:
+
+    $$ P(X = k) = \binom{n}{k} p^k (1-p)^{n-k} $$
+
+    Waarbij:
+    - $n$ het aantal experimenten is,
+    - $p$ de succeskans per experiment,
+    - $k$ het aantal successen.
+    """
+>>>>>>> Stashed changes
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
@@ -91,6 +106,10 @@ generate_streamlit_page(
     plot_title=plot_title, 
     xlabel=xlabel, 
     ylabel=ylabel,
+<<<<<<< Updated upstream
     explanation_md=(explanation_title, explanation_markdown),
+=======
+    explanation_md=explanation_md,
+>>>>>>> Stashed changes
     subplot_dims=(1, 1)  # Single plot (1x1)
 )
