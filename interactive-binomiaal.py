@@ -97,6 +97,9 @@ explanation_md = """
     - $k$ het aantal successen.
     """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -111,7 +114,11 @@ generate_streamlit_page(
     ylabel=ylabel,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     explanation_md=(explanation_title, explanation_markdown),
+=======
+    explanation_md=explanation_md,
+>>>>>>> Stashed changes
 =======
     explanation_md=explanation_md,
 >>>>>>> Stashed changes
