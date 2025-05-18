@@ -34,7 +34,6 @@ slider_dict = add_sidebar_binomiale_verdeling()
 page_header="📊 Interactieve plot: de binomiale verdeling"
 plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
 xlabel="Aantal successen $k$"
-<<<<<<< Updated upstream
 ylabel="Kansfunctie $p(k)=P(X=k)$"
 explanation_title = "# :book: Uitleg: binomiale verdeling"
 explanation_markdown = """
@@ -54,13 +53,13 @@ explanation_markdown = """
     De kans op **exact $k$ successen** in **$n$ pogingen** wordt berekend met:
 
     $$ 
-        P(X=k) = \\binom{n}{k} \cdot p^k \cdot (1 - p)^{n - k}, 
+        P(X=k) = \\binom{n}{k} \\cdot p^k \\cdot (1 - p)^{n - k}, 
     $$
 
     waarbij:
     - $$ \\binom{n}{k} $$ de **binomiaalcoefficient** is, oftewel het aantal manieren om uit $n$ pogingen er $k \le n$ te kiezen die succesvol zijn:  
     $$ 
-        \\binom{n}{k} = \\frac{n!}{k! \cdot (n-k)!} 
+        \\binom{n}{k} = \\frac{n!}{k! \\cdot (n-k)!} 
     $$
     - $n$ het **aantal experimenten** is.
     - $p$ de **kans op succes** per experiment is.
@@ -69,40 +68,33 @@ explanation_markdown = """
     ## 📈 Verwachtingswaarde en standaardafwijking
     - **Verwachtingswaarde**:  
     $$ 
-        E[X] = n \cdot p 
+        E[X] = n \\cdot p 
     $$
     - **Standaardafwijking**:  
     $$
-        \sigma(X) = \sqrt{n \cdot p \cdot (1 - p)} 
+        \\sigma(X) = \\sqrt{n \\cdot p \\cdot (1 - p)} 
     $$
 
     ## 🎯 Voorbeeld: worpen met een eerlijke munt
     Stel dat we een eerlijke munt **10 keer** opgooien en de kans op "kop" is **50\%**. De binomiale verdeling beschrijft dan de kans op **exact 6 keer kop**:
 
     $$
-        P(X=6) = \\binom{10}{6} \cdot (0.5)^6 \cdot (0.5)^4 \\approx 0,2051
+        P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0,2051
     $$
 """
-=======
+
 ylabel="Kansfunctie $f(k)$"
 explanation_md = """
     De binomiale verdeling beschrijft de kansverdeling van het aantal successen in $n$ onafhankelijke Bernoulli-experimenten, waarbij elke proef een kans $p$ heeft op succes.
     De kansfunctie wordt gegeven door:
 
-    $$ P(X = k) = \binom{n}{k} p^k (1-p)^{n-k} $$
+    $$ P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k} $$
 
     Waarbij:
     - $n$ het aantal experimenten is,
     - $p$ de succeskans per experiment,
     - $k$ het aantal successen.
     """
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
@@ -112,18 +104,6 @@ generate_streamlit_page(
     plot_title=plot_title, 
     xlabel=xlabel, 
     ylabel=ylabel,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     explanation_md=(explanation_title, explanation_markdown),
-=======
-    explanation_md=explanation_md,
->>>>>>> Stashed changes
-=======
-    explanation_md=explanation_md,
->>>>>>> Stashed changes
-=======
-    explanation_md=explanation_md,
->>>>>>> Stashed changes
     subplot_dims=(1, 1)  # Single plot (1x1)
 )
