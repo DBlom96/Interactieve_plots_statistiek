@@ -96,6 +96,9 @@ explanation_md = """
     - $p$ de succeskans per experiment,
     - $k$ het aantal successen.
     """
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
@@ -107,7 +110,11 @@ generate_streamlit_page(
     xlabel=xlabel, 
     ylabel=ylabel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     explanation_md=(explanation_title, explanation_markdown),
+=======
+    explanation_md=explanation_md,
+>>>>>>> Stashed changes
 =======
     explanation_md=explanation_md,
 >>>>>>> Stashed changes
