@@ -30,6 +30,7 @@ def plot_clt(axes, user_inputs):
 
     sns.histplot(sample_means, bins=num_bins, kde=False, label="Steekproefgemiddelden", ax=axes[0])
 
+
 def add_sidebar_clt():
     with st.sidebar:
         st.header("Sliders voor parameters")
@@ -51,14 +52,14 @@ def add_sidebar_clt():
             sigma_slider = st.slider("Standaardafwijking $\\sigma$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
             slider_dict.update({"mu": mu_slider, "sigma": sigma_slider})
         elif dist_selector == "uniform":
-            a_slider = st.slider("Ondergrens $a$:", min_value=-10.0, max_value=0.0, step=0.5, value=-5.0)
-            b_slider = st.slider("Bovengrens $b$:", min_value=0.0, max_value=10.0, step=0.5, value=5.0)
+            a_slider = st.slider("Ondergrens $a$:", min_value=-1_000, max_value=1_000, step=1, value=-5)
+            b_slider = st.slider("Bovengrens $b$:", min_value=a_slider, max_value=1_000, step=1, value=5)
             slider_dict.update({"a": a_slider, "b": b_slider})
         elif dist_selector in ["Poisson", "exponentieel"]:
             lambda_slider = st.slider("$\\lambda$:", min_value=0.1, max_value=5.0, step=0.1, value=1.0)
             slider_dict.update({"lambda_": lambda_slider})
         elif dist_selector == "binomiaal":
-            n_slider = st.slider("Aantal Bernoulli-experimenten $n$:", min_value=1, max_value=100, step=1, value=10)
+            n_slider = st.slider("Aantal Bernoulli-experimenten $n$:", min_value=1, max_value=1_000, step=1, value=20)
             p_slider = st.slider("Succeskans $p$:", min_value=0.0, max_value=1.0, step=0.01, value=0.5)
             slider_dict.update({"n": n_slider, "p": p_slider})
     return slider_dict
@@ -66,7 +67,7 @@ def add_sidebar_clt():
 slider_dict = add_sidebar_clt()
 
 page_header="📊 Interactieve plot: de centrale limietstelling"
-if slider_dict["n_samples"] == 1:
+if slider_dict["sample_size"] == 1:
     plot_title = f"Histogram voor steekproefgemiddelden van {slider_dict["sample_size"]} {slider_dict["dist"]} verdeelde kansvariabele (op basis van {slider_dict["n_samples"]} steekproeven)."
 else:
     plot_title = f"Histogram voor steekproefgemiddelden van {slider_dict["sample_size"]} {slider_dict["dist"]} verdeelde kansvariabelen (op basis van {slider_dict["n_samples"]} steekproeven)."
@@ -76,34 +77,44 @@ ylabel="Frequentie"
 
 explanation_title = """# 📊 Interactieve plot: de centrale limietstelling"""
 explanation_markdown = """
-Deze interactieve visualisatie laat zien hoe de **centrale limietstelling** (CLS) werkt:
-ongeacht de oorspronkelijke verdeling van een populatie, zullen de gemiddelden van voldoende grote steekproeven altijd een **normale verdeling** benaderen.
 
-Stel dat we te maken hebben met een reeks onafhankelijke kansvariabelen $$X_1, X_2, \ldots, X_n$$ met dezelfde kansverdeling,
-waarvoor geldt dat de verwachtingswaarde gelijk is aan $$\mu$$ en de standaardafwijking gelijk is aan $$\\sigma$$.
+## 📜 Wat is de centrale limietstelling?
+De **centrale limietstelling (CLS)** is een fundamenteel statistisch principe.
+Het zegt dat, ongeacht de oorspronkelijke verdeling van een kansvariabele in een populatie, de gemiddelden van voldoende grote steekproeven altijd een **normale verdeling** benaderen.
 
-Volgens de **centrale limietstelling** geldt dat het steekproefgemiddelde
+Met andere woorden: zelfs als je begint met een chaotische of scheve verdeling, dan nog zal het **steekproefgemiddelde** uiteindelijk een belkromme vormen wanneer de steekproefgrootte groot genoeg is.
+Wiskundig opgeschreven geldt volgens de **centrale limietstelling** dat het steekproefgemiddelde
 $$
     \\overline{X} = \\frac{X_1+X_2+\\ldots + X_n}{n}
 $$
-bij een voldoende grote waarde voor $$n$$ een normale verdeling benadert, namelijk bij benadering geldt
+bij een voldoende grote waarde voor $$n$$ een normale verdeling benadert, oftewel
 $$
-    X \sim N(\\mu; \\frac{\\sigma}{n}).
+    \\overline{X} \sim N(\\mu; \\frac{\\sigma}{\\sqrt{n}}).
 $$
+Merk op dat $\\overline{X}$ een kansvariabele is, aangezien we niet van te voren al weten hoe de steekproef er precies uit gaat zien. 
+Vandaar dat we spreken over kansverdelingen van steekproefgemiddelden.
 
 ## 🔢 Hoe werkt het?
 1. Kies een kansverdeling (*normaal, uniform, exponentieel, binomiaal of Poisson*).
-2. Stel de **steekproefgrootte** in: Hoeveel waarnemingen bevat elke steekproef?
-3. Pas het **aantal steekproeven** aan: Hoeveel steekproeven worden genomen?
-4. Selecteer parameters die de verdeling specificeren (*bijv. mu en sigma voor normaal, lambda voor exponentieel*).
-5. Bekijk de histogram van de steekproefgemiddelden: Hoe veranderen ze naarmate meer steekproeven worden toegevoegd?
+2. Stel de **steekproefgrootte $n$** in: hoeveel trekkingen uit de gekozen kansverdeling bevat elke steekproef?
+3. Pas het **aantal steekproeven** aan: hoeveel steekproeven moeten worden genomen om de histogram mee te cre\"eren?
+4. Selecteer waardes voor de parameters, afhankelijk van de gekozen kansverdeling (*bijv. mu en sigma voor normaal, lambda voor exponentieel*).
+5. Bekijk het histogram dat we krijgen door voor het gegeven "aantal steekproeven" van grootte $n$ het gemiddelde te bepalen.
+Hoe verandert de kansverdeling van de steekproefgemiddelden naarmate er meer steekproeven worden toegevoegd?
 
 ## 🔍 Wat kun je observeren?
-- Bij een kleine steekproefgrootte kan de verdeling van de steekproefgemiddelden er grillig uitzien.
+- Bij een groter aantal steekproeven is de simulatie iets trager, maar laat het wel het principe van de centrale limietselling het best illustreren.
+- Bij een steekproefgrootte van 1 kun je de originele kansverdeling goed herkennen in de histogram ge\"illustreerd.
+- Bij kleine steekproefgroottes kan de verdeling van de steekproefgemiddelden er nog grillig uitzien.
 - Naarmate de **steekproefgrootte** toeneemt, worden de steekproefgemiddelden steeds meer normaal verdeeld, ongeacht de oorspronkelijke verdeling.
-- Dit is een krachtige eigenschap die in statistiek wordt gebruikt om inferenties te maken over populaties!
 
-🎯 **Experimenteer** met de sliders en zie hoe de centrale limietstelling in actie werkt!
+## 🧠 Waarom is de centrale limietstelling zo belangrijk?
+De centrale limietstelling is een krachtige eigenschap die in statistiek wordt gebruikt om inferenties te maken over populaties! Daarnaast is van veel verschijnselen in de echte wereld die je als kansvariabele kunt modelleren niet bekend wat de onderliggende kansverdeling is. 
+Deze stelling biedt ons handvatten om hier toch zinnige statistische voorspellingen mee te kunnen maken. 
+In het geval dat de onderliggende kansverdeling wel bekend is, dan zijn zeer complexe berekeningen nodig om de exacte kansverdeling van het steekproefgemiddelde te bepalen ($n$-voudige integralen!).
+
+## 🎯 Probeer het zelf!
+Gebruik de **sliders** om te experimenteren en ontdek hoe de centrale limietstelling in actie werkt!
 """
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
