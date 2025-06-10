@@ -1,26 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import streamlit as st
 from scipy.stats import norm
-import mplcyberpunk
-from utils.plot_utils import cyberpunk_color_cycle, generate_streamlit_page
+import streamlit as st
+from utils.streamlit_utils import generate_streamlit_page
+from utils.plot_style import cyberpunk_color_cycle
 
 # Setting up the page layout to wide
-st.set_page_config(layout="wide")
-
-# Title and explanation
-st.markdown("### Betekenis van het concept 'betrouwbaarheid'")
-st.write("""
-Deze interactieve plot berekent voor een gegeven aantal steekproeven van trekking $x_1, x_2, \ldots, x_n$ uit een normale verdeling
-met gegeven $\\mu$ en $\\sigma$ het **betrouwbaarheidsinterval** voor het populatiegemiddelde $\\mu$.
-Op de $x$-as worden waardes gegeven die het steekproefgemiddelde kan aannemen, met een blauwe verticale lijn om de echte populatieparameter aan te geven.
-Op de $y$-as zie je de index van de steekproef: $1, 2, \ldots,$ aantal_steekproeven.
-De bolletjes geven het steekproefgemiddelde aan.
-                  
-Deze plot is bedoeld om te illustreren dat bij een gegeven betrouwbaarheidsniveau $\\alpha$,
-de kans dat bij een volgende steekproef het betrouwbaarheidsinterval de echte populatieparameter $\\mu$ zou bevatten gelijk is aan $1-\\alpha$.  
-""")
-st.markdown("### Interactieve plot: conceptuele betekenis van betrouwbaarheid'")
+st.set_page_config(
+    page_title="Visualisatie van betrouwbaarheidsintervallen",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
 
 # Sidebar function for getting user input
 def add_sidebar_confidence_interval():
@@ -57,6 +47,7 @@ def plot_confidence_intervals(axes, user_inputs):
             color = color_cycle[6] # "tomato red"
 
         axes[0].plot([ci_left, ci_right], [i, i], marker="|", color=color)
+        axes[0].text(mu + 5 * sample_std, i, f"[{ci_left:.4f}, {ci_right:.4f}]", color=color)
         if i == 0:
             axes[0].scatter(sample_mean, i, color=color, s=100, label="Steekproefgemiddelde")  # Sample mean marker
         else:
@@ -64,27 +55,82 @@ def plot_confidence_intervals(axes, user_inputs):
     axes[0].axvline(mu, color=color_cycle[2], linestyle="--")
     
     # Update suptitle and title
-    axes[0].set_xlim(40, 160)
+    axes[0].set_xlim(mu - 6 * sample_std, mu + 6 * sample_std)
     axes[0].set_title(f"Aantal {int(100*(1-alpha))}%-betrouwbaarheidsintervallen dat $\\mu={mu}$ bevat: "
-                 f"{count_include_mu} van de {num_samples} ({(count_include_mu / num_samples * 100):.2f}%)")
-    axes[0].legend()
+                 f"{count_include_mu} van de {num_samples} ({(count_include_mu / num_samples * 100):.2f}%)", pad=50)
+    # axes[0].legend()
 
     # Reset the figsize
-    plt.gcf().set_size_inches(12, 0.5 * num_samples)  # Resize the figure to the desired size
+    plt.gcf().set_size_inches(12, 0.2 * num_samples)  # Resize the figure to the desired size
 
 slider_dict = add_sidebar_confidence_interval()
 
 # Generate the Streamlit page with the sidebar and plot
-title=f""#Interactieve plot: conceptuele betekenis van betrouwbaarheid"
+page_header=f"📊 Interactieve plot: betrouwbaarheidsintervallen"
+plot_title=f"Visualisatie van betrouwbaarheidsintervallen en het concept van betrouwbaarheid"
 xlabel="$x$"
 ylabel="Steekproefindex"
+explanation_title = "# :book: Uitleg: betrouwbaarheidsintervallen"
+explanation_markdown = """
+    # 🔢 Betrouwbaarheidsintervallen: Een Conceptuele Uitleg
+
+    ## Wat is een betrouwbaarheidsinterval?
+    Een **betrouwbaarheidsinterval** (BI) is een manier om een schatting van een populatieparameter, zoals het gemiddelde, te maken op basis van een steekproef. Het geeft een bereik aan waarbinnen de echte waarde met een bepaalde zekerheid (betrouwbaarheid) ligt.
+
+    Stel dat we een populatie hebben met een onbekend gemiddeld gewicht $\\mu$. Door meerdere steekproeven te nemen, kunnen we een schatting van $\\mu$ maken en daar een onzekerheidsmarge aan koppelen.
+
+    ## 📜 Formule van een betrouwbaarheidsinterval
+    Laat $X_1, X_2, \\ldots, X_n$ een theoretische steekproef zijn.
+    Een betrouwbaarheidsinterval voor $\\mu$ wordt berekend als:
+
+    $$
+    \\text{Steekproefgemiddelde} \\pm \\text{foutmarge}
+    $$
+
+    De foutmarge wordt bepaald door:
+
+    $$
+    z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}
+    $$
+
+    - $z_{\\alpha/2}$ is de grenswaarde uit de standaardnormale verdeling $N(0,1)$ waarvoor de rechteroverschrijdingskans $P(Z \\ge z_{\\alpha/2}) = \\alpha/2$.
+      Deze grenswaarde is dus afhankelijk van het betrouwbaarheidsniveau $1-\\alpha$.
+    - $\\sigma$ is de standaardafwijking van de populatie.
+    - $n$ is de steekproefgrootte.
+
+    De formule van het betrouwbaarheidsinterval is dus een **intervalschatter**, omdat verschillende steekproeven een ander interval kunnen geven, oftewel de grenzen van het betrouwbaarheidsintervallen zijn kansvariabelen.
+
+    ## 🔍 Betekenis van het betrouwbaarheidsniveau
+    Het **betrouwbaarheidsniveau** (bijvoorbeeld 95%) betekent dat als we **veel** steekproeven nemen en voor elke steekproef het betrouwbaarheidsinterval berekenen, ongeveer **95%** van deze intervallen de echte populatieparameter $\\mu$ zal bevatten.
+    Het betrouwbaarheidsniveau noteren we met $1 - \\alpha$, oftewel de kans dat voor een willekeurige steekproef het bijbehorende betrouwbaarheidsinterval de echte populatieparameter zal bevatten.
+
+    Een lager significantieniveau $\\alpha$ betekent een breder interval, maar een lagere fractie van de intervallen die de echte populatieparameter bevatten.
+    Een hogere waarde van $\\alpha$ levert een smaller interval op, maar ook een grotere kans om de echte waarde van $\\mu$ mis te lopen.
+
+    ## 📊 Visuele interpretatie
+    In een grafische weergave zien we vaak meerdere steekproeven, waarbij:
+
+    - **🔵 de blauwe lijn** de werkelijke populatieparameter aangeeft.
+    - **🟢 de groene intervallen** de betrouwbaarheidsintervallen zijn die $\\mu$ wel bevatten. De bolletjes duiden het steekproefgemiddelde aan.
+    - **🔴 de rode intervallen** de werkelijke waarde $\\mu$ niet bevatten.
+
+    ## 🚀 Praktische toepassingen
+    Betrouwbaarheidsintervallen worden veel gebruikt in wetenschappelijk onderzoek, geneeskunde en marktanalyses, bijvoorbeeld bij:
+    - 😊 Het inschatten van gemiddelde klanttevredenheidsscores.
+    - 💊 Klinische studies om het effect van een medicijn vast te stellen.
+    - 📈 Financiële voorspellingen op basis van economische steekproeven.
+
+    Door betrouwbaarheid op deze manier visueel en mathematisch te interpreteren, krijgen we een krachtig instrument voor statistische besluitvorming. ✨
+"""
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
     slider_dict, 
     plot_confidence_intervals, 
-    title=title, 
+    page_header=page_header,
+    plot_title=plot_title,
     xlabel=xlabel, 
     ylabel=ylabel,
+    explanation_md=(explanation_title, explanation_markdown),
     subplot_dims=(1, 1)  # Single plot (1x1)
 )
