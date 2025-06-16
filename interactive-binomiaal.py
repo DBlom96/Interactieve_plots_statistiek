@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import streamlit as st
 from scipy.stats import binom
+import streamlit as st
 from utils.streamlit_utils import generate_streamlit_page
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Visualisatie van de binomiale verdeling",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
 
 # Function to plot the binomial distribution
 def plot_binomiale_verdeling(axes, user_inputs):
@@ -82,19 +86,7 @@ explanation_markdown = """
         P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0,2051
     $$
 """
-
 ylabel="Kansfunctie $f(k)$"
-explanation_md = """
-    De binomiale verdeling beschrijft de kansverdeling van het aantal successen in $n$ onafhankelijke Bernoulli-experimenten, waarbij elke proef een kans $p$ heeft op succes.
-    De kansfunctie wordt gegeven door:
-
-    $$ P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k} $$
-
-    Waarbij:
-    - $n$ het aantal experimenten is,
-    - $p$ de succeskans per experiment,
-    - $k$ het aantal successen.
-    """
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
