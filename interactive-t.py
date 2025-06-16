@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import norm, t
-from utils import generate_streamlit_page
+from utils.streamlit_utils import generate_streamlit_page
+from utils.plot_style import cyberpunk_color_cycle
 
 # Set Streamlit page layout
 st.set_page_config(layout="wide")
@@ -63,36 +64,37 @@ def plot_t_distribution(axes, user_inputs):
     axes[0].legend()
     
     # Apply cyberpunk glow effect
-    # mplcyberpunk.add_glow_effects()
 
 # Generate plot using the generic function
 slider_dict = add_sidebar_t_distribution()
-
-title="Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met df vrijheidsgraden"
-xlabel=r"$x$"
-ylabel=r"Kansdichtheid $f(x)$"
-
-explanation_md = r"""
+page_header="Interactieve plot: Student's $t$-verdeling"
+plot_title=f"Vergelijking tussen de standaardnormale verdeling $N(0,1)$ en de $t$-verdeling met df={slider_dict["df"]} vrijheidsgraden"
+xlabel="$x$"
+ylabel="Kansdichtheidsfunctie $f(x)$"
+explanation_title = "# :book: Uitleg: Student's $t$-verdeling"
+explanation_md = fr"""
 ### 📊 Uitleg: Vergelijking tussen de standaardnormale verdeling en de $t$-verdeling
 
-De standaardnormale verdeling $ N(0,1) $ is een theoretisch model met een vaste vorm: symmetrisch, klokvormig, en met gemiddelde 0 en standaardafwijking 1.
+De standaardnormale verdeling $N(0,1)$ is een theoretisch model met een vaste vorm: symmetrisch, klokvormig, en met gemiddelde 0 en standaardafwijking 1.
 
-De **$t$-verdeling** heeft dikkere staarten. Bij lage vrijheidsgraden is deze breder; bij hoge df lijkt hij steeds meer op $ N(0,1) $.
+### 📌 De $t$-verdeling in het kort
+De **$t$-verdeling** heeft dikkere staarten. Bij weinig vrijheidsgraden is deze breder; bij veel vrijheidsgraden lijkt hij steeds meer op $N(0,1)$.
 
 - **Blauw** = kansdichtheidsfunctie van de standaardnormale verdeling $N(0,1)$
-- **Goud** = kansdichtheidsfunctie van de $t$-verdeling met $df={df}$ vrijheidsgraden
+- **Goud** = kansdichtheidsfunctie van de $t$-verdeling met $df={slider_dict["df"]}$ {"vrijheidsgraad" if slider_dict["df"]==1 else "vrijheidsgraden"}
 - Stippellijnen = grenzen van 95%-betrouwbaarheidsintervallen
 
-🧠 *Gebruik t-verdeling bij kleine steekproeven (onbekende σ).*
+🧠 *Gebruik de $t$-verdeling bij kleine steekproeven ($n < 30$) en een onbekende standaardafwijking $\sigma$ om een betrouwbaarheidsinterval te berekenen voor het gemiddelde $\mu$ van een normale verdeling).*
 """
 
 # show_explanation("Uitleg: normale vs. t-verdeling", explanation_md)
 generate_streamlit_page(
     slider_dict,
     plot_t_distribution,
+    page_header=page_header,
+    plot_title=plot_title,
     figsize=(10,5),
-    title=title,
     xlabel=xlabel,
     ylabel=ylabel,
-    explanation_md=explanation_md,
+    explanation_md=(explanation_title, explanation_md),
     subplot_dims=(1,1))
