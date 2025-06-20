@@ -3,37 +3,36 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import mplcyberpunk
 from scipy.stats import norm
-from utils.plot_style import cyberpunk_color_cycle
-from utils.streamlit_utils import generate_streamlit_page
+from utils.plot_utils import cyberpunk_color_cycle, generate_streamlit_page
 
 # Paginalay-out instellen op breed
 st.set_page_config(layout="wide")
 
 # Title and explanation
-# st.markdown("### Interactieve plot: type-I en type-II fouten")
-# st.write("""
-# Deze interactieve plot laat zien wat de type-I en type-II fouten zijn voor een hypothesetoets voor het populatiegemiddelde $\\mu$ met de drie toetstypes: tweezijdig, linkszijdig en rechtszijdig.
-# Allereerst is de kansverdeling voor de toetsingsgrootheid $\\bar{X}$ onder de nulhypothese $\\bar{{X}} \sim N(\\mu_0; \\frac{{\sigma}}{{\sqrt{{n}}}}$ getekend in cyaanblauw.
-# Gegeven de keuze voor het significantieniveau $\\alpha$, wordt het **acceptatiegebied** bepaald met behulp van het $(1-\\alpha)$-voorspellingsinterval voor $\\bar{{x}}$ gegeven $\\mu=\\mu_0$ en $\\alpha$.
-# Dit acceptatiegebied wordt gegeven door de lichtgroene horizontale lijn onder de grafiek.
-# De overige mogelijke waardes voor $\\bar{{x}}$ geven het **kritieke gebied** aan en zijn weergegeven met de rode horizontale lijnen onder de grafiek.
+st.markdown("### Interactieve plot: type-I en type-II fouten")
+st.write("""
+Deze interactieve plot laat zien wat de type-I en type-II fouten zijn voor een hypothesetoets voor het populatiegemiddelde $\\mu$ met de drie toetstypes: tweezijdig, linkszijdig en rechtszijdig.
+Allereerst is de kansverdeling voor de toetsingsgrootheid $\\bar{X}$ onder de nulhypothese $\\bar{{X}} \sim N(\\mu_0; \\frac{{\sigma}}{{\sqrt{{n}}}}$ getekend in cyaanblauw.
+Gegeven de keuze voor het significantieniveau $\\alpha$, wordt het **acceptatiegebied** bepaald met behulp van het $(1-\\alpha)$-voorspellingsinterval voor $\\bar{{x}}$ gegeven $\\mu=\\mu_0$ en $\\alpha$.
+Dit acceptatiegebied wordt gegeven door de lichtgroene horizontale lijn onder de grafiek.
+De overige mogelijke waardes voor $\\bar{{x}}$ geven het **kritieke gebied** aan en zijn weergegeven met de rode horizontale lijnen onder de grafiek.
 
-# De type-I fout is de fout die we maken als $H_0$ in werkelijkheid waar is, maar we kiezen om $H_0$ te verwerpen. 
-# Dit gebeurt als de waargenomen toetsingsgrootheid $\\bar{{x}}$ uit een van de staarten van de cyaanblauwe verdeling komt (een extreme waarde).
-# Merk op dat we de grootte van deze fout kiezen met onze keuze voor het significantieniveau $\\alpha$.
+De type-I fout is de fout die we maken als $H_0$ in werkelijkheid waar is, maar we kiezen om $H_0$ te verwerpen. 
+Dit gebeurt als de waargenomen toetsingsgrootheid $\\bar{{x}}$ uit een van de staarten van de cyaanblauwe verdeling komt (een extreme waarde).
+Merk op dat we de grootte van deze fout kiezen met onze keuze voor het significantieniveau $\\alpha$.
          
-# Het doel van een hypothesetoets zit hem in het beperken van de type-II fout: de fout die we maken wanneer de alternatieve hypothese $\\bar{{X}} \sim N(\\mu_1; \\frac{{\sigma}}{{\sqrt{{n}}}})$ in werkelijkheid waar is, maar we toch besluiten om $H_0$ te accepteren.
-# Deze fout $\\beta$ wordt in de plot weergegeven door het gearceerde gebied onder de verdeling van de alternatieve hypothese (goudgele verdeling).
-# De **kracht** of het **onderscheidingsvermogen** is de kans $1 - \\beta$, oftewel de kans dat als $H_1$ in werkelijkheid waar is we inderdaad de nulhypothese $H_0$ verwerpen.
+Het doel van een hypothesetoets zit hem in het beperken van de type-II fout: de fout die we maken wanneer de alternatieve hypothese $\\bar{{X}} \sim N(\\mu_1; \\frac{{\sigma}}{{\sqrt{{n}}}})$ in werkelijkheid waar is, maar we toch besluiten om $H_0$ te accepteren.
+Deze fout $\\beta$ wordt in de plot weergegeven door het gearceerde gebied onder de verdeling van de alternatieve hypothese (goudgele verdeling).
+De **kracht** of het **onderscheidingsvermogen** is de kans $1 - \\beta$, oftewel de kans dat als $H_1$ in werkelijkheid waar is we inderdaad de nulhypothese $H_0$ verwerpen.
                  
-# Merk het volgende op:
-# - De type-I fout is gekozen met de keuze van $\\alpha$.
-# - De volgende zaken hebben invloed op de type-II fout:
-#     - als $\\mu_0$ en $\\mu_1$ dichter bij elkaar liggen, wordt de type-II fout groter $\\beta$ ($H_0$ en $H_1$ moeilijker te onderscheiden!).
-#     - als de standaardafwijking $\\sigma$ groter wordt, wordt de type-II fout $\\beta$ ook groter.
-#     - als de steekproefgrootte $n$ groter wordt, wordt de type-II fout $\\beta$ kleiner.
-#     - als het significantieniveau $\\alpha$ (en daarmee dus de type-I fout) groter gekozen wordt, dan wordt de type-II fout $\\beta$ kleiner."""
-# )
+Merk het volgende op:
+- De type-I fout is gekozen met de keuze van $\\alpha$.
+- De volgende zaken hebben invloed op de type-II fout:
+    - als $\\mu_0$ en $\\mu_1$ dichter bij elkaar liggen, wordt de type-II fout groter $\\beta$ ($H_0$ en $H_1$ moeilijker te onderscheiden!).
+    - als de standaardafwijking $\\sigma$ groter wordt, wordt de type-II fout $\\beta$ ook groter.
+    - als de steekproefgrootte $n$ groter wordt, wordt de type-II fout $\\beta$ kleiner.
+    - als het significantieniveau $\\alpha$ (en daarmee dus de type-I fout) groter gekozen wordt, dan wordt de type-II fout $\\beta$ kleiner."""
+)
 
 def add_sidebar_hypothesis_testing():
     with st.sidebar:
@@ -41,8 +40,8 @@ def add_sidebar_hypothesis_testing():
 
         # Streamlit widgets for user input
         test_type = st.selectbox("Toetstype", ['tweezijdig', 'linkszijdig', 'rechtszijdig'])
-        mu_0 = st.number_input("Gemiddelde $\\mu_0$ onder $H_0$:", value=0.0)
-        sigma = st.number_input("Standaardafwijking ($\\sigma$)", min_value=0.0, value=1.0)
+        mu_0 = st.slider("Gemiddelde onder $H_0$ ($\\mu_0$):", min_value=-10, max_value=10, value=0, step=1)
+        sigma = st.slider("Standaardafwijking ($\\sigma$)", min_value=1, max_value=10, value=5, step=1)
 
         if test_type == "tweezijdig":
             minmu, maxmu = mu_0 - sigma, mu_0 + sigma
@@ -50,9 +49,10 @@ def add_sidebar_hypothesis_testing():
             minmu, maxmu = mu_0, mu_0 + sigma
         else:
             minmu, maxmu = mu_0 - sigma, mu_0
-        mu_1 = st.number_input("Gemiddelde $\\mu_1$ onder $H_1$", value=mu_0+1) # min_value=minmu, max_value=maxmu, value=mu_0+1 if test_type == "tweezijdig" else value, step=1)
-        alpha = st.number_input("Significantieniveau ($\\alpha$)", min_value=0.001, max_value=0.2, value=0.05)
-        sample_size = st.number_input("Steekproefgrootte ($n$):", min_value=1, value=30)
+        value = (minmu + maxmu) // 2
+        mu_1 = st.slider("Gemiddelde onder $H_1$ ($\\mu_1$)", min_value=minmu, max_value=maxmu, value=mu_0+1 if test_type == "tweezijdig" else value, step=1)
+        alpha = st.slider("Significantieniveau ($\\alpha$)", min_value=0.01, max_value=0.10, value=0.05, step=0.01)
+        sample_size = st.slider("Steekproefgrootte ($n$):", min_value=1, max_value=100, step=1, value=30)
 
         slider_dict = {
             "test_type": test_type, 
@@ -93,17 +93,17 @@ def plot_hypothesis_testing(axes, user_inputs):
     ylines = 1/2 * ytext
 
     axes[0].set_ylim(bottom=1.5*ytext, top=1.1*ymax)
-    axes[0].set_xlabel('Toetsingsgrootheid ($\\overline{x}$)')
-    axes[0].set_ylabel('Kansdichtheidsfunctie $f(\\overline{x})$')
+    axes[0].set_xlabel(r'Toetsingsgrootheid ($\overline{x}$)')
+    axes[0].set_ylabel(r'Kansdichtheid $f(\overline{x})$')
     
     # Plot instellen
-    axes[0].plot(x, pdf_H0, color=H0_color, alpha=0.7, label="Kansverdeling van $\\overline{X}$ onder $H_0$")
+    axes[0].plot(x, pdf_H0, color=H0_color, alpha=0.7, label="Kansverdeling onder $H_0$")
     axes[0].plot([mu_0, mu_0], [0, norm.pdf(mu_0, mu_0, sample_std)], color=H0_color, linestyle='--')
-    axes[0].text(mu_0, ymu, "$\\mu_0$", color=H0_color, ha="center", va="center")
+    axes[0].text(mu_0, ymu, r"$\mu_0$", color=H0_color, ha="center", va="center")
 
-    axes[0].plot(x, pdf_H1, color=H1_color, alpha=0.7, label="Kansverdeling van $\\overline{X}$ onder $H_1$")
+    axes[0].plot(x, pdf_H1, color=H1_color, alpha=0.7, label="Kansverdeling onder $H_1$")
     axes[0].plot([mu_1, mu_1], [0, norm.pdf(mu_1, mu_1, sample_std)], color=H1_color, linestyle='--')
-    axes[0].text(mu_1, ymu, "$\\mu_1$", color=H1_color, ha="center", va="center")
+    axes[0].text(mu_1, ymu, r"$\mu_1$", color=H1_color, ha="center", va="center")
     
     
 
@@ -127,7 +127,7 @@ def plot_hypothesis_testing(axes, user_inputs):
         axes[0].text((critical_value_left + critical_value_right) / 2, ytext, 'Accepteer $H_0$', color=acceptable_color, fontsize=11, ha='center')
 
         # Teken het kritieke gebied
-        axes[0].hlines(ylines, xmin, critical_value_left, color=critical_color, linewidth=5, label=f"Kritiek gebied: $(-\\infty; {critical_value_left:.2f}]$ en $[{critical_value_right:.2f}; \\infty)$")
+        axes[0].hlines(ylines, xmin, critical_value_left, color=critical_color, linewidth=5)
         axes[0].hlines(ylines, critical_value_right, xmax, color=critical_color, linewidth=5)
         axes[0].text((critical_value_left + xmin) / 2, ytext, 'Verwerp $H_0$', color=critical_color, fontsize=11, ha='center')
         axes[0].text((critical_value_right + xmax) / 2, ytext, 'Verwerp $H_0$', color=critical_color, fontsize=11, ha='center')
@@ -151,7 +151,7 @@ def plot_hypothesis_testing(axes, user_inputs):
         axes[0].text((xmin + critical_value_right) / 2, ytext, 'Accepteer $H_0$', color=acceptable_color, fontsize=11, ha='center')
 
         # Teken het kritieke gebied
-        axes[0].hlines(ylines, critical_value_right, xmax, color=critical_color, linewidth=5, label=f"Kritiek gebied: $[{critical_value_right:.2f}; \\infty)$")
+        axes[0].hlines(ylines, critical_value_right, xmax, color=critical_color, linewidth=5)
         axes[0].text((critical_value_right + xmax) / 2, ytext, 'Verwerp $H_0$', color=critical_color, fontsize=11, ha='center')
                
         plt.suptitle(f'Rechtszijdige hypothesetoets: $H_0$: $\\mu\\leq{mu_0}$ vs. $H_1$: $\\mu > {mu_0}$')
@@ -173,72 +173,25 @@ def plot_hypothesis_testing(axes, user_inputs):
         axes[0].text((critical_value_left + xmax) / 2, ytext, 'Accepteer $H_0$', color=acceptable_color, fontsize=11, ha='center')
 
         # Teken het kritieke gebied
-        axes[0].hlines(ylines, xmin, critical_value_left, color=critical_color, linewidth=5, label=f"Kritiek gebied: $(-\\infty; {critical_value_left:.2f}]$")
+        axes[0].hlines(ylines, xmin, critical_value_left, color=critical_color, linewidth=5)
         axes[0].text((xmin + critical_value_left) / 2, ytext, 'Verwerp $H_0$', color=critical_color, fontsize=11, ha='center')
         
         plt.suptitle(f'Linkszijdige hypothesetoets: $H_0$: $\\mu\\geq{mu_0}$ vs. $H_1$: $\\mu < {mu_0}$')
 
-    axes[0].legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1)
+    axes[0].legend()    
+
 slider_dict = add_sidebar_hypothesis_testing()
 
-page_header="Interactieve plot: hypothesetoetsen"
-plot_title=f"Hypothesetoets voor het gemiddelde $\\mu$"
-xlabel="Steekproefgemiddelde $\\overline{x}$", 
-ylabel="Kansdichtheidsfunctie $f(k)$"
-explanation_title = "# :book: Uitleg: hypothesetoetsen"
-explanation_md=r"""
-# 📊 Interactieve Streamlit Webapp: Hypothesetoetsing
-
-Deze interactieve webapp toont de werking van **hypothesetoetsen voor het populatiegemiddelde** $\mu$, inclusief visualisatie van:
-
--  Type-I fout ($\alpha$)
--  Type-II fout ($\beta$)
--  Acceptatie- en kritieke gebieden
-
-## ⚙️ Functionaliteiten
-
-Met de webapp kun je onderstaande parameters instellen via een **sidebar**:
-
--  **Toetstype:** tweezijdig, linkszijdig of rechtszijdig (dit geeft het teken "\neq", "<" of ">" aan in de alternatieve hypothese).
--  **Nulhypothese-gemiddelde** $\mu_0$
--  **Alternatieve hypothese** $\mu_1$
--  **Standaardafwijking** $\sigma$
--  **Significantieniveau** $\alpha$
--  **Steekproefgrootte** $n$
-
-## 🧠 Uitleg: hypothesetoetsing
-
-### 📌 Wat laat de grafiek zien?
-
-- De **cyaanblauwe kromme** is de kansverdeling onder $H_0$, d.w.z. $\bar{X} \sim N(\mu_0, \frac{\sigma}{\sqrt{n}})$.
-- Het **lichtgroene interval** onder de grafiek toont het **acceptatiegebied**.
-- De **rode intervallen** tonen het **kritieke gebied**, afhankelijk van de gekozen toets.
-- De **goudgele kromme** stelt de kansverdeling onder de alternatieve hypothese $H_1$ voor.
-- Het **rood gearceerde oppervlak** geeft de kans op een **type-I fout** ($\alpha$) weer.
-- Het ** geel gearceerde oppervlak** geeft de kans op een **type-II fout** ($\beta$) weer.
-
-### 🧩 Interpretatie
-
--  **Type-I fout ($\alpha$):** de kans dat we $H_0$ onterecht verwerpen.
--  **Type-II fout ($\beta$):** de kans dat we $H_0$ niet verwerpen terwijl $H_1$ waar is.
-- ✅ **Onderscheidend vermogen van de toets:** $1 - \beta$
-
-### 🧮 Invloeden op het onderscheidend vermogen
-
-- Kleinere afstand tussen $\mu_0$ en $\mu_1$ $\rightarrow$ lager onderscheidend vermogen $1 - \beta$
-- Grotere standaardafwijking $\sigma$ $\rightarrow$ lager onderscheidend vermogen $1 - \beta$
-- Grotere steekproefgrootte $n$ $\rightarrow$ hoger onderscheidend vermogen $1 - \beta$
-- Grotere $\alpha$ $\rightarrow$ hoger onderscheidend vermogen $1 - \beta$ (omdat we de kans op een type-I fout verhogen, en daardoor de kans op een type-II fout $\beta$ verlagen)
-"""
+title="Interactieve plot: de centrale limietstelling"
+xlabel="Steekproefgemiddelde $\\bar{x}$"
+ylabel="Frequentie"
 
 # Call generate_streamlit_page with the plot_binomiale_verdeling function
 generate_streamlit_page(
-    sliders=slider_dict,
-    plot_function=plot_hypothesis_testing, 
-    page_header=page_header,
-    plot_title=plot_title, 
+    slider_dict, 
+    plot_hypothesis_testing, 
+    title=title, 
     xlabel=xlabel, 
     ylabel=ylabel,
-    explanation_md=(explanation_title, explanation_md), 
     subplot_dims=(1, 1)  # Single plot (1x1)
 )
