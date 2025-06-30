@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 from scipy.stats import chi2
+import mplcyberpunk
 from utils.plot_style import cyberpunk_color_cycle
 from utils.streamlit_utils import generate_streamlit_page
 
