@@ -6,6 +6,7 @@ from utils.plot_style import cyberpunk_color_cycle
 from utils.streamlit_utils import generate_streamlit_page
 
 st.set_page_config(layout="wide")
+
 def add_sidebar_chi2():
     with st.sidebar:
         st.header("Instellingen voor chi-kwadraatverdeling")
