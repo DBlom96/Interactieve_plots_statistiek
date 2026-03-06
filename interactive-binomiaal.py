@@ -39,7 +39,7 @@ page_header="📊 Interactieve plot: de binomiale verdeling"
 plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
 xlabel="Aantal successen $k$"
 ylabel="Kansfunctie $p(k)=P(X=k)$"
-explanation_title = "# :book: Uitleg: binomiale verdeling"
+explanation_title = "# :books: Uitleg: binomiale verdeling"
 explanation_markdown = """
     De **binomiale verdeling** is een discrete kansverdeling die het aantal successen telt in een reeks onafhankelijke Bernoulli-experimenten.
     Dit betekent dat elk experiment slechts twee mogelijke uitkomsten heeft: *succes* (1) of *mislukking* (0).
