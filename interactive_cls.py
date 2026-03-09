@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm, uniform, expon, binom, poisson
-from utils.explanation_utils import show_explanation  # Blijft zoals u het had
+from utils.explanation_utils import show_explanation
 
 st.set_page_config(layout="wide")
 
@@ -105,8 +105,14 @@ fig.update_layout(
               f"Std: {all_means.std():.3f} (theoretisch: {true_sigma:.3f})"),
         font=dict(size=15),
     ),
-    xaxis_title="Steekproefgemiddelde x̄",
-    yaxis_title="Frequentie",
+    xaxis=dict(
+        title=dict(text="Steekproefgemiddelde x̄", font=dict(size=20)),
+        tickfont=dict(size=20)
+    ),
+    yaxis = dict(
+        title=dict(text = "Frequentie", font=dict(size=20)),
+        tickfont=dict(size=20)
+    ),
     legend=dict(x=0.75, y=0.95),
     height=500,
 )
@@ -126,7 +132,7 @@ st.markdown(
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
-explanation_title = """# 📊 Interactieve plot: de centrale limietstelling"""
+explanation_title = """📊 Interactieve plot: de centrale limietstelling"""
 explanation_markdown = """
 
 ## 📜 Wat is de centrale limietstelling?

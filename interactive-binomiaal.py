@@ -1,8 +1,8 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import binom
 import streamlit as st
-from utils.streamlit_utils import generate_streamlit_page
+import numpy as np
+import plotly.graph_objects as go
+from scipy.stats import binom
+from utils.explanation_utils import show_explanation
 
 st.set_page_config(
     page_title="Visualisatie van de binomiale verdeling",
@@ -10,36 +10,77 @@ st.set_page_config(
     layout="wide"
 )
 
-# Function to plot the binomial distribution
-def plot_binomiale_verdeling(axes, user_inputs):
-    n = user_inputs["n"]
-    p = user_inputs["p"]
+# ----------------------------------
+# PARAMETERS
+# ----------------------------------
 
-    x = np.arange(0, n + 1)  # Mogelijke uitkomsten
-    binom_pmf = binom.pmf(x, n, p)  # Binomiale kansfunctie
-
-    # Maak de plot
-    axes[0].stem(x, binom_pmf, linefmt='-', markerfmt='o', basefmt=" ")
-
-def add_sidebar_binomiale_verdeling():
-    with st.sidebar:
-        st.header("Sliders voor parameters")
-        
-        # Specific sliders for each distribution
-        n_slider = st.slider(label="Aantal Bernoulli-experimenten $n$", min_value=1, max_value=100, value=20, step=1)
-        p_slider = st.slider(label="Succeskans $p$", min_value=0.01, max_value=0.99, value=0.5, step=0.01)
+st.title("📊 Interactieve plot: de binomiale verdeling")
+with st.sidebar:
+    st.header("Parameters")
     
-    slider_dict = {"n": n_slider, "p": p_slider}
-    return slider_dict
+    n_slider = st.number_input(label="Aantal Bernoulli-experimenten $n$", min_value=1, value=20)
+    p_slider = st.slider(label="Succeskans $p$", min_value=0.0, max_value=1.0, value=0.5)
 
-slider_dict = add_sidebar_binomiale_verdeling()
+# ----------------------------------
+# SAMPLING
+# ----------------------------------
+
+def draw_sample_binomial(n, p):
+    x = np.arange(0, n + 1)  # Mogelijke uitkomsten
+    y = binom.pmf(x, n, p)  # Binomiale kansfunctie
+    return x, y
+
+# ----------------------------------
+# PLOTTING
+# ----------------------------------
+
+x, y = draw_sample_binomial(n_slider, p_slider)
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=x,
+    y=y,
+    mode='markers',
+    marker=dict(color="cyan"),
+    showlegend=False
+))
+
+for xi, yi in zip(x, y):
+    fig.add_trace(go.Scatter(
+        x=[xi, xi],
+        y=[0, yi],
+        mode='lines',
+        line=dict(color='cyan',width=2),
+        showlegend=False
+    ))
+
+fig.update_layout(
+    title=dict(
+        text=(f"Naalddiagram van de binomiale verdeling met n = {n_slider} en p = {p_slider}"),
+        font=dict(size=40),
+    ),
+    xaxis=dict(
+        title=dict(text="Uitkomst k", font=dict(size=30)),
+        tickfont=dict(size=30)
+    ),
+    yaxis = dict(
+        title=dict(text = "Kansfunctie P(X=k)", font=dict(size=30)),
+        tickfont=dict(size=30)
+    ),
+    height=800,
+)
+
+st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+
 
 # Generate the Streamlit page with the sidebar and plot
-page_header="📊 Interactieve plot: de binomiale verdeling"
-plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
-xlabel="Aantal successen $k$"
-ylabel="Kansfunctie $p(k)=P(X=k)$"
-explanation_title = "# :books: Uitleg: binomiale verdeling"
+# page_header="📊 Interactieve plot: de binomiale verdeling"
+# plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
+# xlabel="Aantal successen $k$"
+# ylabel="Kansfunctie $p(k)=P(X=k)$"
+
+explanation_title = "📚 Uitleg: binomiale verdeling"
 explanation_markdown = """
     De **binomiale verdeling** is een discrete kansverdeling die het aantal successen telt in een reeks onafhankelijke Bernoulli-experimenten.
     Dit betekent dat elk experiment slechts twee mogelijke uitkomsten heeft: *succes* (1) of *mislukking* (0).
@@ -61,13 +102,13 @@ explanation_markdown = """
     $$
 
     waarbij:
+    - $n$ het **aantal experimenten** is.
+    - $p$ de **kans op succes** per experiment is.
+    - $k$ het **aantal successen** is.
     - $$ \\binom{n}{k} $$ de **binomiaalcoefficient** is, oftewel het aantal manieren om uit $n$ pogingen er $k \le n$ te kiezen die succesvol zijn:  
     $$ 
         \\binom{n}{k} = \\frac{n!}{k! \\cdot (n-k)!} 
     $$
-    - $n$ het **aantal experimenten** is.
-    - $p$ de **kans op succes** per experiment is.
-    - $k$ het **aantal successen** is.
 
     ## 📈 Verwachtingswaarde en standaardafwijking
     - **Verwachtingswaarde**:  
@@ -83,19 +124,8 @@ explanation_markdown = """
     Stel dat we een eerlijke munt **10 keer** opgooien en de kans op "kop" is **50\%**. De binomiale verdeling beschrijft dan de kans op **exact 6 keer kop**:
 
     $$
-        P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0,2051
+        P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0.2051
     $$
 """
-ylabel="Kansfunctie $f(k)$"
 
-# Call generate_streamlit_page with the plot_binomiale_verdeling function
-generate_streamlit_page(
-    slider_dict, 
-    plot_binomiale_verdeling, 
-    page_header=page_header,
-    plot_title=plot_title, 
-    xlabel=xlabel, 
-    ylabel=ylabel,
-    explanation_md=(explanation_title, explanation_markdown),
-    subplot_dims=(1, 1)  # Single plot (1x1)
-)
+show_explanation(explanation_title, explanation_markdown)
