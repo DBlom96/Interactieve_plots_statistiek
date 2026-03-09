@@ -17,13 +17,14 @@ with st.sidebar:
     alpha = st.number_input("Significantieniveau &alpha;", 0.01, 0.10, 0.05)
     frame_duration = st.number_input("Frame duur (ms)", min_value=100, value=500)
     batch_size = st.number_input("Aantal steekproeven", min_value=1, value=100, max_value=1000)
-    generate = st.button("Genereer & Animeer")
+    generate = st.button("Steekproeven trekken")
 
 st.write("""In deze simulatie worden betrouwbaarheidsintervallen bepaald voor het populatiegemiddelde $\\mu$ van een normale verdeling $N(\\mu = ?, \\sigma)$ met bekende standaardafwijking $\\sigma$.
 Als we een steekproef van grootte $n$ trekken uit deze kansverdeling en het steekproefgemiddelde $\\bar{x}$ berekenen, kunnen we een betrouwbaarheidsinterval construeren dat met een bepaalde betrouwbaarheidsniveau (1 - &alpha;) het werkelijke populatiegemiddelde $\\mu$ bevat.
 Als we het proces van steekproeftrekking en intervalconstructie herhalen, kunnen we zien dat bij een betrouwbaarheidsniveau van bijvoorbeeld 0.95 (&alpha;=0.05) geldt dat ongeveer 95% van de intervallen het werkelijke populatiegemiddelde $\\mu$ zullen bevatten, wat inzicht geeft in het concept van betrouwbaarheidsintervallen en hun interpretatie.
          
-Merk op: normaal gesproken weet je natuurlijk niet wat $\\mu$ is en wil je daarover uitspraken doen op basis van je steekproef. In deze simulatie is $\\mu$ echter bekend om het concept van betrouwbaarheidsintervallen en betrouwbaarheidsniveau (1 - &alpha;) beter te kunnen illustreren.""")
+Merk op: normaal gesproken weet je natuurlijk niet wat $\\mu$ is en wil je daarover uitspraken doen op basis van je steekproef. 
+In deze simulatie is $\\mu$ echter bekend om het concept van betrouwbaarheidsintervallen en betrouwbaarheidsniveau (1 - &alpha;) beter te kunnen illustreren.""")
 
 # --------------------------------------------------
 # SIMULATION STEP
@@ -241,4 +242,4 @@ if generate:
     fig = build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 else:
-    st.info("Klik op **Genereer & Animeer** in de sidebar om een batch te starten.")
+    st.info(f"Klik op **Steekproeven trekken** in de sidebar om {batch_size} steekproeven te trekken van grootte $n={n}$.")
