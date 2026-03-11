@@ -89,14 +89,6 @@ fig.add_trace(go.Bar(
     name="Steekproefgemiddelden",
 ))
 
-# fig.add_trace(go.Scatter(
-#     x=x_curve,
-#     y=curve_y,
-#     mode="lines",
-#     line=dict(color="red", width=2.5),
-#     name=f"CLT: N({true_mu:.2f}, {true_sigma:.3f})",
-# ))
-
 obs = "observatie" if sample_size == 1 else "observaties"
 fig.update_layout(
     title=dict(

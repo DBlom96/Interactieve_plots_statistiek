@@ -25,7 +25,7 @@ with st.sidebar:
 # SAMPLING
 # ----------------------------------
 
-def draw_sample_binomial(n, p):
+def draw_binomial_distribution(n, p):
     x = np.arange(0, n + 1)  # Mogelijke uitkomsten
     y = binom.pmf(x, n, p)  # Binomiale kansfunctie
     return x, y
@@ -34,7 +34,7 @@ def draw_sample_binomial(n, p):
 # PLOTTING
 # ----------------------------------
 
-x, y = draw_sample_binomial(n_slider, p_slider)
+x, y = draw_binomial_distribution(n_slider, p_slider)
 
 fig = go.Figure()
 
@@ -73,14 +73,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
-
-# Generate the Streamlit page with the sidebar and plot
-# page_header="📊 Interactieve plot: de binomiale verdeling"
-# plot_title = f"Naalddiagram van de binomiale verdeling met $n = {slider_dict["n"]}$ en $p = {slider_dict["p"]}$"
-# xlabel="Aantal successen $k$"
-# ylabel="Kansfunctie $p(k)=P(X=k)$"
-
-explanation_title = "📚 Uitleg: binomiale verdeling"
+explanation_title = "📚 De binomiale verdeling"
 explanation_markdown = """
     De **binomiale verdeling** is een discrete kansverdeling die het aantal successen telt in een reeks onafhankelijke Bernoulli-experimenten.
     Dit betekent dat elk experiment slechts twee mogelijke uitkomsten heeft: *succes* (1) of *mislukking* (0).

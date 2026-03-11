@@ -1,8 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import binom, poisson
 import streamlit as st
-from utils.streamlit_utils import generate_streamlit_page
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from scipy.stats import binom, poisson
+from utils.explanation_utils import show_explanation
 
 st.set_page_config(
     page_title="Connectie tussen de binomiale en Poissonverdeling",
@@ -10,58 +11,126 @@ st.set_page_config(
     layout="wide"
 )
 
-# Function to plot Binomial and Poisson distributions
-def plot_binomial_poisson(axes, user_inputs):
-    lmbda = user_inputs["lmbda"]
-    n = user_inputs["n"]
-    p = lmbda / n  # Define p for Binomial
-    
-    k_values = np.arange(0, max(2 * lmbda, 20))  # Range of k-values for visualization
-    xticklabels = np.arange(0, len(k_values), max(1, len(k_values) / 10))
+# ------------------------------
+# PARAMETERS
+# ------------------------------
 
-    # Binomial probabilities
-    binom_probs = binom.pmf(k_values, n, p)
-    
-    # Poisson probabilities
-    poisson_probs = poisson.pmf(k_values, lmbda)
-        
-    # Plot the Binomial distribution
-    axes[0].stem(k_values, binom_probs, linefmt='-', markerfmt='o', basefmt=' ')
-    prob = lmbda / n
-    if int(prob) == prob:  # If p is an integer
-        axes[0].set_title(f"Binomiaal($n={n}$; $p=\\frac{{\\lambda}}{{n}} = {int((lmbda / n))}$)")
-    else:  # If p is a float
-        axes[0].set_title(f"Binomiaal($n={n}$; $p=\\frac{{\\lambda}}{{n}} \\approx {(lmbda / n):.4f}$)")
-    axes[0].set_xlabel("$k$")
-    axes[0].set_ylabel("Kansfunctie $f(k)$")
-    axes[0].set_xticks(xticklabels)
-    
-    # Plot the Poisson distribution
-    axes[1].stem(k_values, poisson_probs, linefmt='-', markerfmt='o', basefmt=' ')
-    axes[1].set_title(f"Poisson($\\lambda={lmbda}$)")
-    axes[1].set_xlabel("$k$")
-    axes[1].set_ylabel("Kansfunctie $f(k)$")
-    axes[1].set_xticks(xticklabels)
+st.title("📊 Connectie tussen de binomiale verdeling en de Poissonverdeling")
+with st.sidebar:
+    st.header("Parameters")
 
-def add_sidebar_poisson_verdeling():
-    with st.sidebar:
-        st.header("Sliders voor parameters")
+    lambda_input = st.number_input(label="$\\lambda$", min_value=0.1, value=1.0)
+    n_input = st.number_input(label="Aantal Bernoulli-experimenten $n$", min_value=1, value=20)
 
-        # Specific sliders for each distribution
-        lambda_slider = st.slider(label="$\\lambda$", min_value=0.5, max_value=20.0, value=2.0, step=0.1)
-        n_slider = st.slider(label="Aantal Bernoulli-experimenten $n$", min_value=int(lambda_slider)+1, max_value=5000, value=max(100, int(lambda_slider * 50)), step=1)
-    
-    slider_dict = {"lmbda": lambda_slider, "n": n_slider}
-    return slider_dict
+# ------------------------------
+# SAMPLING
+# ------------------------------
 
-slider_dict = add_sidebar_poisson_verdeling()
+# Limit maximum x-value to a reasonable value
+k_max = max(n_input + 1, int(lambda_input + 4 * np.sqrt(lambda_input))) 
 
-# Generate Streamlit page with sidebar and plot
-page_header="Interactieve plot: de binomiale en Poissonverdeling"
-plot_title=f"Naalddiagrammen van de binomiale en Poissonverdeling"
-xlabel="Aantal successen $k$", 
-ylabel="Kansfunctie $f(k)$"
-explanation_title = "# :book: Uitleg: Poissonverdeling"
+def draw_sample_binomial(n, lambda_val):
+    x = np.arange(0, k_max)  # Mogelijke uitkomsten
+    y = binom.pmf(x, n, lambda_val / n)  # Binomiale kansfunctie
+    return x, y
+
+def draw_sample_poisson(lambda_val):
+    x = np.arange(0, k_max)  # Mogelijke uitkomsten
+    y = poisson.pmf(x, lambda_val)  # Poisson-kansfunctie
+    return x, y
+
+# ------------------------------
+# PLOTTING
+# ------------------------------
+
+x_binom, y_binom = draw_sample_binomial(n_input, lambda_input)
+x_poisson, y_poisson = draw_sample_poisson(lambda_input)
+
+subtitle1 = f"Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f})"
+subtitle2 = f"Poisson(&#955; = " + f"{lambda_input})"
+fig = make_subplots(rows=1, cols=2, subplot_titles=(subtitle1, subtitle2))
+
+for annotation in fig['layout']['annotations']:
+    annotation['font'] = dict(size=30)
+
+# Add stem plot for the binomial distribution
+fig.add_trace(go.Scatter(
+    x=x_binom,
+    y=y_binom,
+    mode='markers',
+    marker=dict(color="cyan"),
+    showlegend=False
+), row=1, col=1)
+for xi, yi in zip(x_binom, y_binom):
+    fig.add_trace(go.Scatter(
+        x=[xi, xi],
+        y=[0, yi],
+        mode='lines',
+        line=dict(color='cyan',width=2),
+        showlegend=False
+    ), row=1, col=1)
+
+# Add stem plot for the Poisson distribution
+fig.add_trace(go.Scatter(
+    x=x_poisson,
+    y=y_poisson,
+    mode='markers',
+    marker=dict(color="magenta"),
+    showlegend=False
+), row=1, col=2)
+for xi, yi in zip(x_poisson, y_poisson):
+    fig.add_trace(go.Scatter(
+        x=[xi, xi],
+        y=[0, yi],
+        mode='lines',
+        line=dict(color='magenta',width=2),
+        showlegend=False
+    ), row=1, col=2)
+
+# Update the layout of the figure
+fig.update_layout(
+    height=800,
+    xaxis=dict(
+        title=dict(text="Aantal successen k", font=dict(size=30)),
+        tickfont=dict(size=30)
+    ),
+    yaxis=dict(
+        title=dict(text="Kansfunctie f(k)", font=dict(size=30)),
+        tickfont=dict(size=30)
+    )
+)
+
+fig.update_xaxes(
+    title_text="Aantal successen k",
+    title_font=dict(size=24),
+    tickfont=dict(size=24),
+    row=1, col=1
+)
+
+fig.update_yaxes(
+    title_text="Kansfunctie f(k)",
+    title_font=dict(size=24),
+    tickfont=dict(size=24),
+    row=1, col=1
+)
+
+fig.update_xaxes(
+    title_text="Aantal gebeurtenissen k",
+    title_font=dict(size=24),
+    tickfont=dict(size=24),
+    row=1, col=2
+)
+
+fig.update_yaxes(
+    title_text="Kansfunctie f(k)",
+    title_font=dict(size=24),
+    tickfont=dict(size=24),
+    row=1, col=2
+)  
+
+st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+
+explanation_title = "📚 De Poissonverdeling"
 explanation_md=r"""
 ### 📌 De binomiale verdeling in het kort
 
@@ -105,7 +174,7 @@ De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de 
 - *$p$* is klein  
 - *$\lambda = n \cdot p$* is constant
 
-In de limiet geldt:
+In de limiet geldt dat de kansfunctie van de binomiale verdeling die van de Poissonverdeling benadert (dat wil zeggen, voor elke waarde van k is de waarde van de kansfunctie bij benadering hetzelfde voor beide verdelingen): 
 
 $$
     \text{Binomiaal}(n, p) \longrightarrow \text{Poisson}(\lambda)
@@ -116,7 +185,7 @@ Bij 10.000 producten en een kans van 0.0002 op een defect geldt dat
 $$
     \lambda = n \cdot p = 10.000 \cdot 0.0002 = 2.
 $$
-Dan kan het aantal defecten worden gemodelleerd met een Poissonverdeling met $\lambda = 2$.
+Dan kan het aantal defecten bij benadering worden gemodelleerd met een Poissonverdeling met $\lambda = 2$.
 
 ---
 
@@ -127,15 +196,6 @@ Dan kan het aantal defecten worden gemodelleerd met een Poissonverdeling met $\l
 - Veel praktische toepassingen voldoen aan de voorwaarden voor deze benadering.
 """
 
-# Call generate_streamlit_page with the plot_binomial_poisson function
-generate_streamlit_page(
-    slider_dict,
-    plot_binomial_poisson, 
-    page_header=page_header,
-    plot_title=plot_title, 
-    xlabel=xlabel, 
-    ylabel=ylabel,
-    explanation_md=(explanation_title, explanation_md), 
-    subplot_dims=(1,2)  # Generate two subplots side by side
-)
+# Show the explanation in the Streamlit app
+show_explanation(explanation_title, explanation_md)
 
