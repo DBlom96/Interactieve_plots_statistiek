@@ -121,7 +121,7 @@ def make_stat_card_annotations(count_contains, total, alpha):
             body += f"<br><span style='font-size:25px;color:#bbb'>{card['sub']}</span>"
 
         card_annotations.append(dict(
-            x=card["x"], y=1.40,
+            x=card["x"], y=1.35,
             xref="paper", yref="paper",
             text=body,
             font=dict(size=30),
@@ -158,7 +158,7 @@ def make_annotations_for_frame(intervals, means, contains, mu, count_contains, t
     card_annotations = make_stat_card_annotations(count_contains, total, alpha)
     return annotations + card_annotations
 
-
+@st.cache_data
 def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
     z  = norm.ppf(1 - alpha / 2)
     se = sigma / np.sqrt(n)
@@ -211,8 +211,8 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
         layout=go.Layout(
             xaxis=dict(range=x_range, title="Populatiegemiddelde \u03bc", title_font=dict(size=30), tickfont=dict(size=30)),
             yaxis=dict(range=y_range, autorange="reversed", showticklabels=False),
-            height=1000,
-            margin=dict(t=300),
+            height=800,
+            margin=dict(t=200),
             annotations=first_annotations,
             shapes=[dict(
                 type="line", x0=mu, x1=mu, y0=y_range[0]+2, y1=y_range[1],
@@ -222,8 +222,8 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
                 type="buttons",
                 pad=dict(t=20, r=20, b=20, l=20),
                 showactive=False,
-                y=-0.25,
-                x=0.5,
+                y=0.25,
+                x=0.9,
                 xanchor="center",
                 direction="left",
                 buttons=[
