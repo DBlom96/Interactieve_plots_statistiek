@@ -17,6 +17,12 @@ st.set_page_config(
 )
 
 # ----------------------------------
+# CSS
+# ----------------------------------
+with open("./styles/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ----------------------------------
 # HELPERS
 # ----------------------------------
 
@@ -106,6 +112,15 @@ def add_region_bar(fig, x0, x1, y, color):
         )
     )
 
+def add_text(fig, text, x, y, color):
+    fig.add_annotation(
+        x=x,
+        y=y,
+        text=text,
+        showarrow=False,
+        font=dict(size=25, color=color)
+    )
+
 
 # ----------------------------------
 # PARAMETERS
@@ -135,13 +150,36 @@ beta = regions.beta
 power = 1 - beta
 
 # -------------------------------
+# STAT CARDS
+# -------------------------------
+ 
+st.markdown(f"""
+<div class="stats-row" >
+  <div class="stat-card alpha">
+    <span class="stat-label">Type-I fout</span>
+    <span class="stat-value">&alpha; = {alpha:.3f}</span>
+    <span class="stat-desc">Kans op onterecht verwerpen van H₀</span>
+    <span class="stat-desc">(rood gearceerd gebied)</span>
+  </div>
+  <div class="stat-card beta">
+    <span class="stat-label">Type-II fout</span>
+    <span class="stat-value">&beta; = {beta:.3f}</span>
+    <span class="stat-desc">Kans op onterecht accepteren van H₀</span>
+    <span class="stat-desc">(lichtblauw gearceerd gebied)</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# -------------------------------
 # PLOTTING
 # -------------------------------
 
-H0_COLOR = "cyan"
-H1_COLOR = "gold"
+H0_COLOR = "gold"
+H1_COLOR = "magenta"
 ACCEPTABLE_COLOR = "springgreen"
 CRITICAL_COLOR = "tomato"
+ALPHA_COLOR = CRITICAL_COLOR
+BETA_COLOR = "cyan"
 
 fig = go.Figure()
 
@@ -186,14 +224,18 @@ if test_type == "tweezijdig":
     mask_right = x > right
     mask_accept = (x >= left) & (x <= right)
 
-    add_shaded_region(fig, x, pdf0, mask_left, CRITICAL_COLOR, f"Type-I fout (&#945;={alpha:.3f})")
-    add_shaded_region(fig, x, pdf0, mask_right, CRITICAL_COLOR, "", False)
+    add_shaded_region(fig, x, pdf0, mask_left, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
+    add_shaded_region(fig, x, pdf0, mask_right, ALPHA_COLOR, "", False)
 
-    add_shaded_region(fig, x, pdf1, mask_accept, H1_COLOR, f"Type-II fout (&#946;={beta:.3f})")
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
 
     add_region_bar(fig, xmin, left, yline, CRITICAL_COLOR)
     add_region_bar(fig, left, right, yline, ACCEPTABLE_COLOR)
     add_region_bar(fig, right, xmax, yline, CRITICAL_COLOR)
+
+    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 1.5 * yline, CRITICAL_COLOR)
+    add_text(fig, "Acceptatiegebied", (left + right) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
+    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 1.5 * yline, CRITICAL_COLOR)
 
 
 elif test_type == "rechtszijdig":
@@ -203,11 +245,14 @@ elif test_type == "rechtszijdig":
     mask_crit = x > right
     mask_accept = x <= right
 
-    add_shaded_region(fig, x, pdf0, mask_crit, CRITICAL_COLOR, f"Type-I fout (&#945;={alpha:.3f})")
-    add_shaded_region(fig, x, pdf1, mask_accept, "lavender", f"Type-II fout (&#946;={beta:.3f})")
+    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
 
     add_region_bar(fig, xmin, right, yline, ACCEPTABLE_COLOR)
     add_region_bar(fig, right, xmax, yline, CRITICAL_COLOR)
+
+    add_text(fig, "Acceptatiegebied", (xmin + right) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
+    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 1.5 * yline, CRITICAL_COLOR)
 
 
 else:  # linkszijdig
@@ -217,11 +262,14 @@ else:  # linkszijdig
     mask_crit = x < left
     mask_accept = x >= left
 
-    add_shaded_region(fig, x, pdf0, mask_crit, CRITICAL_COLOR, f"Type-I fout (&#945;={alpha:.3f})")
-    add_shaded_region(fig, x, pdf1, mask_accept, H1_COLOR, f"Type-II fout (&#946;={beta:.3f})")
+    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
 
     add_region_bar(fig, xmin, left, yline, CRITICAL_COLOR)
     add_region_bar(fig, left, xmax, yline, ACCEPTABLE_COLOR)
+
+    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 1.5 * yline, CRITICAL_COLOR)
+    add_text(fig, "Acceptatiegebied", (left + xmax) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
 
 # --------------------------------------------------
 # LAYOUT
@@ -249,7 +297,7 @@ fig.update_layout(
         tickfont=dict(size=25)
     ),
 
-    legend=dict(font=dict(size=20)),
+    legend=dict(font=dict(size=30), xanchor="right", yanchor="top"),
 
     height=750
 )
