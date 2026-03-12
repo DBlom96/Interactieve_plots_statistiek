@@ -252,7 +252,7 @@ if method == "p-waarde":
 
     fig.update_layout(
         title = dict(
-            text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}. | De p-waarde behorende bij de geobserveerde toetsingsgrootheid &#967;<sup>2</sup> is gelijk aan {p_waarde:.4f}.",
+            text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}.",
             font=dict(size=30),
         ),
         xaxis = dict(
