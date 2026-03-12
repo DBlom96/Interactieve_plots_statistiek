@@ -57,8 +57,8 @@ def draw_chi2_distribution(df):
 
 x, y = draw_chi2_distribution(df)
 ACCEPTABLE_COLOR = "springgreen" # "neongreen"
-DIST_COLOR = "cyan"
-P_VALUE_COLOR = css_to_rgba("cyan", 0.4) # "cyan"
+DIST_COLOR = "gold"
+P_VALUE_COLOR = css_to_rgba("gold", 0.4) # "cyan"
 CRITICAL_COLOR = "tomato" # "tomato red"
 
 fig = go.Figure()
@@ -79,11 +79,11 @@ if method == "Plot":
         ),
         xaxis = dict(
             title=dict(text="x", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         yaxis = dict(
             title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         height=800
     )
@@ -159,20 +159,39 @@ if method == "Kritiek gebied":
         textfont=dict(color=CRITICAL_COLOR, size=30),
         showlegend=False
     ))
+ 
+    # -------------------------------
+    # STAT CARDS
+    # -------------------------------
+    
+    st.markdown(f"""
+    <div class="stats-row-2" >
+        <div class="stat-card acceptatie">
+            <span class="stat-label">Acceptatiegebied</span>
+            <span class="stat-value">[0, {grens:.4f}]</span>
+            <span class="stat-desc">Kans op redelijke uitkomst (laagste {int(100*(1-alpha))}%)</span>
+        </div>
+        <div class="stat-card kritiek">
+            <span class="stat-label">Kritiek gebied</span>
+            <span class="stat-value">({grens:.4f}, &infin;)</span>
+            <span class="stat-desc">Kans op extreme hoge uitkomst (top {int(100*alpha)}%)</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
     fig.update_layout(
         title = dict(
-            text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}. | De geobserveerde toetsingsgrootheid &#967;<sup>2</sup> ligt in het " + ("kritieke gebied" if toetsingsgrootheid > grens else "acceptatiegebied") + ".",
+            text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}. | &#967;<sup>2</sup> = {toetsingsgrootheid:.4f} ligt in het " + ("kritieke gebied" if toetsingsgrootheid > grens else "acceptatiegebied") + ".",
             font=dict(size=30),
         ),
         xaxis = dict(
             title=dict(text="x", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         yaxis = dict(
             title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         height=800
     )
@@ -257,11 +276,11 @@ if method == "p-waarde":
         ),
         xaxis = dict(
             title=dict(text="x", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         yaxis = dict(
             title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=30)),
-            tickfont=dict(size=30),    
+            tickfont=dict(size=25),    
         ),
         height=800
     )
@@ -271,12 +290,11 @@ if method == "p-waarde":
     # -------------------------------
     
     st.markdown(f"""
-    <div class="stats-row" >
+    <div class="stats-row-2" >
         <div class="stat-card pvalue">
             <span class="stat-label">p-waarde</span>
-            <span class="stat-value">{p_waarde:.3f}</span>
+            <span class="stat-value">{p_waarde:.4f}</span>
             <span class="stat-desc">Kans op uitkomst groter dan of gelijk aan &chi;<sup>2</sup> = {toetsingsgrootheid:.3f}</span>
-            <span class="stat-desc">(lichtblauw gearceerd gebied)</span>
         </div>
     </div>
     """, unsafe_allow_html=True)

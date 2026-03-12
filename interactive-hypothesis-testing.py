@@ -138,7 +138,7 @@ with st.sidebar:
     sigma = st.number_input(label="Standaardafwijking ($\\sigma$):", min_value=1e-6, value=1.0)
     n = st.number_input(label="Steekproefgrootte ($n$):", min_value=1, value=30)
     alpha = st.number_input(label="Significantieniveau ($\\alpha$):", min_value=0.001, max_value=0.2, value=0.05)
-    mu1 = st.slider("Gemiddelde $\\mu_1$ (alternatieve hypothese)", min_value=mu0 - 1, max_value=mu0 + 1)
+    mu1 = st.slider("Gemiddelde $\\mu_1$ (alternatieve hypothese):", min_value=mu0 - 1, max_value=mu0 + 1)
 
 # -------------------------------
 # COMPUTATION
@@ -154,7 +154,7 @@ power = 1 - beta
 # -------------------------------
  
 st.markdown(f"""
-<div class="stats-row" >
+<div class="stats-row-2" >
   <div class="stat-card alpha">
     <span class="stat-label">Type-I fout</span>
     <span class="stat-value">&alpha; = {alpha:.3f}</span>

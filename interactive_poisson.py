@@ -58,7 +58,7 @@ fig.add_trace(go.Scatter(
     x=x_binom,
     y=y_binom,
     mode='markers',
-    marker=dict(color="cyan"),
+    marker=dict(color="gold"),
     showlegend=False
 ), row=1, col=1)
 for xi, yi in zip(x_binom, y_binom):
@@ -66,7 +66,7 @@ for xi, yi in zip(x_binom, y_binom):
         x=[xi, xi],
         y=[0, yi],
         mode='lines',
-        line=dict(color='cyan',width=2),
+        line=dict(color='gold',width=2),
         showlegend=False
     ), row=1, col=1)
 

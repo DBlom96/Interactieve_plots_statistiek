@@ -42,7 +42,7 @@ fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode='markers',
-    marker=dict(color="cyan"),
+    marker=dict(color="gold"),
     showlegend=False
 ))
 
@@ -51,7 +51,7 @@ for xi, yi in zip(x, y):
         x=[xi, xi],
         y=[0, yi],
         mode='lines',
-        line=dict(color='cyan',width=2),
+        line=dict(color='gold',width=2),
         showlegend=False
     ))
 
@@ -62,11 +62,11 @@ fig.update_layout(
     ),
     xaxis=dict(
         title=dict(text="Uitkomst k", font=dict(size=30)),
-        tickfont=dict(size=30)
+        tickfont=dict(size=25)
     ),
     yaxis = dict(
         title=dict(text = "Kansfunctie P(X=k)", font=dict(size=30)),
-        tickfont=dict(size=30)
+        tickfont=dict(size=25)
     ),
     height=800,
 )

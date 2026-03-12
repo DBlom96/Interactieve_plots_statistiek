@@ -1,68 +1,41 @@
-import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
+import streamlit as st
+import mplcyberpunk
 from sklearn.linear_model import LinearRegression
-from matplotlib.colors import to_rgb
-from utils.explanation_utils import show_explanation
-from dataclasses import dataclass
-
-# ----------------------------------
-# PAGE CONFIG
-# ----------------------------------
-
-st.set_page_config(
-    page_title="Lineaire regressie",
-    initial_sidebar_state="expanded",
-    layout="wide"
-)
-
-# ----------------------------------
-# CSS
-# ----------------------------------
-with open("./styles/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-# ----------------------------------
-# HELPERS
-# ----------------------------------
-
-def css_to_rgba(css_color, alpha=0.4):
-    r,g,b = [int(c*255) for c in to_rgb(css_color)]
-    return f"rgba({r},{g},{b},{alpha})"
+from plot_utils import cyberpunk_color_cycle, generate_streamlit_page
 
 # Initialize session state for storing points
 if "points" not in st.session_state:
     st.session_state["points"] = {"x": {}, "y": {}}
 
-# ----------------------------------
-# PARAMETERS
-# ----------------------------------
+# Function to handle sidebar input
+def add_sidebar_regression():
 
-st.title("📊 Lineaire regressie")
+    with st.sidebar:
+        st.header("Invoer voor lineaire regressie:")
 
-with st.sidebar:
-    st.header("Invoer voor lineaire regressie:")
+        point_input = st.sidebar.text_input(f"Voer een punt x, y in (voorbeeld: 2.5, 5.1)", value="0.0, 0.0")
+        add_point_button = st.sidebar.button("Punt toevoegen")
 
-    point_input = st.sidebar.text_input(f"Voer een punt x, y in (voorbeeld: 2.5, 5.1)", value="0.0, 0.0")
-    add_point_button = st.sidebar.button("Punt toevoegen")
-
-    if add_point_button:
-        # Parse the input and add the point to session state
-        try:
-            x, y = map(float, point_input.split(","))
-            if st.session_state["points"]["x"] == {}:
-                idx_x = 0
-                idx_y = 0
-            else:
-                idx_x = max(st.session_state["points"]["x"]) + 1
-                idx_y = max(st.session_state["points"]["y"]) + 1
+        if add_point_button:
+            # Parse the input and add the point to session state
+            try:
+                x, y = map(float, point_input.split(","))
+                if st.session_state["points"]["x"] == {}:
+                    idx_x = 0
+                    idx_y = 0
+                else:
+                    idx_x = max(st.session_state["points"]["x"]) + 1
+                    idx_y = max(st.session_state["points"]["y"]) + 1
+        
+                st.session_state["points"]["x"][idx_x] = x
+                st.session_state["points"]["y"][idx_y] = y
+                    
+            except ValueError:
+                st.sidebar.error("Schrijf het punt als twee getallen gescheiden door een komma. Gebruik een punt voor decimalen.")
     
-            st.session_state["points"]["x"][idx_x] = x
-            st.session_state["points"]["y"][idx_y] = y
-                
-        except ValueError:
-            st.sidebar.error("Schrijf het punt als twee getallen gescheiden door een komma. Gebruik een punt voor decimalen.")
-
-return st.session_state["points"]
+    return st.session_state["points"]
 
 def plot_regression(axes, user_inputs):
     """Plots the scatter points and regression line."""

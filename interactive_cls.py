@@ -1,37 +1,52 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+from matplotlib.colors import to_rgb
 from scipy.stats import norm, uniform, expon, binom, poisson
 from utils.explanation_utils import show_explanation
 
 st.set_page_config(layout="wide")
 
+# ----------------------------------
+# CSS
+# ----------------------------------
+with open("./styles/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ----------------------------------
+# HELPERS
+# ----------------------------------
+
+def css_to_rgba(css_color, alpha=0.4):
+    r,g,b = [int(c*255) for c in to_rgb(css_color)]
+    return f"rgba({r},{g},{b},{alpha})"
+
 # --------------------------------------------------
 # PARAMETERS
 # --------------------------------------------------
-st.title("Steekproefgemiddelden en de centrale limietstelling")
+st.title("📊 De centrale limietstelling")
 
 with st.sidebar:
     st.header("Parameters")
 
-    dist_selector = st.selectbox("Kansverdeling:", ["normaal", "uniform", "exponentieel", "binomiaal", "Poisson"])
+    dist_selector = st.selectbox("Kansverdeling:", ["normale", "uniforme", 'exponenti&#235;le', "binomiale", "Poisson"])
     sample_size   = st.number_input("Steekproefgrootte $n$:", min_value=1, value=30)
     n_samples     = st.number_input("Aantal steekproeven:", min_value=1, value=1_000)
     n_bins        = int(np.sqrt(n_samples))
 
-    if dist_selector == "normaal":
+    if dist_selector == "normale":
         mu_val      = st.number_input("Gemiddelde $\\mu$:", value=0.0)
         sigma_val   = st.number_input("Standaardafwijking $\\sigma$:", value=1.0)
         dist_params = {"mu": mu_val, "sigma": sigma_val}
         true_mu     = mu_val
         true_sigma  = sigma_val / np.sqrt(sample_size)
-    elif dist_selector == "uniform":
+    elif dist_selector == "uniforme":
         a_val       = st.number_input("Ondergrens $a$:", value=-5.0)
-        b_val       = st.number_input("Bovengrens $b$:", min_value=a_val + 0.1)
+        b_val       = st.number_input("Bovengrens $b$:", min_value=a_val + 0.1, value=5.0)
         dist_params = {"a": a_val, "b": b_val}
         true_mu     = (a_val + b_val) / 2
         true_sigma  = (b_val - a_val) / np.sqrt(12 * sample_size)
-    elif dist_selector == "exponentieel":
+    elif dist_selector == 'exponenti&#235;le':
         lam_val     = st.number_input("$\\lambda$:", min_value=0.1,value=1.0)
         dist_params = {"lambda_": lam_val}
         true_mu     = 1 / lam_val
@@ -41,7 +56,7 @@ with st.sidebar:
         dist_params = {"lambda_": lam_val}
         true_mu     = lam_val
         true_sigma  = np.sqrt(lam_val / sample_size)
-    elif dist_selector == "binomiaal":
+    elif dist_selector == "binomiale":
         n_binom     = st.number_input("Aantal Bernoulli-experimenten $n$:", min_value=1, value=20)
         p_binom     = st.slider("Succeskans $p$:", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
         dist_params = {"n": n_binom, "p": p_binom}
@@ -53,20 +68,22 @@ with st.sidebar:
 # --------------------------------------------------
 
 def draw_sample_means(dist, sample_size, n_samples, **params):
-    if dist == "normaal":
+    if dist == "normale":
         data = norm.rvs(loc=params["mu"], scale=params["sigma"], size=(sample_size, n_samples))
-    elif dist == "uniform":
+    elif dist == "uniforme":
         data = uniform.rvs(loc=params["a"], scale=params["b"] - params["a"], size=(sample_size, n_samples))
-    elif dist == "exponentieel":
+    elif dist == 'exponenti&#235;le':
         data = expon.rvs(scale=1 / params["lambda_"], size=(sample_size, n_samples))
-    elif dist == "binomiaal":
+    elif dist == "binomiale":
         data = binom.rvs(n=params["n"], p=params["p"], size=(sample_size, n_samples))
     elif dist == "Poisson":
         data = poisson.rvs(mu=params["lambda_"], size=(sample_size, n_samples))
     return data.mean(axis=0)
 
+
+
 # --------------------------------------------------
-# PLOT
+# COMPUTATIONS
 # --------------------------------------------------
 
 all_means = draw_sample_means(dist_selector, sample_size, n_samples, **dist_params)
@@ -78,6 +95,29 @@ counts, _   = np.histogram(all_means, bins=bin_edges)
 
 x_curve = np.linspace(bin_edges[0], bin_edges[-1], 300)
 curve_y = norm.pdf(x_curve, loc=true_mu, scale=true_sigma) * n_samples * bin_width
+
+# -------------------------------
+# STAT CARDS
+# -------------------------------
+ 
+st.markdown(f"""
+<div class="stats-row-2" >
+  <div class="stat-card alpha">
+    <span class="stat-label">Gemiddelde</span>
+    <span class="stat-value">{all_means.mean():.4f}</span>
+    <span class="stat-desc">Steeds dichter bij 0 (als n &rightarrow; &#8734;) </span>
+  </div>
+  <div class="stat-card beta">
+    <span class="stat-label">Standaardafwijking</span>
+    <span class="stat-value">{all_means.std():.4f}</span>
+    <span class="stat-desc">Steeds dichter bij &sigma; / &radic; n = {true_sigma:.4f} (als n &rightarrow; &#8734;)</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# --------------------------------------------------
+# PLOT
+# --------------------------------------------------
 
 fig = go.Figure()
 
@@ -92,36 +132,24 @@ fig.add_trace(go.Bar(
 obs = "observatie" if sample_size == 1 else "observaties"
 fig.update_layout(
     title=dict(
-        text=(f"Histogram van steekproefgemiddelden | "
-              f"Gemiddelde: {all_means.mean():.3f} (theoretisch: {true_mu:.3f}) | "
-              f"Std: {all_means.std():.3f} (theoretisch: {true_sigma:.3f})"),
-        font=dict(size=15),
+        text=f"Histogram van steekproefgemiddelden ({n_samples} steekproeven uit de {dist_selector} verdeling)",
+        font=dict(size=30),
     ),
     xaxis=dict(
-        title=dict(text="Steekproefgemiddelde x̄", font=dict(size=20)),
+        title=dict(text="Steekproefgemiddelde x̄", font=dict(size=25)),
         tickfont=dict(size=20)
     ),
     yaxis = dict(
-        title=dict(text = "Frequentie", font=dict(size=20)),
+        title=dict(text = "Frequentie", font=dict(size=25)),
         tickfont=dict(size=20)
     ),
     legend=dict(x=0.75, y=0.95),
-    height=500,
+    height=500
 )
 
 # --------------------------------------------------
 # RENDER
 # --------------------------------------------------
-
-st.subheader("📊 Interactieve plot: de centrale limietstelling")
-
-st.markdown(
-    f"Histogram van steekproefgemiddelden van **{sample_size}** {obs} uit een "
-    f"**{dist_selector}** verdeling op basis van **{n_samples}** steekproeven. "
-    f"De rode curve toont de theoretische normale benadering: "
-    f"$\\overline{{X}} \\sim N(\\mu,\\, \\sigma/\\sqrt{{n}})$."
-)
-
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
 explanation_title = """📊 Interactieve plot: de centrale limietstelling"""
@@ -152,8 +180,8 @@ Vandaar dat we spreken over kansverdelingen van steekproefgemiddelden.
 Hoe verandert de kansverdeling van de steekproefgemiddelden naarmate er meer steekproeven worden toegevoegd?
 
 ## 🔍 Wat kun je observeren?
-- Bij een groter aantal steekproeven is de simulatie iets trager, maar laat het wel het principe van de centrale limietselling het best illustreren.
-- Bij een steekproefgrootte van 1 kun je de originele kansverdeling goed herkennen in de histogram geïllustreerd.
+- Bij een groter aantal steekproeven is de simulatie iets trager, maar laat het wel het principe van de centrale limietstelling het best illustreren.
+- Bij een steekproefgrootte van 1 kun je de originele kansverdeling goed herkennen in de histogram die wordt geïllustreerd.
 - Bij kleine steekproefgroottes kan de verdeling van de steekproefgemiddelden er nog grillig uitzien.
 - Naarmate de **steekproefgrootte** toeneemt, worden de steekproefgemiddelden steeds meer normaal verdeeld, ongeacht de oorspronkelijke verdeling.
 

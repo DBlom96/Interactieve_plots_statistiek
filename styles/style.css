@@ -11,15 +11,28 @@ html, body, [class*="css"] {
 }
 
 label[data-testid="stWidgetLabel"] > div > p {
-    font-size: 20px;  /* Change this value as needed */
+    font-size: 15px;  /* Change this value as needed */
     font-weight: bold; /* Optional: make it bold */
-    color: #333333;    /* Optional: change text color */
 }
  
 /* Stat cards */
-.stats-row {
+.stats-row-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-row-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-row-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -48,6 +61,8 @@ label[data-testid="stWidgetLabel"] > div > p {
 .stat-card.beta::before  { background: cyan; }
 .stat-card.power::before { background: springgreen; }
 .stat-card.pvalue::before { background: cyan; }
+.stat-card.kritiek::before { background: tomato; }
+.stat-card.acceptatie::before { background: springgreen; }
 
 .stat-card.total::before   { background: #aaa; }
 .stat-card.hit::before     { background: lime; }
@@ -74,6 +89,8 @@ label[data-testid="stWidgetLabel"] > div > p {
 .stat-card.beta  .stat-value { color: cyan; }
 .stat-card.power .stat-value { color: springgreen; }
 .stat-card.pvalue .stat-value { color: cyan; }
+.stat-card.kritiek .stat-value { color: tomato; }
+.stat-card.acceptatie .stat-value { color: springgreen; }
 
 .stat-card.total .stat-value { color: #aaa; }
 .stat-card.hit   .stat-value { color: lime; }

@@ -104,7 +104,7 @@ def make_stat_card_annotations(count_contains, total, alpha):
         #      color="white",  border="#555555"),
         dict(x=0.12, label="BEVAT \u03bc",       value=f"{count_contains} / {total}",
              color="lime",   border="#39ff14"),
-        dict(x=0.37, label="BEVAT \u03bc NIET",  value=f"{total_miss} / {total}",
+        dict(x=0.35, label="BEVAT \u03bc NIET",  value=f"{total_miss} / {total}",
              color="tomato", border="#ff4b4b"),
         dict(x=0.75, label=F"PERCENTAGE (VERWACHT: {expected:.0f}%)", value=f"{coverage:.1f}%",
              color="cyan",   border="#00e5ff")
@@ -147,11 +147,11 @@ def make_annotations_for_frame(intervals, means, contains, mu, count_contains, t
         color = "lime" if contains[j] else "red"
         annotations += [
             dict(x=means[j], y=-j + 0.38, xref="x", text=f"x\u0304={means[j]:.2f}",
-                 showarrow=False, font=dict(color="cyan", size=20), xanchor="center", bgcolor=None, bordercolor=None),
+                 showarrow=False, font=dict(color="cyan", size=16), xanchor="center", bgcolor=None, bordercolor=None),
             dict(x=l, y=-j + 0.38, text=f"{l:.2f}",
-                 showarrow=False, font=dict(color=color, size=20), xanchor="center", bgcolor=None, bordercolor=None),
+                 showarrow=False, font=dict(color=color, size=16), xanchor="center", bgcolor=None, bordercolor=None),
             dict(x=r, y=-j + 0.38, text=f"{r:.2f}",
-                 showarrow=False, font=dict(color=color, size=20), xanchor="center", bgcolor=None, bordercolor=None),
+                 showarrow=False, font=dict(color=color, size=16), xanchor="center", bgcolor=None, bordercolor=None),
         ]
 
     # Stat cards
@@ -209,7 +209,7 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
         data=frames[0].data,
         frames=frames,
         layout=go.Layout(
-            xaxis=dict(range=x_range, title="Populatiegemiddelde \u03bc", title_font=dict(size=30), tickfont=dict(size=30)),
+            xaxis=dict(range=x_range, title="Populatiegemiddelde \u03bc", title_font=dict(size=30), tickfont=dict(size=25)),
             yaxis=dict(range=y_range, autorange="reversed", showticklabels=False),
             height=800,
             margin=dict(t=200),
@@ -261,7 +261,7 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
 # --------------------------------------------------
 
 st.subheader(
-    f"Berekening van een {(1 - alpha):.0%}-betrouwbaarheidsinterval "
+    f"{(1 - alpha):.0%}-betrouwbaarheidsinterval "
     f"voor het populatiegemiddelde ($\\mu$), gegeven $\\sigma = {sigma}$ en $n={n}$."
 )
 
