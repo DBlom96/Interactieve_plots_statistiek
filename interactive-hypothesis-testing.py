@@ -94,7 +94,7 @@ def add_shaded_region(fig, x, y, mask, color, name, showlegend=True):
             x=x[mask],
             y=y[mask],
             fill="tozeroy",
-            fillcolor=css_to_rgba(color, 0.25),
+            fillcolor=css_to_rgba(color, 0.4),
             line=dict(color="rgba(0,0,0,0)"),
             name=name,
             showlegend=showlegend

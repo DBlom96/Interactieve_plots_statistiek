@@ -39,8 +39,9 @@ html, body, [class*="css"] {
  
 .stat-card.alpha::before { background: tomato; }
 .stat-card.beta::before  { background: cyan; }
-.stat-card.power::before { background: springgreen ; }
- 
+.stat-card.power::before { background: springgreen; }
+.stat-card.pvalue::before { background: cyan; }
+
 .stat-label {
     font-size: 1.5rem;
     text-transform: uppercase;
@@ -59,8 +60,9 @@ html, body, [class*="css"] {
  
 .stat-card.alpha .stat-value { color: tomato; }
 .stat-card.beta  .stat-value { color: cyan; }
-.stat-card.power .stat-value { color: springgreen ; }
- 
+.stat-card.power .stat-value { color: springgreen; }
+.stat-card.pvalue .stat-value { color: cyan; }
+
 .stat-symbol {
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.5rem;

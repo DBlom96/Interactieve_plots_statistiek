@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import chi2
+from matplotlib.colors import to_rgb
 from utils.explanation_utils import show_explanation
 
 st.set_page_config(
@@ -9,6 +10,19 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     layout="wide"
 )
+
+# ----------------------------------
+# CSS
+# ----------------------------------
+with open("./styles/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ----------------------------------
+# HELPER FUNCTIONS
+# ----------------------------------
+def css_to_rgba(css_color, alpha=0.4):
+    r,g,b = [int(c*255) for c in to_rgb(css_color)]
+    return f"rgba({r},{g},{b},{alpha})"
 
 # ----------------------------------
 # PARAMETERS
@@ -42,9 +56,10 @@ def draw_chi2_distribution(df):
 # --------------------------------
 
 x, y = draw_chi2_distribution(df)
-acceptable_color = "springgreen" # "neongreen"
-fill_color = "cyan" # "cyan"
-critical_color = "tomato" # "tomato red"
+ACCEPTABLE_COLOR = "springgreen" # "neongreen"
+DIST_COLOR = "cyan"
+P_VALUE_COLOR = css_to_rgba("cyan", 0.4) # "cyan"
+CRITICAL_COLOR = "tomato" # "tomato red"
 
 fig = go.Figure()
 
@@ -52,7 +67,7 @@ fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode='lines',
-    line=dict(color=fill_color),
+    line=dict(color=DIST_COLOR),
     showlegend=False
 ))
 
@@ -84,7 +99,7 @@ if method == "Kritiek gebied":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
-        line=dict(color=fill_color, dash='dash'),
+        line=dict(color=DIST_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -92,7 +107,7 @@ if method == "Kritiek gebied":
         x=[grens, grens],
         y=[0, chi2.pdf(grens, df=df)],
         mode='lines',
-        line=dict(color=critical_color, dash='dash'),
+        line=dict(color=CRITICAL_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -103,9 +118,9 @@ if method == "Kritiek gebied":
         x=[toetsingsgrootheid],
         y=[ytext],
         mode='text',
-        marker=dict(color=fill_color, size=10),
+        marker=dict(color=DIST_COLOR, size=10),
         text=r"&#967;<sup>2</sup>",
-        textfont=dict(size=30, color=fill_color),
+        textfont=dict(size=30, color=DIST_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -115,7 +130,7 @@ if method == "Kritiek gebied":
         x=[0, grens],
         y=[ylines, ylines],
         mode='lines',
-        line=dict(color=acceptable_color, width=10),
+        line=dict(color=ACCEPTABLE_COLOR, width=10),
         showlegend=False
     ))
 
@@ -123,25 +138,25 @@ if method == "Kritiek gebied":
         x=[grens, max(x)],
         y=[ylines, ylines],
         mode='lines',
-        line=dict(color=critical_color, width=10),
+        line=dict(color=CRITICAL_COLOR, width=10),
         showlegend=False
     ))
 
     fig.add_trace(go.Scatter(
         x=[(0 + grens) / 2],
-        y=[ylines * 0.5],
+        y=[ylines * 1.5],
         mode='text',
         text='Acceptatiegebied',
-        textfont=dict(color=acceptable_color, size=30),
+        textfont=dict(color=ACCEPTABLE_COLOR, size=30),
         showlegend=False
     ))
 
     fig.add_trace(go.Scatter(
         x=[(grens + max(x)) / 2],
-        y=[ylines * 0.5],
+        y=[ylines * 1.5],
         mode='text',
         text='Kritiek gebied',
-        textfont=dict(color=critical_color, size=30),
+        textfont=dict(color=CRITICAL_COLOR, size=30),
         showlegend=False
     ))
 
@@ -167,22 +182,6 @@ if method == "p-waarde":
     p_waarde = 1 - chi2.cdf(toetsingsgrootheid, df=df)
     mask = x >= toetsingsgrootheid
 
-    fig.add_trace(go.Scatter(
-        x=[toetsingsgrootheid, toetsingsgrootheid],
-        y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
-        mode='lines',
-        line=dict(color=fill_color, dash='dash'),
-        showlegend=False
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=[grens, grens],
-        y=[0, chi2.pdf(grens, df=df)],
-        mode='lines',
-        line=dict(color=critical_color, dash='dash'),
-        showlegend=False
-    ))
-
     ytext = -0.2 * max(y)  # Position for the horizontal line
     ylines = 1/2 * ytext
 
@@ -190,7 +189,7 @@ if method == "p-waarde":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
-        line=dict(color=fill_color, dash='dash'),
+        line=dict(color=DIST_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -198,7 +197,34 @@ if method == "p-waarde":
         x=[grens, grens],
         y=[0, chi2.pdf(grens, df=df)],
         mode='lines',
-        line=dict(color=critical_color, dash='dash'),
+        line=dict(color=CRITICAL_COLOR, dash='dash'),
+        showlegend=False
+    ))
+
+    # Shade region corresponding to the p-value
+    fig.add_trace(go.Scatter(
+        x=x[mask],
+        y=y[mask],
+        mode='lines',
+        fill='tozeroy',
+        fillcolor=P_VALUE_COLOR,
+        opacity=0.3
+    ))
+
+    # Draw lines and text for test statistic and critical value
+    fig.add_trace(go.Scatter(
+        x=[toetsingsgrootheid, toetsingsgrootheid],
+        y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
+        mode='lines',
+        line=dict(color=DIST_COLOR, dash='dash', width=3),
+        showlegend=False
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[grens, grens],
+        y=[0, chi2.pdf(grens, df=df)],
+        mode='lines',
+        line=dict(color=CRITICAL_COLOR, dash='dash', width=3),
         showlegend=False
     ))
 
@@ -206,9 +232,9 @@ if method == "p-waarde":
         x=[toetsingsgrootheid],
         y=[ytext],
         mode='text',
-        marker=dict(color=fill_color, size=10),
+        marker=dict(color=DIST_COLOR, size=10),
         text=r"&#967;<sup>2</sup>",
-        textfont=dict(size=30, color=fill_color),
+        textfont=dict(size=30, color=DIST_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -217,21 +243,11 @@ if method == "p-waarde":
         x=[grens],
         y=[ytext],
         mode='text',
-        marker=dict(color=critical_color, size=10),
+        marker=dict(color=CRITICAL_COLOR, size=10),
         text="g",
-        textfont=dict(size=30, color=critical_color),
+        textfont=dict(size=30, color=CRITICAL_COLOR),
         textposition="top center",
         showlegend=False
-    ))
-
-    # Add lines to indicate acceptable and critical intervals
-    fig.add_trace(go.Scatter(
-        x=x[mask],
-        y=y[mask],
-        mode='lines',
-        fill='tozeroy',
-        fillcolor=fill_color,
-        opacity=0.3
     ))
 
     fig.update_layout(
@@ -249,6 +265,21 @@ if method == "p-waarde":
         ),
         height=800
     )
+
+    # -------------------------------
+    # STAT CARDS
+    # -------------------------------
+    
+    st.markdown(f"""
+    <div class="stats-row" >
+        <div class="stat-card pvalue">
+            <span class="stat-label">p-waarde</span>
+            <span class="stat-value">{p_waarde:.3f}</span>
+            <span class="stat-desc">Kans op uitkomst groter dan of gelijk aan &chi;<sup>2</sup> = {toetsingsgrootheid:.3f}</span>
+            <span class="stat-desc">(lichtblauw gearceerd gebied)</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
