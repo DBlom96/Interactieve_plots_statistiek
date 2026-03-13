@@ -1,30 +1,31 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
-from matplotlib.colors import to_rgb
+
 from scipy.stats import norm, uniform, expon, binom, poisson
 from utils.explanation_utils import show_explanation
+from utils.streamlit_utils import load_css, css_to_rgba, page_header
 
-st.set_page_config(layout="wide")
-
+st.set_page_config(
+    page_title="De centrale limietstelling",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
 # ----------------------------------
 # CSS
 # ----------------------------------
-with open("./styles/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+load_css()
+
+
 
 # ----------------------------------
 # HELPERS
 # ----------------------------------
 
-def css_to_rgba(css_color, alpha=0.4):
-    r,g,b = [int(c*255) for c in to_rgb(css_color)]
-    return f"rgba({r},{g},{b},{alpha})"
-
 # --------------------------------------------------
 # PARAMETERS
 # --------------------------------------------------
-st.title("📊 De centrale limietstelling")
+page_header("📊 Centrale limietstelling", "Statistiek · Visualisatie")
 
 with st.sidebar:
     st.header("Parameters")
@@ -131,12 +132,15 @@ fig.add_trace(go.Bar(
 
 obs = "observatie" if sample_size == 1 else "observaties"
 fig.update_layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
     title=dict(
-        text=f"Histogram van steekproefgemiddelden ({n_samples} steekproeven uit de {dist_selector} verdeling)",
-        font=dict(size=30),
+        text=f"Histogram van steekproefgemiddelden<br><sup>(gebaseerd op {n_samples} steekproeven van {sample_size} observaties uit de {dist_selector} verdeling)</sup>",
+        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
     ),
     xaxis=dict(
-        title=dict(text="Steekproefgemiddelde x̄", font=dict(size=25)),
+        title=dict(text=r"Steekproefgemiddelde", font=dict(size=25)),
         tickfont=dict(size=20)
     ),
     yaxis = dict(
@@ -172,21 +176,21 @@ Merk op dat $\\overline{X}$ een kansvariabele is, aangezien we niet van te voren
 Vandaar dat we spreken over kansverdelingen van steekproefgemiddelden.
 
 ## 🔢 Hoe werkt het?
-1. Kies een kansverdeling (*normaal, uniform, exponentieel, binomiaal of Poisson*).
+1. Kies een kansverdeling (*normale, uniforme, exponenti&#235;le, binomiale of Poisson*).
 2. Stel de **steekproefgrootte $n$** in: hoeveel trekkingen uit de gekozen kansverdeling bevat elke steekproef?
 3. Pas het **aantal steekproeven** aan: hoeveel steekproeven moeten worden genomen om de histogram mee te cre\"eren?
 4. Selecteer waardes voor de parameters, afhankelijk van de gekozen kansverdeling (*bijv. mu en sigma voor normaal, lambda voor exponentieel*).
-5. Bekijk het histogram dat we krijgen door voor het gegeven "aantal steekproeven" van grootte $n$ het gemiddelde te bepalen.
+5. Bekijk het histogram dat we krijgen door voor het gegeven 'Aantal steekproeven' van grootte $n$ het gemiddelde te bepalen.
 Hoe verandert de kansverdeling van de steekproefgemiddelden naarmate er meer steekproeven worden toegevoegd?
 
 ## 🔍 Wat kun je observeren?
 - Bij een groter aantal steekproeven is de simulatie iets trager, maar laat het wel het principe van de centrale limietstelling het best illustreren.
-- Bij een steekproefgrootte van 1 kun je de originele kansverdeling goed herkennen in de histogram die wordt geïllustreerd.
+- Bij een steekproefgrootte $n = 1$ en een groot aantal steekproeven, zou je de originele kansverdeling moeten kunnen herkennen in de histogram die wordt geïllustreerd.
 - Bij kleine steekproefgroottes kan de verdeling van de steekproefgemiddelden er nog grillig uitzien.
-- Naarmate de **steekproefgrootte** toeneemt, worden de steekproefgemiddelden steeds meer normaal verdeeld, ongeacht de oorspronkelijke verdeling.
+- Naarmate de **steekproefgrootte** $n$ toeneemt, zie je dat de histogram van steekproefgemiddelden steeds meer op een normale verdeling gaat lijken. Het maakt niet uit met welke oorspronkelijke verdeling je bent begonnen!
 
 ## 🧠 Waarom is de centrale limietstelling zo belangrijk?
-De centrale limietstelling is een krachtige eigenschap die in statistiek wordt gebruikt om inferenties te maken over populaties! Daarnaast is van veel verschijnselen in de echte wereld die je als kansvariabele kunt modelleren niet bekend wat de onderliggende kansverdeling is. 
+De centrale limietstelling is een krachtige eigenschap die in statistiek wordt gebruikt om voorspellingen te maken over de eigenschappen van de gehele populatie! Daarnaast is van veel verschijnselen in de echte wereld die je als kansvariabele kunt modelleren niet bekend wat de onderliggende kansverdeling is. 
 Deze stelling biedt ons handvatten om hier toch zinnige statistische voorspellingen mee te kunnen maken. 
 In het geval dat de onderliggende kansverdeling wel bekend is, dan zijn zeer complexe berekeningen nodig om de exacte kansverdeling van het steekproefgemiddelde te bepalen ($n$-voudige integralen!).
 

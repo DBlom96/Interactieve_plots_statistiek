@@ -1,9 +1,10 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
-from matplotlib.colors import to_rgb
+
 from scipy.stats import norm, t
 from utils.explanation_utils import show_explanation
+from utils.streamlit_utils import load_css, css_to_rgba, page_header
 
 # ----------------------------------
 # PAGE CONFIG
@@ -14,25 +15,21 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     layout="wide"
 )
-
 # ----------------------------------
 # CSS
 # ----------------------------------
-with open("./styles/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+load_css()
+
+
 
 # ----------------------------------
 # HELPERS
 # ----------------------------------
 
-def css_to_rgba(css_color, alpha=0.4):
-    r,g,b = [int(c*255) for c in to_rgb(css_color)]
-    return f"rgba({r},{g},{b},{alpha})"
-
 # ----------------------------------
 # PARAMETERS
 # ----------------------------------
-st.title("📊 Visualisatie van Student's $t$-verdeling")
+page_header("📊 Student's t-verdeling", "Kansverdelingen · Continu")
 with st.sidebar:
     st.header("Parameters")
 
@@ -162,9 +159,12 @@ if df >= 3:
 # ── Layout ──
 df_label = f"{df} {"vrijheidsgraad" if df == 1 else "vrijheidsgraden"}"
 fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
     title=dict(
-        text=f"Kansdichtheidsfuncties van N(0,1) (goud) en t(df={df}) (magenta)",
-        font=dict(size=35),
+        text=f"Kansdichtheidsfuncties van N(0,1) en t(df={df})",
+        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
         x=0.03,
     ),
     xaxis=dict(
@@ -192,11 +192,11 @@ st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False)
 
 explanation_title = "📚 Student's $t$-verdeling"
 explanation_md = f"""
-# 📊 Interactieve Streamlit Webapp: Student's $t$-verdeling
+# 📊 Student's $t$-verdeling
 
 Deze interactieve webapp toont een vergelijking tussen de standaardnormale verdeling $N(0,1)$ en Student's $t$-verdeling met verschillende aantallen vrijheidsgraden (df = degrees of freedom).
 
-### 📌 Wat laat de grafiek zien?
+## 📌 Wat laat de grafiek zien?
 De $t$-verdeling ontstaat wanneer je het gemiddelde van een steekproef wilt vergelijken met een populatiegemiddelde, maar de **populatiestandaardafwijking $\sigma$ onbekend** is.
 Je schat $\\sigma$ dan met de steekproefstandaardafwijking $s$ en die schatting bevat zelf ook weer onzekerheid omdat we met een steekproef werken.
 
@@ -206,7 +206,7 @@ Hoe kleiner de steekproefgrootte $n$, hoe kleiner het aantal vrijheidsgraden ($n
 Wanneer het aantal vrijheidsgraden groot is (oftewel je werkt met een grotere steekproef), dan is er steeds minder onzekerheid en de $t$-verdeling benadert de standaardnormale verdeling $N(0,1)$.
 In de praktijk geldt dan ook dat bij $\\text{{df}} \geq 30$ het verschil verwaarloosbaar klein is (controleer dit voor jezelf door $\\text{{df}}=30$ in te vullen en te zien wat er gebeurt).
 
-### ❓ Wanneer gebruik je een $t$-verdeling in plaats van de normale verdeling?
+## ❓ Wanneer gebruik je een $t$-verdeling in plaats van de normale verdeling?
 | Situatie | Gebruik |
 |---|---|
 | $\sigma$ bekend | $N(0,1)$ |
@@ -263,7 +263,7 @@ $$
 **Bereken de toetsingsgrootheid:**
  
 $$
-    t = \\frac{{\\bar{{x}} - \\mu_0}}{{s / \\sqrt{{n}}}} = \\frac{{312 - 300}}{{24 / \\sqrt{{{df + 1}}}}} = \\frac{{12}}{{24 / {np.sqrt(df + 1):.3f}}} = \\frac{{12}}{{{24 / np.sqrt(df + 1):.3f}}} = {12 / (24 / np.sqrt(df + 1)):.4f}.
+    t = \\frac{{\\bar{{x}} - \\mu_0}}{{s / \\sqrt{{n}}}} = \\frac{{312 - 300}}{{24 / \\sqrt{{{df + 1}}}}} = \\frac{{12}}{{24 / {np.sqrt(df + 1):.4f}}} = \\frac{{12}}{{{24 / np.sqrt(df + 1):.4f}}} = {12 / (24 / np.sqrt(df + 1)):.4f}.
 $$
  
 **Vergelijk met kritieke waarde** bij $\\alpha = {alpha}$ en $\\text{{df}} = {df}$:
@@ -272,7 +272,7 @@ $$
     t_{{\\text{{crit}}}} = \\text{{tcdf}}(\\text{{opp}}=1-\\frac{{\\alpha}}{{2}}, \\text{{df}}={df}) = {t_crit:.4f}.
 $$
  
-{"✅ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.3f}" + f" < {t_crit:.4f} \\qquad \\Rightarrow \\qquad H_0$ **niet verwerpen**: geen significant verschil gevonden." if abs(12 / (24 / np.sqrt(df + 1))) < t_crit else "❌ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.4f}" + f" > {t_crit:.4f}\\qquad \\Rightarrow \\qquad H_0$ **verwerpen**: wel een significant verschil gevonden."}
+{"✅ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.4f}" + f" < {t_crit:.4f} \\qquad \\Rightarrow \\qquad H_0$ **niet verwerpen**: geen significant verschil gevonden." if abs(12 / (24 / np.sqrt(df + 1))) < t_crit else "❌ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.4f}" + f" > {t_crit:.4f}\\qquad \\Rightarrow \\qquad H_0$ **verwerpen**: wel een significant verschil gevonden."}
 """
 
 # Call show_explanation for printing the explanation on the webapp

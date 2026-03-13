@@ -2,14 +2,18 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm
+from utils.streamlit_utils import load_css, page_header
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Betrouwbaarheidsintervallen voor het populatiegemiddelde",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
 
 # ----------------------------------
 # CSS
 # ----------------------------------
-with open("./styles/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+load_css()
 
 def write_header(text, font_size):
     st.markdown(f'<p style="font-size:{font_size}px;">{text}</p>', unsafe_allow_html=True)
@@ -17,8 +21,10 @@ def write_header(text, font_size):
 # --------------------------------------------------
 # PARAMETERS
 # --------------------------------------------------
-st.title("Betrouwbaarheidsintervallen voor het populatiegemiddelde (μ)")
+page_header("📊 Betrouwbaarheidsintervallen", "Schatten · Populatiegemiddelde μ")
 with st.sidebar:
+    st.header("Parameters")
+
     mu = st.number_input("Populatiegemiddelde ($\\mu$)", value=0)
     sigma = st.number_input("Populatiestandaarddeviatie $\\sigma$", min_value=0.01, value=2.0)
     n = st.number_input("Steekproefgrootte $n$", min_value=2, value=30)
@@ -114,11 +120,11 @@ def make_stat_card_annotations(count_contains, total, alpha):
     for card in cards:
         # ── Card body ──
         body = (
-            f"<span style='font-size:30px;color:#bbb;letter-spacing:5px;padding=5'>{card['label']}</span>"
-            f"<br><b><span style='font-size:30px;color:{card['color']}'>{card['value']}</span></b>"
+            f"<span style='font-size:25px;color:#bbb;letter-spacing:5px;padding=5;'>{card['label']}</span>"
+            f"<br><b><span style='font-size:25px;color:{card['color']};'>{card['value']}</span></b>"
         )
         if "sub" in card:
-            body += f"<br><span style='font-size:25px;color:#bbb'>{card['sub']}</span>"
+            body += f"<br><span style='font-size:25px;color:#bbb';>{card['sub']}</span>"
 
         card_annotations.append(dict(
             x=card["x"], y=1.35,
@@ -211,12 +217,12 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
         layout=go.Layout(
             xaxis=dict(range=x_range, title="Populatiegemiddelde \u03bc", title_font=dict(size=30), tickfont=dict(size=25)),
             yaxis=dict(range=y_range, autorange="reversed", showticklabels=False),
-            height=800,
-            margin=dict(t=200),
+            height=600,
+            margin=dict(t=150),
             annotations=first_annotations,
             shapes=[dict(
-                type="line", x0=mu, x1=mu, y0=y_range[0]+2, y1=y_range[1],
-                line=dict(color="yellow", dash="dash")
+                type="line", x0=mu, x1=mu, y0=y_range[0]+3, y1=y_range[1]-1,
+                line=dict(color="gold", dash="dash")
             )],
             updatemenus=[dict(
                 type="buttons",
@@ -247,7 +253,7 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
                     ),
                 ],
                 font=dict(
-                    size=25,        # Font size for button labels
+                    size=20,        # Font size for button labels
                 ),
             )]
         )
@@ -269,4 +275,4 @@ if generate:
     fig = build_animated_figure(mu, sigma, n, alpha, int(batch_size), frame_duration)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 else:
-    st.info(f"### Klik op **Steekproeven trekken** in de sidebar om {batch_size} {'steekproeven' if batch_size > 1 else "steekproef"} te trekken van grootte $n={n}$.")
+    st.info(f"Klik op **Steekproeven trekken** in de sidebar om {batch_size} {'steekproeven' if batch_size > 1 else "steekproef"} te trekken van grootte $n={n}$.")

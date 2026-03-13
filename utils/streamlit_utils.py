@@ -1,50 +1,30 @@
 import streamlit as st
-import mplcyberpunk
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from typing import Callable, Dict, Any, Tuple
+from matplotlib.colors import to_rgb
 
-from utils.explanation_utils import show_explanation  # Blijft zoals u het had
-from utils.figure_utils import create_figure
-from utils.plot_style import set_plot_style
+def css_to_rgba(css_color, alpha = 0.4) -> str:
+    """Converteert een CSS-kleur naar een rgba-string voor Plotly."""
+    r, g, b = [int(c * 255) for c in to_rgb(css_color)]
+    return f"rgba({r},{g},{b},{alpha})"
 
-def generate_streamlit_page(
-    sliders: Dict[str, Any],
-    plot_function: Callable[[Any, Dict[str, Any]], None],
-    figsize: Tuple[int, int] = (8, 5),
-    page_header: str = "Interactieve plot",
-    plot_title: str = "Interactieve plot",
-    xlabel: str = "$x$",
-    ylabel: str = "$y$",
-    explanation_md: Tuple[str, str] = ("Uitleg:", ""),
-    subplot_dims: Tuple[int, int] = (1, 1),
-) -> None:
+
+def load_css(path = "./styles/style.css"):
+    """Laadt de gedeelde CSS-stylesheet in de Streamlit-app."""
+    with open(path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def page_header(title: str, subtitle: str = "") -> None:
     """
-    Genereert een gestandaardiseerde Streamlit pagina met uitleg, sliders en een plot.
-
+    Toont een gestandaardiseerde paginatitel met optionele eyebrow-tekst.
+ 
     Args:
-        sliders: Ingevoerde waarden via sliders.
-        plot_function: Functie die een plot tekent op de assen.
-        figsize: Grootte van de figuur.
-        page_header: header van de gehele pagina.
-        plot_title: Titel van de figuur.
-        xlabel: X-as label.
-        ylabel: Y-as label.
-        explanation_md: Markdown tekst voor uitleg.
-        subplot_dims: Indeling (rijen, kolommen) van subplots.
+        title:    Hoofdtitel van de pagina (bijv. 'Binomiale verdeling').
+        subtitle: Optionele eyebrow boven de titel (bijv. 'Kansverdelingen · Discreet').
     """
-
-    set_plot_style("cyberpunk")
-
-    # show_explanation(*explanation_md)
-
-    fig, axes = create_figure(figsize, page_header, plot_title, xlabel, ylabel, subplot_dims=subplot_dims)
-
-    plot_function(axes, sliders)
-
-
-    # if style.lower() == "cyberpunk":
-    mplcyberpunk.make_lines_glow()
-    st.pyplot(fig)
-
-    show_explanation(*explanation_md)
+    if subtitle:
+        st.markdown(
+            f"<p style='font-size:11px; text-transform:uppercase; letter-spacing:0.10em;"
+            f" color:rgba(168,218,220,0.55); margin-bottom:0.1rem; font-family:\"JetBrains Mono\",monospace;'>"
+            f"{subtitle}</p>",
+            unsafe_allow_html=True,
+        )
+    st.title(title)

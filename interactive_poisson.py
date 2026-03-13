@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.stats import binom, poisson
 from utils.explanation_utils import show_explanation
+from utils.streamlit_utils import load_css, page_header
 
 st.set_page_config(
     page_title="Connectie tussen de binomiale en Poissonverdeling",
@@ -11,11 +12,16 @@ st.set_page_config(
     layout="wide"
 )
 
+# ----------------------------------
+# CSS
+# ----------------------------------
+load_css()
+
 # ------------------------------
 # PARAMETERS
 # ------------------------------
 
-st.title("📊 Connectie tussen de binomiale verdeling en de Poissonverdeling")
+page_header("📊 Connectie tussen de binomiale en Poissonverdeling", "Kansverdelingen · Limietgeval")
 with st.sidebar:
     st.header("Parameters")
 
@@ -48,7 +54,7 @@ x_poisson, y_poisson = draw_sample_poisson(lambda_input)
 
 subtitle1 = f"Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f})"
 subtitle2 = f"Poisson(&#955; = " + f"{lambda_input})"
-fig = make_subplots(rows=1, cols=2, subplot_titles=(subtitle1, subtitle2))
+fig = make_subplots(rows=1, cols=2)
 
 for annotation in fig['layout']['annotations']:
     annotation['font'] = dict(size=30)
@@ -89,14 +95,25 @@ for xi, yi in zip(x_poisson, y_poisson):
 
 # Update the layout of the figure
 fig.update_layout(
-    height=800,
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+    title=dict(
+        text=f"Vergelijking tussen de binomiale en Poissonverdeling<br><sup>Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f}) en Poisson(&#955; = " + f"{lambda_input})</sup>",
+        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+        pad=dict(t=30, b=20)
+    ),
+    height=600,
     xaxis=dict(
         title=dict(text="Aantal successen k", font=dict(size=30)),
-        tickfont=dict(size=30)
+        tickfont=dict(size=25)
     ),
     yaxis=dict(
-        title=dict(text="Kansfunctie f(k)", font=dict(size=30)),
-        tickfont=dict(size=30)
+        title=dict(
+            text="Kansfunctie f(k)",
+            font=dict(size=30),
+        ),
+        tickfont=dict(size=25)
     )
 )
 
@@ -130,9 +147,11 @@ fig.update_yaxes(
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
-explanation_title = "📚 De Poissonverdeling"
+explanation_title = "📚 Connectie tussen de binomiale en Poissonverdeling"
 explanation_md=r"""
-### 📌 De binomiale verdeling in het kort
+# 📚 Connectie tussen de binomiale en Poissonverdeling
+
+## 📌 De binomiale verdeling in het kort
 
 De **binomiale verdeling** beschrijft de kansvariabele $X$ die het aantal successen telt in een vast aantal onafhankelijke Bernoulli-experimenten (*$n$*).
 Een Bernoulli-experiment is een kansexperiment met een uitkomstenruimte bestaande uit twee mogelijke uitkomsten (succes ($1$) of mislukking ($0$)).
@@ -149,7 +168,7 @@ waarbij:
 
 ---
 
-### 📌 De Poissonverdeling in het kort
+## 📌 De Poissonverdeling in het kort
 
 De **Poissonverdeling** beschrijft het aantal gebeurtenissen gedurende een vaste meeteenheid (vaak tijd of ruimte), wanneer deze gebeurtenissen:
 - onafhankelijk van elkaar plaatsvinden,
@@ -167,7 +186,7 @@ waarbij:
 
 ---
 
-### 🔗 De connectie tussen binomiaal en Poisson
+## 🔗 De connectie tussen binomiaal en Poisson
 
 De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de volgende voorwaarden:
 - *$n$* is groot  
@@ -177,7 +196,7 @@ De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de 
 In de limiet geldt dat de kansfunctie van de binomiale verdeling die van de Poissonverdeling benadert (dat wil zeggen, voor elke waarde van k is de waarde van de kansfunctie bij benadering hetzelfde voor beide verdelingen): 
 
 $$
-    \text{Binomiaal}(n, p) \longrightarrow \text{Poisson}(\lambda)
+    \text{Binomiaal}(n, \frac{\lambda}{n}) \longrightarrow \text{Poisson}(\lambda)
 $$
 
 **Voorbeeld:**  
@@ -189,7 +208,7 @@ Dan kan het aantal defecten bij benadering worden gemodelleerd met een Poissonve
 
 ---
 
-### ✅ Waarom deze benadering nuttig is
+## ✅ Waarom deze benadering nuttig is
 
 - Wanneer het aantal experimenten *n* groot wordt, zijn binomiaalco&euml;ffici&euml;nten $\binom{n}{k}$ heel lastig te berekenen.  
 - Kansen uitrekenen met de Poissonverdeling is wiskundig eenvoudiger.  

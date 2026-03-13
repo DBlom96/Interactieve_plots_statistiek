@@ -1,7 +1,9 @@
 [theme]
-base="dark"
+base = "dark"
+primaryColor = "#3a9fd8" # sky blue accent
+backgroundColor = "#0e1a2d" # deep navy page bg
+secondaryBackgroundColor = "#1d324e" # mid-navy sidebar / surfaces
+textColor = "#eef4fc" # cool near-white
 
-primaryColor="#a8dadc"  # Blue primary color
-secondaryBackgroundColor="#1d3557"  # blue background for sidebar
-backgroundColor="#212946" #"#457b9d"  # Lightblue color
-textColor="#f1faee"  # Light greyblue text color
+[server]
+headless = true

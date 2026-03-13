@@ -1,110 +1,274 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=JetBrains+Mono:wght@400;500&display=swap');
- 
-html, body, [class*="css"] {
-    font-family: 'Source Serif 4', Georgia, serif;
-}
- 
-/* Sidebar labels */
-[data-testid="stSidebar"] label {
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 25px;
+/* ============================================================
+   TYPOGRAPHY SYSTEM — Interactieve Plots Statistiek
+   
+   Font roles:
+     Display / body  →  Source Serif 4   (warmth, readability)
+     Labels / code   →  JetBrains Mono   (precision, contrast)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+  /* Colours (mirror config.toml for custom components) */
+  --clr-bg:        #1a1f2e;
+  --clr-surface:   #141f30;
+  --clr-primary:   #a8dadc;
+  --clr-text:      #f1faee;
+  --clr-muted:     rgba(241, 250, 238, 0.45);
+  --clr-subtle:    rgba(241, 250, 238, 0.15);
+
+  /* Type scale (Major Third, 1.250 ratio) */
+  --type-xs:    0.64rem;   /*  ~10px */
+  --type-sm:    0.80rem;   /*  ~13px */
+  --type-base:  1.00rem;   /*  ~16px */
+  --type-md:    1.25rem;   /*  ~20px */
+  --type-lg:    1.563rem;  /*  ~25px */
+  --type-xl:    1.953rem;  /*  ~31px */
+  --type-2xl:   2.441rem;  /*  ~39px */
+
+  /* Spacing */
+  --gap-xs:  0.25rem;
+  --gap-sm:  0.5rem;
+  --gap-md:  1rem;
+  --gap-lg:  1.5rem;
 }
 
-label[data-testid="stWidgetLabel"] > div > p {
-    font-size: 15px;  /* Change this value as needed */
-    font-weight: bold; /* Optional: make it bold */
+/* ── Global reset ───────────────────────────────────────────── */
+html, body, [class*="css"] {
+  font-family: 'JetBrains Mono', monospace;
+  font-size:   var(--type-base);
+  line-height: 1.65;
+  color:       var(--clr-text);
+}
+
+/* ── Streamlit main titles & headings ───────────────────────── */
+
+/* st.title → h1 */
+[data-testid="stApp"] h1 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-2xl);
+  font-weight:    600;
+  line-height:    1.15;
+  letter-spacing: -0.01em;
+  margin-bottom:  var(--gap-sm);
+}
+
+/* st.header → h2 */
+[data-testid="stApp"] h2 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-xl);
+  font-weight:    1000;
+  letter-spacing: -0.005em;
+  line-height:    1.25;
+  margin-top:     var(--gap-lg);
+  margin-bottom:  var(--gap-xs);
+}
+
+/* st.subheader → h3 */
+[data-testid="stApp"] h3 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-lg);
+  font-weight:    400;
+  line-height:    1.3;
+  margin-top:     var(--gap-md);
+  margin-bottom:  var(--gap-xs);
+}
+
+/* st.markdown body text */
+[data-testid="stMarkdownContainer"] p {
+  font-size:   var(--type-base);
+  line-height: 1.75;
+}
+
+[data-testid="stAlert"][kind="info"] div > p {
+    font-size: var(--type-xs);
+}
+
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+
+/* Sidebar section header (st.header inside sidebar) */
+[data-testid="stSidebar"] h2 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-md);
+  font-weight:    400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--clr-primary);
+  opacity:        0.75;
+  margin-bottom:  var(--gap-md);
+  border-bottom:  1px solid var(--clr-subtle);
+  padding-bottom: var(--gap-xs);
+}
+
+/* Sidebar section header (st.subheader inside sidebar) */
+[data-testid="stSidebar"] h3 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-base);
+  font-weight:    400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--clr-primary);
+  opacity:        0.75;
+  margin-bottom:  var(--gap-md);
+  border-bottom:  1px solid var(--clr-subtle);
+  padding-bottom: var(--gap-xs);
+}
+
+/* Widget labels inside sidebar AND main area */
+label[data-testid="stWidgetLabel"] > div > p,
+[data-testid="stSidebar"] label {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-sm);
+  font-weight:    400;
+  /* text-transform: uppercase; */
+  letter-spacing: 0.04em;
+  color:          var(--clr-text);
+}
+
+/* Slider / number-input values */
+[data-testid="stSidebar"] input,
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size:   var(--type-sm);
+}
+
+ 
+/* ── Expander (explanation blocks) ──────────────────────────── */
+ 
+/* Expander title row */
+[data-testid="stExpander"] summary {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-md);
+  font-weight:    500;
+  letter-spacing: 0.01em;
 }
  
-/* Stat cards */
+/* Body / paragraph text inside expander → Arial */
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p, li {
+  font-family: 'Montserrat', sans-serif;
+  font-size:   var(--type-base);
+  line-height: 1.8;
+}
+ 
+/* h2 subheaders (## in markdown) inside expander → JetBrains Mono */
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] h2 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-lg);
+  font-weight:    500;
+  letter-spacing: 0.01em;
+  margin-top:     var(--gap-lg);
+  margin-bottom:  var(--gap-xs);
+}
+ 
+/* h3 subheaders (### in markdown) inside expander → JetBrains Mono */
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] h3 {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-md);
+  font-weight:    400;
+  letter-spacing: 0.02em;
+  margin-top:     var(--gap-md);
+  margin-bottom:  var(--gap-xs);
+}
+
+/* ── Stat cards ─────────────────────────────────────────────── */
+
 .stats-row-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display:               grid;
+  grid-template-columns: repeat(2, auto);
+  gap:                   var(--gap-md);
+  margin-bottom:         var(--gap-lg);
 }
 
 .stats-row-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display:               grid;
+  grid-template-columns: repeat(3, auto);
+  gap:                   var(--gap-md);
+  margin-bottom:         var(--gap-lg);
 }
 
 .stats-row-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display:               grid;
+  grid-template-columns: repeat(4, auto);
+  gap:                   var(--gap-md);
+  margin-bottom:         var(--gap-lg);
 }
- 
-.stat-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 1rem 1.2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.25rem;
-    position: relative;
-    overflow: hidden;
-}
- 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-}
- 
-.stat-card.alpha::before { background: tomato; }
-.stat-card.beta::before  { background: cyan; }
-.stat-card.power::before { background: springgreen; }
-.stat-card.pvalue::before { background: cyan; }
-.stat-card.kritiek::before { background: tomato; }
-.stat-card.acceptatie::before { background: springgreen; }
 
-.stat-card.total::before   { background: #aaa; }
-.stat-card.hit::before     { background: lime; }
-.stat-card.miss::before    { background: red; }
-.stat-card.pct::before     { background: cyan; }
+.stat-card {
+  border:        1px solid var(--clr-subtle);
+  border-radius: 10px;
+  padding:       var(--gap-md) var(--gap-md);
+  box-shadow:    0 2px 10px rgba(0, 0, 0, 0.15);
+  display:       flex;
+  flex-direction: column;
+  gap:           var(--gap-xs);
+  position:      relative;
+  overflow:      hidden;
+}
+
+.stat-card::before {
+  content:  '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+/* Accent colours — top bar + value colour */
+.stat-card.alpha::before      { background: tomato; }
+.stat-card.beta::before       { background: #a8dadc; }
+.stat-card.power::before      { background: springgreen; }
+.stat-card.pvalue::before     { background: #a8dadc; }
+.stat-card.kritiek::before    { background: tomato; }
+.stat-card.acceptatie::before { background: springgreen; }
+.stat-card.bi::before         { background: gold; }
+.stat-card.pi::before         { background: magenta; }
+.stat-card.total::before      { background: rgba(241,250,238,.35); }
+.stat-card.hit::before        { background: limegreen; }
+.stat-card.miss::before       { background: tomato; }
+.stat-card.pct::before        { background: #a8dadc; }
+
+/* ── Stat card typography ─── */
 
 .stat-label {
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #bbb;
-    font-family: 'JetBrains Mono', monospace;
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      var(--type-md);
+  font-weight:    400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--clr-muted);
 }
- 
-.stat-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 2rem;
-    font-weight: 500;
-    line-height: 1.5;
-    margin: 0.1rem 0;
-}
- 
-.stat-card.alpha .stat-value { color: tomato; }
-.stat-card.beta  .stat-value { color: cyan; }
-.stat-card.power .stat-value { color: springgreen; }
-.stat-card.pvalue .stat-value { color: cyan; }
-.stat-card.kritiek .stat-value { color: tomato; }
-.stat-card.acceptatie .stat-value { color: springgreen; }
 
-.stat-card.total .stat-value { color: #aaa; }
-.stat-card.hit   .stat-value { color: lime; }
-.stat-card.miss  .stat-value { color: red; }
-.stat-card.pct   .stat-value { color: cyan; }
+.stat-value {
+  font-family:  'JetBrains Mono', monospace;
+  font-size:    var(--type-xl);
+  font-weight:  500;
+  line-height:  1.2;
+}
 
 .stat-symbol {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.5rem;
-    color: #bbb;
+  font-family: 'JetBrains Mono', monospace;
+  font-size:   var(--type-sm);
+  color:       var(--clr-muted);
 }
- 
+
 .stat-desc {
-    font-size: 1.5rem;
-    color: #bbb;
-    line-height: 1.4;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size:   var(--type-base);
+  color:       var(--clr-muted);
+  line-height: 1.5;
 }
+
+/* Value accent colours */
+.stat-card.alpha      .stat-value { color: tomato; }
+.stat-card.beta       .stat-value { color: #a8dadc; }
+.stat-card.power      .stat-value { color: springgreen; }
+.stat-card.pvalue     .stat-value { color: #a8dadc; }
+.stat-card.kritiek    .stat-value { color: tomato; }
+.stat-card.acceptatie .stat-value { color: springgreen; }
+.stat-card.bi         .stat-value { color: gold; }
+.stat-card.pi         .stat-value { color: magenta; }
+.stat-card.total      .stat-value { color: var(--clr-muted); }
+.stat-card.hit        .stat-value { color: limegreen; }
+.stat-card.miss       .stat-value { color: tomato; }
+.stat-card.pct        .stat-value { color: #a8dadc; }

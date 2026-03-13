@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import binom
 from utils.explanation_utils import show_explanation
+from utils.streamlit_utils import load_css, page_header
 
 st.set_page_config(
     page_title="Visualisatie van de binomiale verdeling",
@@ -11,10 +12,15 @@ st.set_page_config(
 )
 
 # ----------------------------------
+# CSS
+# ----------------------------------
+load_css()
+
+# ----------------------------------
 # PARAMETERS
 # ----------------------------------
 
-st.title("📊 Interactieve plot: de binomiale verdeling")
+page_header("📊 Binomiale verdeling", "Kansverdelingen · Discreet")
 with st.sidebar:
     st.header("Parameters")
     
@@ -56,25 +62,30 @@ for xi, yi in zip(x, y):
     ))
 
 fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
     title=dict(
-        text=(f"Naalddiagram van de binomiale verdeling met n = {n_slider} en p = {p_slider}"),
-        font=dict(size=40),
+        text=(f"Binomiale verdeling met n = {n_slider} en p = {p_slider}"),
+        font=dict(size=40, family="JetBrains Mono, monospace", color="#f1faee"),
     ),
     xaxis=dict(
-        title=dict(text="Uitkomst k", font=dict(size=30)),
+        title=dict(text="Aantal successen k", font=dict(size=30)),
         tickfont=dict(size=25)
     ),
     yaxis = dict(
         title=dict(text = "Kansfunctie P(X=k)", font=dict(size=30)),
         tickfont=dict(size=25)
     ),
-    height=800,
+    height=600,
 )
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
 explanation_title = "📚 De binomiale verdeling"
 explanation_markdown = """
+    # 📊 De binomiale verdeling
+
     De **binomiale verdeling** is een discrete kansverdeling die het aantal successen telt in een reeks onafhankelijke Bernoulli-experimenten.
     Dit betekent dat elk experiment slechts twee mogelijke uitkomsten heeft: *succes* (1) of *mislukking* (0).
     Onafhankelijkheid betekent dat de uitkomst van het ene experiment geen invloed heeft op de kansverdeling van andere experimenten.
@@ -117,7 +128,7 @@ explanation_markdown = """
     Stel dat we een eerlijke munt **10 keer** opgooien en de kans op "kop" is **50\%**. De binomiale verdeling beschrijft dan de kans op **exact 6 keer kop**:
 
     $$
-        P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0.2051
+        P(X=6) = \\binom{10}{6} \\cdot (0.5)^6 \\cdot (0.5)^4 \\approx 0.2051.
     $$
 """
 

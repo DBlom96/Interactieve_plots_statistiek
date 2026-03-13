@@ -2,8 +2,9 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm
-from matplotlib.colors import to_rgb
+
 from utils.explanation_utils import show_explanation
+from utils.streamlit_utils import load_css, css_to_rgba, page_header
 from dataclasses import dataclass
 
 # ----------------------------------
@@ -15,20 +16,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     layout="wide"
 )
-
 # ----------------------------------
 # CSS
 # ----------------------------------
-with open("./styles/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+load_css()
+
+
 
 # ----------------------------------
 # HELPERS
 # ----------------------------------
-
-def css_to_rgba(css_color, alpha=0.4):
-    r,g,b = [int(c*255) for c in to_rgb(css_color)]
-    return f"rgba({r},{g},{b},{alpha})"
 
 @dataclass
 class TestRegions:
@@ -47,7 +44,7 @@ def generate_distributions(mu0, mu1, sigma, n, points=600):
     center = (mu0 + mu1) / 2
     spread = abs(mu1 - mu0) + 4 * sample_std
 
-    x = np.linspace(center - spread, center + spread, points)
+    x = np.linspace(mu0 - spread, mu0 + spread, points)
 
     pdf0 = norm.pdf(x, mu0, sample_std)
     pdf1 = norm.pdf(x, mu1, sample_std)
@@ -118,7 +115,7 @@ def add_text(fig, text, x, y, color):
         y=y,
         text=text,
         showarrow=False,
-        font=dict(size=25, color=color)
+        font=dict(size=20, color=color)
     )
 
 
@@ -138,7 +135,7 @@ with st.sidebar:
     sigma = st.number_input(label="Standaardafwijking ($\\sigma$):", min_value=1e-6, value=1.0)
     n = st.number_input(label="Steekproefgrootte ($n$):", min_value=1, value=30)
     alpha = st.number_input(label="Significantieniveau ($\\alpha$):", min_value=0.001, max_value=0.2, value=0.05)
-    mu1 = st.slider("Gemiddelde $\\mu_1$ (alternatieve hypothese):", min_value=mu0 - 1, max_value=mu0 + 1)
+    mu1 = st.number_input("Gemiddelde $\\mu_1$ (alternatieve hypothese):", min_value=mu0 - 1, value = mu0 + 0.5, max_value=mu0 + 1)
 
 # -------------------------------
 # COMPUTATION
@@ -154,18 +151,23 @@ power = 1 - beta
 # -------------------------------
  
 st.markdown(f"""
-<div class="stats-row-2" >
+<div class="stats-row-3" >
   <div class="stat-card alpha">
     <span class="stat-label">Type-I fout</span>
-    <span class="stat-value">&alpha; = {alpha:.3f}</span>
+    <span class="stat-value">&alpha; = {alpha:.4f}</span>
     <span class="stat-desc">Kans op onterecht verwerpen van H₀</span>
     <span class="stat-desc">(rood gearceerd gebied)</span>
   </div>
   <div class="stat-card beta">
     <span class="stat-label">Type-II fout</span>
-    <span class="stat-value">&beta; = {beta:.3f}</span>
+    <span class="stat-value">&beta; = {beta:.4f}</span>
     <span class="stat-desc">Kans op onterecht accepteren van H₀</span>
     <span class="stat-desc">(lichtblauw gearceerd gebied)</span>
+  </div>
+  <div class="stat-card acceptatie">
+    <span class="stat-label">Onderscheidend vermogen</span>
+    <span class="stat-value">1 - &beta; = {(1- beta):.4f}</span>
+    <span class="stat-desc">Hoe betrouwbaar is de toets als H<sub>0</sub> niet waar is.</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -179,12 +181,12 @@ H1_COLOR = "magenta"
 ACCEPTABLE_COLOR = "springgreen"
 CRITICAL_COLOR = "tomato"
 ALPHA_COLOR = CRITICAL_COLOR
-BETA_COLOR = "cyan"
+BETA_COLOR = "#a8dadc"
 
 fig = go.Figure()
 
-add_curve(fig, x, pdf0, H0_COLOR, r"Verdeling onder H<sub>0</sub>")
-add_curve(fig, x, pdf1, H1_COLOR, r"Verdeling onder H<sub>1</sub>")
+add_curve(fig, x, pdf0, H0_COLOR, name=r"H<sub>0</sub>", showlegend=False)
+add_curve(fig, x, pdf1, H1_COLOR, name=r"H<sub>1</sub>", showlegend=False)
 
 # mean lines
 
@@ -224,18 +226,18 @@ if test_type == "tweezijdig":
     mask_right = x > right
     mask_accept = (x >= left) & (x <= right)
 
-    add_shaded_region(fig, x, pdf0, mask_left, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
+    add_shaded_region(fig, x, pdf0, mask_left, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.4f})", False)
     add_shaded_region(fig, x, pdf0, mask_right, ALPHA_COLOR, "", False)
 
-    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.4f})", False)
 
     add_region_bar(fig, xmin, left, yline, CRITICAL_COLOR)
     add_region_bar(fig, left, right, yline, ACCEPTABLE_COLOR)
     add_region_bar(fig, right, xmax, yline, CRITICAL_COLOR)
 
-    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 1.5 * yline, CRITICAL_COLOR)
-    add_text(fig, "Acceptatiegebied", (left + right) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
-    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 1.5 * yline, CRITICAL_COLOR)
+    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 2 * yline, CRITICAL_COLOR)
+    add_text(fig, "Acceptatiegebied", (left + right) / 2, 2 * yline, ACCEPTABLE_COLOR)
+    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 2 * yline, CRITICAL_COLOR)
 
 
 elif test_type == "rechtszijdig":
@@ -245,14 +247,14 @@ elif test_type == "rechtszijdig":
     mask_crit = x > right
     mask_accept = x <= right
 
-    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
-    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
+    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.4f})", False)
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.4f})", False)
 
     add_region_bar(fig, xmin, right, yline, ACCEPTABLE_COLOR)
     add_region_bar(fig, right, xmax, yline, CRITICAL_COLOR)
 
-    add_text(fig, "Acceptatiegebied", (xmin + right) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
-    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 1.5 * yline, CRITICAL_COLOR)
+    add_text(fig, "Acceptatiegebied", (xmin + right) / 2, 2 * yline, ACCEPTABLE_COLOR)
+    add_text(fig, "Kritiek gebied", (right + xmax) / 2, 2 * yline, CRITICAL_COLOR)
 
 
 else:  # linkszijdig
@@ -262,14 +264,14 @@ else:  # linkszijdig
     mask_crit = x < left
     mask_accept = x >= left
 
-    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.3f})", False)
-    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.3f})", False)
+    add_shaded_region(fig, x, pdf0, mask_crit, ALPHA_COLOR, f"Type-I fout (&#945;={alpha:.4f})", False)
+    add_shaded_region(fig, x, pdf1, mask_accept, BETA_COLOR, f"Type-II fout (&#946;={beta:.4f})", False)
 
     add_region_bar(fig, xmin, left, yline, CRITICAL_COLOR)
     add_region_bar(fig, left, xmax, yline, ACCEPTABLE_COLOR)
 
-    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 1.5 * yline, CRITICAL_COLOR)
-    add_text(fig, "Acceptatiegebied", (left + xmax) / 2, 1.5 * yline, ACCEPTABLE_COLOR)
+    add_text(fig, "Kritiek gebied", (xmin + left) / 2, 2 * yline, CRITICAL_COLOR)
+    add_text(fig, "Acceptatiegebied", (left + xmax) / 2, 2 * yline, ACCEPTABLE_COLOR)
 
 # --------------------------------------------------
 # LAYOUT
@@ -277,14 +279,17 @@ else:  # linkszijdig
 if test_type == "tweezijdig":
     title_text = f"Tweezijdige toets (H<sub>0</sub>: &mu; = {mu0} versus H<sub>1</sub>: &mu; &#8800; {mu0})"
 elif test_type == "linkszijdig":
-    title_text = f"Linkszijdige toets (H<sub>0</sub>: &mu; &#8805; {mu0} versus H<sub>1</sub>: &mu; < {mu0})"
+    title_text = f"Linkszijdige toets (<span style='color:gold;'>H<sub>0</sub>: &mu; &#8805; {mu0}</span> versus <span style='color:magenta;'>H<sub>1</sub>: &mu; < {mu0}</span>)"
 elif test_type == "rechtszijdig":
     title_text = f"Rechtszijdige toets (H<sub>0</sub>: &mu; &#8804; {mu0} versus H<sub>1</sub>: &mu; > {mu0})"
 fig.update_layout(
 
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
     title=dict(
         text=title_text,
-        font=dict(size=35),
+        font=dict(size=35, family="JetBrains Mono, monospace", color="#f1faee")
     ),
 
     xaxis=dict(
@@ -310,7 +315,7 @@ st.plotly_chart(
 
 explanation_title = "📚 Uitleg: hypothesetoetsen"
 explanation_md=r"""
-# 📊 Interactieve Streamlit Webapp: Hypothesetoetsing
+# 📊 Hypothesetoetsen
 
 Deze interactieve webapp toont de werking van **hypothesetoetsen voor het populatiegemiddelde** $\mu$, inclusief visualisatie van:
 
@@ -323,25 +328,23 @@ Deze interactieve webapp toont de werking van **hypothesetoetsen voor het popula
 
 Met de webapp kun je onderstaande parameters instellen via een **sidebar**:
 
--  **Toetstype:** tweezijdig, linkszijdig of rechtszijdig (dit geeft het teken "≠", "$<$" of "$>$" aan in de alternatieve hypothese).
+-  **Toetstype:** tweezijdig, linkszijdig of rechtszijdig (dit geeft het teken "≠", "$<$" of "$>$" aan in de alternatieve hypothese $H_1$).
 -  **Nulhypothese-gemiddelde** $\mu_0$
 -  **Alternatieve hypothese** $\mu_1$
 -  **Standaardafwijking** $\sigma$
 -  **Significantieniveau** $\alpha$
 -  **Steekproefgrootte** $n$
 
-## 🧠 Uitleg: hypothesetoetsing
+## 📌 Wat laat de grafiek zien?
 
-### 📌 Wat laat de grafiek zien?
-
-- De **cyaanblauwe kromme** is de kansverdeling onder $H_0$, d.w.z. $\bar{X} \sim N(\mu_0, \frac{\sigma}{\sqrt{n}})$.
-- De **goudgele kromme** stelt de kansverdeling onder de alternatieve hypothese $H_1$ voor (voor een gegeven $\mu_1 \neq \mu_0$).
+- De **goudgele kromme** stelt de kansverdeling voor onder $H_0$, d.w.z. $\bar{X} \sim N(\mu_0, \frac{\sigma}{\sqrt{n}})$.
+- De **paarse kromme** stelt de kansverdeling voor onder $H_1$, d.w.z. $\bar{X} \sim N(\mu_1, \frac{\sigma}{\sqrt{n}})$ voor een gegeven $\mu_1 \neq \mu_0$).
 - Het **lichtgroene interval** onder de grafiek toont het **acceptatiegebied**.
-- Het **rode interval** (links- en rechtszijdige toetsen) vormt of de **rode intervallen** (tweezijdige toets) vormen het **kritieke gebied**.
-- Het **rood gearceerde oppervlak** geeft de kans op een **type-I fout** ($\alpha$) weer.
-- Het **lichtpaars gearceerde oppervlak** geeft de kans op een **type-II fout** ($\beta$) weer.
+- Het **rode interval** (links- en rechtszijdige toetsen) of de **rode intervallen** (tweezijdige toets) vormen het **kritieke gebied**.
+- Het **rood gearceerde oppervlak** geeft de kans op een **type-I fout** ($\alpha$) weer, oftewel de kans op het verwerpen van $H_0$, terwijl deze toch waar is.
+- Het **lichtpaars gearceerde oppervlak** geeft de kans op een **type-II fout** ($\beta$) weer, oftewel de kans op het accepteren van $H_0$, terwijl deze niet waar is.
 
-### 🧮 Invloeden op het onderscheidend vermogen
+## 🧮 Invloeden op het onderscheidend vermogen
 
 - Hoe kleiner de afstand tussen $\mu_0$ en $\mu_1$, hoe kleiner het onderscheidend vermogen $1 - \beta$
 - Hoe groter de standaardafwijking $\sigma$, hoe kleiner het onderscheidend vermogen $1 - \beta$
