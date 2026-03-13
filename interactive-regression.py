@@ -278,7 +278,9 @@ elif n_points == 1:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
-        title=dict(text="Voeg minstens twee punten toe voor een regressielijn.", font=dict(size=30)),
+        title=dict(
+            text="Voeg minstens twee punten toe voor een regressielijn.", 
+            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee")),
         height=600,
         xaxis=dict(title=dict(text="X", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
         yaxis=dict(title=dict(text="Y", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
@@ -370,11 +372,11 @@ if n_points > 0:
 
 explanation_title = "📚 Lineaire regressie"
 explanation_md = r"""
-### 📊 Wat is lineaire regressie?
+# 📊 Lineaire regressie
 
 **Lineaire regressie** is een statistische methode waarmee we de lineaire relatie tussen een onafhankelijke variabele $X$ en een afhankelijke variabele $Y$ modelleren. Het doel is een rechte lijn te vinden die de datapunten zo goed mogelijk beschrijft.
 
-### 📜 Het regressiemodel
+## 📜 Het regressiemodel
 
 De geschatte regressielijn heeft de vorm:
 
@@ -386,7 +388,7 @@ waarbij:
 - $b_0$ het **intercept** is: de verwachte waarde van $\hat{Y}$ wanneer $X = 0$
 - $b_1$ de **helling** is: de verandering in $\hat{Y}$ per eenheid toename in $X$
 
-### 🔧 Kleinste-kwadratenmethode
+## 🔧 Kleinste-kwadratenmethode
 
 De parameters $b_0$ en $b_1$ worden bepaald met de **kleinste-kwadratenmethode**: we minimaliseren de som van de kwadraten van de residuen (de verticale afstanden tussen de datapunten en de regressielijn):
 
@@ -396,18 +398,19 @@ $$
 
 De rode stippellijnen in de plot tonen deze residuen.
 
-### 📈 Determinatiecoëfficiënt R²
+## 📈 Pearson's correlatieco\"effici\"ent $r$
 
-De **R²-waarde** geeft aan welk deel van de variantie in $Y$ wordt verklaard door het model:
+De **correlatiecoefficient van Pearson** geeft aan in hoeverre er lineaire samenhang is tussen de twee ratiovariabelen $X$ en $Y$:
 
 $$
-R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}
+r^2 = \frac{\bar{xy} - \bar{x}\cdot\bar{y}}{(\bar{y^2} - \bar{y})^2 \cdot (\bar{x^2} - \bar{x}^2)^2}
 $$
 
-- $R^2 = 1$: het model verklaart alle variantie (perfecte fit)
-- $R^2 = 0$: het model verklaart niets
+- $r = -1$: het model heeft een perfecte negatieve lineaire samenhang
+- $r = 0$: het model heeft geen lineaire samenhang
+- $r = 1$: het model heeft een perfecte positieve lineaire samenhang
 
-### 📐 Betrouwbaarheidsinterval voor E[Y|X]
+## 📐 Betrouwbaarheidsinterval voor E(Y|X)
 
 Het **betrouwbaarheidsinterval** (gouden band) toont de onzekerheid over de *gemiddelde* waarde van $Y$ voor een gegeven $X=x_0$:
 
@@ -415,7 +418,7 @@ $$
 \hat{Y} \pm t_{\alpha/2,\, n-2} \cdot s \cdot \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}
 $$
 
-### 🔮 Voorspellingsinterval voor Y gegeven X
+## 🔮 Voorspellingsinterval voor Y gegeven X
 
 Het **voorspellingsinterval** (paarse band) is breder: het toont de onzekerheid over een *individuele nieuwe waarneming* van $Y$ voor een gegeven $X = x_0$:
 
@@ -423,7 +426,7 @@ $$
 \hat{Y} \pm t_{\alpha/2,\, n-2} \cdot s \cdot \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}
 $$
 
-Het voorspellingsinterval is altijd breder dan het betrouwbaarheidsinterval, omdat het ook de inherente spreiding van individuele waarnemingen rond het gemiddelde omvat.
+Het voorspellingsinterval is altijd breder dan het betrouwbaarheidsinterval (let op de extra 1 onder de wortel), omdat de spreiding steeds kleiner wordt naarmate je naar gemiddeldes van grotere steekproeven kijkt. Uit de centrale limietstelling volgt immers dat steekproefgemiddelden bij benadering normaal verdeeld zijn, maar de standaardafwijking wordt dan gedeeld door de wortel van de steekproefgrootte.
 """
 
 show_explanation(explanation_title, explanation_md)
