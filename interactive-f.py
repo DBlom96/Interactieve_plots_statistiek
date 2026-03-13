@@ -1,13 +1,13 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
-from scipy.stats import chi2
+from scipy.stats import f
 
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, css_to_rgba, page_header
 
 st.set_page_config(
-    page_title="Visualisatie van de chikwadraatverdeling",
+    page_title="Visualisatie van de $F$-verdeling",
     initial_sidebar_state="expanded",
     layout="wide"
 )
@@ -24,7 +24,8 @@ page_header("📊 Chikwadraatverdeling", "Hypothesetoetsen · Continu")
 with st.sidebar:
     st.header("Parameters")
 
-    df = st.number_input(label="Aantal vrijheidsgraden (df)", min_value=1, value=5)
+    df_teller = st.number_input(label="Aantal vrijheidsgraden teller ($\\text{{df}_1$)", min_value=1, value=5)
+    df_noemer = st.number_input(label="Aantal vrijheidsgraden noemer ($\\text{{df}_2$)", min_value=1, value=5)
     method = st.selectbox(
         label="Selecteer visualisatiemethode", 
         options=["Plot", "Kritiek gebied", "p-waarde"]
@@ -32,22 +33,22 @@ with st.sidebar:
 
     if method != "Plot":
         alpha = st.number_input("Significantieniveau $\\alpha$", min_value=0.001, value=0.05)
-        toetsingsgrootheid = st.number_input("Geobserveerde toetsingsgrootheid $\\chi^2$", value=2.0)
+        toetsingsgrootheid = st.number_input("Geobserveerde toetsingsgrootheid $f$", value=2.0)
 
 # --------------------------------
 # SAMPLING
 # --------------------------------
 
-def draw_chi2_distribution(df):
-    x = np.linspace(0, max(10, df + 5 * np.sqrt(df)), 10_000)
-    y = chi2.pdf(x, df)
+def draw_f_distribution(df1, df2):
+    x = np.linspace(0, max(10, df1 + 5 * np.sqrt(df1)), 10_000)
+    y = f.pdf(x, df1, df2)
     return x, y
 
 # --------------------------------
 # PLOTTING
 # --------------------------------
 
-x, y = draw_chi2_distribution(df)
+x, y = draw_f_distribution(df_teller, df_noemer)
 ACCEPTABLE_COLOR = "springgreen" # "neongreen"
 DIST_COLOR = "gold"
 P_VALUE_COLOR = css_to_rgba("gold", 0.4) # "cyan"
@@ -70,7 +71,7 @@ if method == "Plot":
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
         title = dict(
-            text=(f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}."),
+            text=(f"F-verdeling met df<sub>1</sub> = {df_teller} en df<sub>2</sub> = {df_noemer} vrijheidsgraden."),
             font=dict(size=40, family="JetBrains Mono, monospace", color="#f1faee"),
         ),
         xaxis = dict(
@@ -85,15 +86,15 @@ if method == "Plot":
     )
 
 if method == "Kritiek gebied":
-    grens = chi2.ppf(1 - alpha, df)
-    p_waarde = 1 - chi2.cdf(toetsingsgrootheid, df=df)
+    grens = f.ppf(1 - alpha, df_teller, df_noemer)
+    p_waarde = 1 - f.cdf(toetsingsgrootheid, df=df)
 
     mask_acceptable = x < grens
     mask_critical = x >= grens
 
     fig.add_trace(go.Scatter(
         x=[toetsingsgrootheid, toetsingsgrootheid],
-        y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
+        y=[0, f.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
         line=dict(color=DIST_COLOR, dash='dash'),
         showlegend=False
@@ -333,7 +334,7 @@ explanation_md = fr"""
 
 De **$\chi^2$-verdeling** (chikwadraatverdeling) is een verdeling die vooral wordt gebruikt bij toetsen over varianties, onafhankelijkheid tussen twee categorische variabelen en in goodness-of-fit tests.
 
-## 📌 Eigenschappen van de $\chi^2$-verdeling:
+## 📌 Eigenschappen van de $F$-verdeling:
 - De verdeling is **niet symmetrisch** en altijd **positief** ($\chi^2 \geq 0$)
 - De vorm hangt af van het aantal **vrijheidsgraden** (df)
   - Voor kleine waarden van df (weinig vrijheidsgraden), is de verdeling scheef naar rechts.
