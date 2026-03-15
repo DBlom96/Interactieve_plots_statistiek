@@ -50,7 +50,7 @@ def draw_chi2_distribution(df):
 x, y = draw_chi2_distribution(df)
 ACCEPTABLE_COLOR = "springgreen" # "neongreen"
 DIST_COLOR = "gold"
-P_VALUE_COLOR = css_to_rgba("gold", 0.4) # "cyan"
+P_VALUE_COLOR = css_to_rgba("#a8dadc", 0.4) # "cyan"
 CRITICAL_COLOR = "tomato" # "tomato red"
 CRITICAL_SHADE_COLOR = css_to_rgba(CRITICAL_COLOR, 0.4)
 
@@ -66,30 +66,29 @@ fig.add_trace(go.Scatter(
 
 if method == "Plot":
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
         title = dict(
             text=(f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}."),
-            font=dict(size=40, family="JetBrains Mono, monospace", color="#f1faee"),
+            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
         ),
         xaxis = dict(
-            title=dict(text="x", font=dict(size=30)),
-            tickfont=dict(size=25),    
+            title=dict(text="x", font=dict(size=25)),
+            tickfont=dict(size=20),    
         ),
         yaxis = dict(
-            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=30)),
-            tickfont=dict(size=25),    
+            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
+            tickfont=dict(size=20),    
         ),
         height=600
     )
 
 if method == "Kritiek gebied":
+    # We toetsen altijd rechtszijdig met de chikwadraattoets.
     grens = chi2.ppf(1 - alpha, df)
     p_waarde = 1 - chi2.cdf(toetsingsgrootheid, df=df)
 
-    mask_acceptable = x < grens
-    mask_critical = x >= grens
+    mask_acceptable = (x < grens)
+    mask_critical = (x >= grens)
 
     fig.add_trace(go.Scatter(
         x=[toetsingsgrootheid, toetsingsgrootheid],
@@ -190,8 +189,6 @@ if method == "Kritiek gebied":
 
 
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
         title = dict(
             text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}.<br><sup>&#967;<sup>2</sup> = {toetsingsgrootheid:.4f} ligt in het " + ("kritieke gebied" if toetsingsgrootheid > grens else "acceptatiegebied") + ".</sup>",
@@ -282,20 +279,18 @@ if method == "p-waarde":
     ))
 
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
         title = dict(
             text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}.",
-            font=dict(size=30),
+            font=dict(size=30,family="JetBrains Mono, monospace", color="#f1faee"),
         ),
         xaxis = dict(
-            title=dict(text="x", font=dict(size=30)),
-            tickfont=dict(size=25),    
+            title=dict(text="x", font=dict(size=25)),
+            tickfont=dict(size=20),    
         ),
         yaxis = dict(
-            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=30)),
-            tickfont=dict(size=25),    
+            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
+            tickfont=dict(size=20),    
         ),
         height=600
     )
