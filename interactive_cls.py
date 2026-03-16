@@ -4,7 +4,8 @@ import plotly.graph_objects as go
 
 from scipy.stats import norm, uniform, expon, binom, poisson
 from utils.explanation_utils import show_explanation
-from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.streamlit_utils import load_css, page_header
+from utils.constants import *
 
 st.set_page_config(
     page_title="De centrale limietstelling",
@@ -16,12 +17,6 @@ st.set_page_config(
 # ----------------------------------
 load_css()
 
-
-
-# ----------------------------------
-# HELPERS
-# ----------------------------------
-
 # --------------------------------------------------
 # PARAMETERS
 # --------------------------------------------------
@@ -30,7 +25,7 @@ page_header("📊 Centrale limietstelling", "Statistiek · Visualisatie")
 with st.sidebar:
     st.header("Parameters")
 
-    dist_selector = st.selectbox("Kansverdeling:", ["normale", "uniforme", 'exponenti&#235;le', "binomiale", "Poisson"])
+    dist_selector = st.selectbox("Kansverdeling:", ["normale", "uniforme", 'exponentiële', "binomiale", "Poisson"])
     sample_size   = st.number_input("Steekproefgrootte $n$:", min_value=1, value=30)
     n_samples     = st.number_input("Aantal steekproeven:", min_value=1, value=1_000)
     n_bins        = int(np.sqrt(n_samples))
@@ -47,7 +42,7 @@ with st.sidebar:
         dist_params = {"a": a_val, "b": b_val}
         true_mu     = (a_val + b_val) / 2
         true_sigma  = (b_val - a_val) / np.sqrt(12 * sample_size)
-    elif dist_selector == 'exponenti&#235;le':
+    elif dist_selector == 'exponentiële':
         lam_val     = st.number_input("$\\lambda$:", min_value=0.1,value=1.0)
         dist_params = {"lambda_": lam_val}
         true_mu     = 1 / lam_val
@@ -73,7 +68,7 @@ def draw_sample_means(dist, sample_size, n_samples, **params):
         data = norm.rvs(loc=params["mu"], scale=params["sigma"], size=(sample_size, n_samples))
     elif dist == "uniforme":
         data = uniform.rvs(loc=params["a"], scale=params["b"] - params["a"], size=(sample_size, n_samples))
-    elif dist == 'exponenti&#235;le':
+    elif dist == 'exponentiële':
         data = expon.rvs(scale=1 / params["lambda_"], size=(sample_size, n_samples))
     elif dist == "binomiale":
         data = binom.rvs(n=params["n"], p=params["p"], size=(sample_size, n_samples))
@@ -126,29 +121,27 @@ fig.add_trace(go.Bar(
     x=bin_centers,
     y=counts,
     width=bin_width * 0.95,
-    marker=dict(color="steelblue", opacity=0.75),
+    marker=dict(color=HISTOGRAM_BAR_COLOR, opacity=0.75),
     name="Steekproefgemiddelden",
 ))
 
 obs = "observatie" if sample_size == 1 else "observaties"
 fig.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     title=dict(
         text=f"Histogram van steekproefgemiddelden<br><sup>(gebaseerd op {n_samples} steekproeven van {sample_size} observaties uit de {dist_selector} verdeling)</sup>",
-        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     ),
     xaxis=dict(
-        title=dict(text=r"Steekproefgemiddelde", font=dict(size=25)),
-        tickfont=dict(size=20)
+        title=dict(text=r"Steekproefgemiddelde", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
     yaxis = dict(
-        title=dict(text = "Frequentie", font=dict(size=25)),
-        tickfont=dict(size=20)
+        title=dict(text = "Frequentie", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
     legend=dict(x=0.75, y=0.95),
-    height=500
+    height=600
 )
 
 # --------------------------------------------------
@@ -156,7 +149,7 @@ fig.update_layout(
 # --------------------------------------------------
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
-explanation_title = """📊 Interactieve plot: de centrale limietstelling"""
+explanation_title = """📊 De centrale limietstelling"""
 explanation_markdown = """
 
 ## 📜 Wat is de centrale limietstelling?
@@ -170,7 +163,7 @@ $$
 $$
 bij een voldoende grote waarde voor $$n$$ een normale verdeling benadert, oftewel
 $$
-    \\overline{X} \sim N(\\mu; \\frac{\\sigma}{\\sqrt{n}}).
+    \\overline{X} \\sim N(\\mu; \\frac{\\sigma}{\\sqrt{n}}).
 $$
 Merk op dat $\\overline{X}$ een kansvariabele is, aangezien we niet van te voren al weten hoe de steekproef er precies uit gaat zien. 
 Vandaar dat we spreken over kansverdelingen van steekproefgemiddelden.

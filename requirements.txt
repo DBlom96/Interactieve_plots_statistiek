@@ -1,8 +1,6 @@
 numpy
-matplotlib
+plotly
 seaborn
 scipy
 streamlit
 ipywidgets
-mplcyberpunk
-plotly

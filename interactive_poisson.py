@@ -3,8 +3,10 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.stats import binom, poisson
+
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, page_header
+from utils.constants import *
 
 st.set_page_config(
     page_title="Connectie tussen de binomiale en Poissonverdeling",
@@ -21,7 +23,8 @@ load_css()
 # PARAMETERS
 # ------------------------------
 
-page_header("📊 Connectie tussen de binomiale en Poissonverdeling", "Kansverdelingen · Limietgeval")
+page_header("📊 Connectie tussen de binomiale en Poissonverdeling", "Discrete kansverdelingen")
+
 with st.sidebar:
     st.header("Parameters")
 
@@ -54,96 +57,56 @@ x_poisson, y_poisson = draw_sample_poisson(lambda_input)
 
 subtitle1 = f"Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f})"
 subtitle2 = f"Poisson(&#955; = " + f"{lambda_input})"
-fig = make_subplots(rows=1, cols=2)
+fig = make_subplots(rows=1, cols=2, subplot_titles=(subtitle1, subtitle2) )
 
 for annotation in fig['layout']['annotations']:
-    annotation['font'] = dict(size=30)
+    annotation['font'] = dict(size=TITLE_FONT_SIZE)
+    annotation['y'] += 0.1
 
-# Add stem plot for the binomial distribution
-fig.add_trace(go.Scatter(
-    x=x_binom,
-    y=y_binom,
-    mode='markers',
-    marker=dict(color="gold"),
-    showlegend=False
-), row=1, col=1)
+# Voeg naalddiagrammen toe voor de binomiale verdeling en de Poissonverdeling
+fig.add_trace(go.Scatter(x=x_binom, y=y_binom, mode='markers', marker=dict(color=H0_COLOR), showlegend=False), row=1, col=1)
+fig.add_trace(go.Scatter(x=x_poisson, y=y_poisson, mode='markers', marker=dict(color=H1_COLOR), showlegend=False), row=1, col=2)
+
 for xi, yi in zip(x_binom, y_binom):
     fig.add_trace(go.Scatter(
         x=[xi, xi],
         y=[0, yi],
         mode='lines',
-        line=dict(color='gold',width=2),
+        line=dict(color=H0_COLOR, width=2),
         showlegend=False
     ), row=1, col=1)
 
-# Add stem plot for the Poisson distribution
-fig.add_trace(go.Scatter(
-    x=x_poisson,
-    y=y_poisson,
-    mode='markers',
-    marker=dict(color="magenta"),
-    showlegend=False
-), row=1, col=2)
 for xi, yi in zip(x_poisson, y_poisson):
     fig.add_trace(go.Scatter(
         x=[xi, xi],
         y=[0, yi],
         mode='lines',
-        line=dict(color='magenta',width=2),
+        line=dict(color=H1_COLOR, width=2),
         showlegend=False
     ), row=1, col=2)
 
 # Update the layout of the figure
 fig.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
-    title=dict(
-        text=f"Vergelijking tussen de binomiale en Poissonverdeling<br><sup>Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f}) en Poisson(&#955; = " + f"{lambda_input})</sup>",
-        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
-        pad=dict(t=30, b=20)
-    ),
-    height=600,
-    xaxis=dict(
-        title=dict(text="Aantal successen k", font=dict(size=30)),
-        tickfont=dict(size=25)
-    ),
-    yaxis=dict(
-        title=dict(
-            text="Kansfunctie f(k)",
-            font=dict(size=30),
-        ),
-        tickfont=dict(size=25)
+    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
+    height=600
+)
+
+for (col, text) in [(1, "Aantal successen k"), (2, "Aantal gebeurtenissen k")]:
+    # Update de titel van de y-assen
+    fig.update_xaxes(
+        title_text=text,
+        title_font=dict(size=AXIS_FONT_SIZE),
+        tickfont=dict(size=TICK_FONT_SIZE),
+        row=1, col=col
     )
-)
 
-fig.update_xaxes(
-    title_text="Aantal successen k",
-    title_font=dict(size=24),
-    tickfont=dict(size=24),
-    row=1, col=1
-)
-
-fig.update_yaxes(
-    title_text="Kansfunctie f(k)",
-    title_font=dict(size=24),
-    tickfont=dict(size=24),
-    row=1, col=1
-)
-
-fig.update_xaxes(
-    title_text="Aantal gebeurtenissen k",
-    title_font=dict(size=24),
-    tickfont=dict(size=24),
-    row=1, col=2
-)
-
-fig.update_yaxes(
-    title_text="Kansfunctie f(k)",
-    title_font=dict(size=24),
-    tickfont=dict(size=24),
-    row=1, col=2
-)  
+    # Update de titel van de y-assen
+    fig.update_yaxes(
+        title_text="Kansfunctie f(k)",
+        title_font=dict(size=AXIS_FONT_SIZE),
+        tickfont=dict(size=TICK_FONT_SIZE),
+        row=1, col=col
+    )
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
 
@@ -193,7 +156,7 @@ De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de 
 - *$p$* is klein  
 - *$\lambda = n \cdot p$* is constant
 
-In de limiet geldt dat de kansfunctie van de binomiale verdeling die van de Poissonverdeling benadert (dat wil zeggen, voor elke waarde van k is de waarde van de kansfunctie bij benadering hetzelfde voor beide verdelingen): 
+In de limiet geldt dat de kansfunctie van de binomiale verdeling die van de Poissonverdeling benadert (dat wil zeggen, voor elke waarde van $k$ is de waarde van de kansfunctie bij benadering hetzelfde voor beide verdelingen): 
 
 $$
     \text{Binomiaal}(n, \frac{\lambda}{n}) \longrightarrow \text{Poisson}(\lambda)
@@ -210,7 +173,7 @@ Dan kan het aantal defecten bij benadering worden gemodelleerd met een Poissonve
 
 ## ✅ Waarom deze benadering nuttig is
 
-- Wanneer het aantal experimenten *n* groot wordt, zijn binomiaalco&euml;ffici&euml;nten $\binom{n}{k}$ heel lastig te berekenen.  
+- Wanneer het aantal experimenten $n$ groot wordt, zijn binomiaalco&euml;ffici&euml;nten $\binom{n}{k}$ heel lastig te berekenen.  
 - Kansen uitrekenen met de Poissonverdeling is wiskundig eenvoudiger.  
 - Veel praktische toepassingen voldoen aan de voorwaarden voor deze benadering.
 """

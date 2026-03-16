@@ -5,6 +5,8 @@ from scipy.stats import f
 
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.constants import *
+
 
 st.set_page_config(
     page_title="Visualisatie van de F-verdeling",
@@ -20,7 +22,7 @@ load_css()
 # PARAMETERS
 # ----------------------------------
 
-page_header("📊 $F$-verdeling", "Toets voor gelijke varianties")
+page_header("📊 F-verdeling", "Continue kansverdelingen")
 with st.sidebar:
     st.header("Parameters")
 
@@ -49,9 +51,7 @@ def draw_f_distribution(df1, df2, xmax):
 # ------------------------
 xmax = f.ppf(0.99, dfn=df1, dfd=df2)
 x, y = draw_f_distribution(df1, df2, xmax)
-ACCEPTABLE_COLOR = "springgreen" # "neongreen"
-DIST_COLOR = "gold"
-P_VALUE_COLOR = css_to_rgba("#a8dadc", 0.4) # "cyan"
+P_VALUE_COLOR = css_to_rgba(BETA_COLOR, 0.4) # "cyan"
 CRITICAL_COLOR = "tomato" # "tomato red"
 CRITICAL_SHADE_COLOR = css_to_rgba(CRITICAL_COLOR, 0.4)
 
@@ -83,7 +83,7 @@ if method == "Kritiek gebied":
     # We toetsen altijd tweezijdig met de F-toets voor gelijke varianties
 
     # Teken stippellijnen om toetsingsgrootheid en kritieke grenzen aan te geven.
-    for (val, color) in [(toetsingsgrootheid, DIST_COLOR), (linkergrens, CRITICAL_COLOR), (rechtergrens, CRITICAL_COLOR)]:
+    for (val, color) in [(toetsingsgrootheid, H0_COLOR), (linkergrens, CRITICAL_COLOR), (rechtergrens, CRITICAL_COLOR)]:
         fig.add_trace(go.Scatter(
             x=[val, val],
             y=[0, f.pdf(val, dfn=df1, dfd=df2)],
@@ -108,9 +108,9 @@ if method == "Kritiek gebied":
         x=[toetsingsgrootheid],
         y=[YLINES * 2],
         mode='text',
-        marker=dict(color=DIST_COLOR, size=10),
+        marker=dict(color=H0_COLOR, size=10),
         text="f",
-        textfont=dict(size=20, color=DIST_COLOR),
+        textfont=dict(size=ANNOTATION_FONT_SIZE, color=H0_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -136,7 +136,7 @@ if method == "Kritiek gebied":
             y=[YLINES * 2.5],
             mode='text',
             text=text,
-            textfont=dict(color=color, size=20),
+            textfont=dict(color=color, size=ANNOTATION_FONT_SIZE),
             showlegend=False
         ))
  
@@ -170,7 +170,7 @@ if method == "p-waarde":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, f.pdf(toetsingsgrootheid, dfn=df1, dfd=df2)],
         mode='lines',
-        line=dict(color=DIST_COLOR, dash='dash'),
+        line=dict(color=H0_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -193,9 +193,9 @@ if method == "p-waarde":
         x=[toetsingsgrootheid],
         y=[YTEXT],
         mode='text',
-        marker=dict(color=DIST_COLOR, size=10),
+        marker=dict(color=H0_COLOR, size=10),
         text=r"f",
-        textfont=dict(size=30, color=DIST_COLOR),
+        textfont=dict(size=ANNOTATION_FONT_SIZE, color=H0_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -230,23 +230,23 @@ fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode='lines',
-    line=dict(color=DIST_COLOR),
+    line=dict(color=H0_COLOR),
     showlegend=False
 ))
 
 fig.update_layout(
-    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     title = dict(
         text=(f"F-verdeling met df<sub>1</sub> = {df1} en df<sub>2</sub> = {df2} vrijheidsgraden."),
-        font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     ),
     xaxis = dict(
-        title=dict(text="x", font=dict(size=25)),
-        tickfont=dict(size=20),    
+        title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE),    
     ),
     yaxis = dict(
-        title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
-        tickfont=dict(size=20),    
+        title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE),    
     ),
     height=600
 )
@@ -322,7 +322,7 @@ $$p = \min\left(P(F \leq f),\; P(F \geq f)\right) < \alpha / 2$$
 
 ---
 
-## 🪖 Rekenvoorbeeld: precisie van twee sluipschuttersteams
+## 🔢 Rekenvoorbeeld: precisie van twee sluipschuttersteams
 
 Een defensie-onderzoeker wil weten of twee sluipschutterteams — **Team Alpha** en **Team Bravo** — even consistent schieten. Beide teams voeren $10$ oefenschoten uit op een doelwit op $300$ meter. De **afwijking ten opzichte van het middelpunt** (in cm) wordt geregistreerd. De onderzoeker wil bij een significantieniveau van $\alpha = 0.05$ toetsen of de spreiding in beide teams gelijk is.
 

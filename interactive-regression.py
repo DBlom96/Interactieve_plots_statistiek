@@ -7,6 +7,8 @@ from sklearn.linear_model import LinearRegression
 
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, page_header, css_to_rgba
+from utils.constants import *
+
 
 # ----------------------------------
 # PAGE CONFIG
@@ -29,15 +31,6 @@ load_css("./styles/style.css")
 
 if "points" not in st.session_state:
     st.session_state["points"] = {"x": [], "y": []}
-
-POINT_COLOR      = "cyan"
-REGRESSION_COLOR = "springgreen"
-RESIDUAL_COLOR   = "tomato"
-CI_COLOR         = "gold"
-PI_COLOR         = "magenta"
-CI_FILL_COLOR    = css_to_rgba(CI_COLOR, 0.25)
-PI_FILL_COLOR    = css_to_rgba(PI_COLOR, 0.25)
-
 
 def compute_intervals(X_flat, y, x_range, alpha):
     """
@@ -145,7 +138,7 @@ with st.sidebar:
     alpha_interval = st.number_input(
         "Significantieniveau α",
         min_value=0.01, max_value=0.20, value=0.05, step=0.01,
-        help="Gebruik α = 0.05 voor een 95%-interval. Geldt voor zowel het betrouwbaarheids- als voorspellingsinterval."
+        help="Gebruik $\\alpha = 0.05$ voor een $95\%$-interval. Geldt voor zowel het betrouwbaarheids- als voorspellingsinterval."
     )
     conf_pct = int(100 * (1 - alpha_interval))
 
@@ -205,7 +198,7 @@ if n_points >= 2:
     <div class="stats-row-2">
         <div class="stat-card kritiek">
             <span class="stat-label">Regressievergelijking</span>
-            <span class="stat-value">Ŷ = {slope:.2f}X {sign} {abs(intercept):.2f}</span>
+            <span class="stat-value">Ŷ = {slope:.4f}X {sign} {abs(intercept):.4f}</span>
             <span class="stat-desc">Geschatte lineaire relatie</span>
         </div>
         <div class="stat-card beta">
@@ -255,16 +248,14 @@ fig = go.Figure()
 
 if n_points == 0:
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title=dict(
             text="Voeg datapunten toe via de zijbalk.",
-            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        yaxis=dict(title=dict(text="Y", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
     )
 
 elif n_points == 1:
@@ -275,15 +266,13 @@ elif n_points == 1:
         showlegend=False
     ))
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title=dict(
             text="Voeg minstens twee punten toe voor een regressielijn.", 
-            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee")),
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR)),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        yaxis=dict(title=dict(text="Y", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
     )
 
 else:
@@ -326,7 +315,7 @@ else:
         x=x_range, y=y_pred_line,
         mode="lines",
         line=dict(color=REGRESSION_COLOR, width=3),
-        name=f"Ŷ = {slope:.2f}X {'+' if intercept >= 0 else '-'} {abs(intercept):.2f}",
+        name=f"Ŷ = {slope:.4f}X {'+' if intercept >= 0 else '-'} {abs(intercept):.4f}",
         showlegend=False
     ))
 
@@ -343,17 +332,15 @@ else:
         st.warning("Minimaal 3 datapunten nodig om intervallen te berekenen.")
 
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title=dict(
-            text=f"Regressielijn: Ŷ = {slope:.2f}X {'+' if intercept >= 0 else '-'} {abs(intercept):.2f}  |  R² = {r_squared:.4f}",
-            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+            text=f"Regressielijn: Ŷ = {slope:.4f}X {'+' if intercept >= 0 else '-'} {abs(intercept):.4f} ", 
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        yaxis=dict(title=dict(text="Y", font=dict(size=30)), tickfont=dict(size=25), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        legend=dict(font=dict(size=18)),
+        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE)),
+        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE)),
+        legend=dict(font=dict(size=ANNOTATION_FONT_SIZE)),
     )
 
 st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
@@ -398,35 +385,58 @@ $$
 
 De rode stippellijnen in de plot tonen deze residuen.
 
-## 📈 Pearson's correlatieco\"effici\"ent $r$
+## 📈 Pearson's correlatiecoëfficiënt $r$
 
 De **correlatiecoefficient van Pearson** geeft aan in hoeverre er lineaire samenhang is tussen de twee ratiovariabelen $X$ en $Y$:
 
 $$
-r^2 = \frac{\bar{xy} - \bar{x}\cdot\bar{y}}{(\bar{y^2} - \bar{y})^2 \cdot (\bar{x^2} - \bar{x}^2)^2}
+r^2 = \frac{\overline{xy} - \overline{x}\cdot\overline{y}}{\sqrt{(\overline{y^2} - \overline{y}^2) \cdot (\overline{x^2} - \overline{x}^2)}}
 $$
 
-- $r = -1$: het model heeft een perfecte negatieve lineaire samenhang
-- $r = 0$: het model heeft geen lineaire samenhang
-- $r = 1$: het model heeft een perfecte positieve lineaire samenhang
+- $r = -1$: het model heeft een perfecte negatieve lineaire samenhang,
+- $r = 0$: het model heeft geen lineaire samenhang,
+- $r = 1$: het model heeft een perfecte positieve lineaire samenhang.
 
 ## 📐 Betrouwbaarheidsinterval voor E(Y|X)
 
-Het **betrouwbaarheidsinterval** (gouden band) toont de onzekerheid over de *gemiddelde* waarde van $Y$ voor een gegeven $X=x_0$:
+Het **betrouwbaarheidsinterval** (gouden band) toont de onzekerheid over de *gemiddelde* waarde van $Y$ voor een gegeven $X=x_0$.
 
+Hiervoor berekenen we eerst een schatting $s_{\varepsilon}^2$ voor de variantie $\sigma^2$ van de storingsterm:
 $$
-\hat{Y} \pm t_{\alpha/2,\, n-2} \cdot s \cdot \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}
+    s_{\varepsilon}^2 = \frac{\sum e_i^2}{n - 2} = \frac{\sum \left(y_i - (b_0 + b_1 \cdot x_i)\right)^2}{n - 2}=  \frac{n}{n-2} \cdot \left( \overline{y^2} - b_0 \cdot \overline{y} - b_1 \cdot \overline{xy} \right) 
 $$
+Vervolgens berekenen we een schatting $s_{\mu}$ voor de variantie in het gemiddelde $E(Y|X=x_0)$:
+$$
+    s_{\mu} = s_{\varepsilon} \cdot \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}.
+$$
+
+Het **betrouwbaarheidsinterval** over de gemiddelde waarde van $Y$ voor een gegeven $X = x_0$ is dan gelijk aan
+$$
+    [Y_0 - t \cdot s_{\mu},\quad Y_0 + t \cdot s_{\mu}].
+$$
+waarbij
+- $Y_0 = b_0 + b_1 \cdot x_0$, en
+- $t = \text{InvT}(\text{area}=1 - \frac{\alpha}{2}, \text{df} = n - 1)$.
 
 ## 🔮 Voorspellingsinterval voor Y gegeven X
 
-Het **voorspellingsinterval** (paarse band) is breder: het toont de onzekerheid over een *individuele nieuwe waarneming* van $Y$ voor een gegeven $X = x_0$:
-
+Het **voorspellingsinterval** (paarse band) is breder: het toont de onzekerheid over een *individuele nieuwe waarneming* van $Y$ voor een gegeven $X = x_0$.
+De variantie over een individuele waarneming is namelijk groter dan de variantie over een gemiddelde van meerdere waarnemingen, omdat in dat laatste geval uitschieters gedempt worden.
+We berekenen een schatting $s_{f}$ voor de variantie in een individuele waarde voor $Y$ gegeven $X = x_0$ als volgt:
 $$
-\hat{Y} \pm t_{\alpha/2,\, n-2} \cdot s \cdot \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}
+    s_{f} = s_{\varepsilon} \cdot \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i} (x_i - \bar{x})^2}}.
 $$
+Merk op dat $s_{f} > s_{\mu}$, aangezien er een extra $+1$ onder de wortel staat!
+Het **voorspellingsinterval** over de gemiddelde waarde van $Y$ voor een gegeven $X = x_0$ is dan gelijk aan
+$$
+    [Y_0 - t \cdot s_{f},\quad Y_0 + t \cdot s_{f}].
+$$
+waarbij
+- $Y_0 = b_0 + b_1 \cdot x_0$, en
+- $t = \text{InvT}(\text{area}=1 - \frac{\alpha}{2}, \text{df} = n - 1)$.
 
-Het voorspellingsinterval is altijd breder dan het betrouwbaarheidsinterval (let op de extra 1 onder de wortel), omdat de spreiding steeds kleiner wordt naarmate je naar gemiddeldes van grotere steekproeven kijkt. Uit de centrale limietstelling volgt immers dat steekproefgemiddelden bij benadering normaal verdeeld zijn, maar de standaardafwijking wordt dan gedeeld door de wortel van de steekproefgrootte.
+Tenslotte blijkt uit de formules voor $s_{\mu}$ en $s_{f}$ dat de varianties kleiner worden naarmate de steekproefgrootte $n$ groter wordt, omdat er gedeeld wordt door $n$.
+Met ander woorden: hoe groter de steekproef, hoe smaller het interval dat benodigd is om het betrouwbaarheidsniveau te waarborgen.
 """
 
 show_explanation(explanation_title, explanation_md)

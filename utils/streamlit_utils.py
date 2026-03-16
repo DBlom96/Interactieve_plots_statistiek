@@ -22,7 +22,7 @@ def page_header(title: str, subtitle: str = "") -> None:
     """
     if subtitle:
         st.markdown(
-            f"<p style='font-size:11px; text-transform:uppercase; letter-spacing:0.10em;"
+            f"<p style='font-size:14px; text-transform:uppercase; letter-spacing:0.10em;"
             f" color:rgba(168,218,220,0.55); margin-bottom:0.1rem; font-family:\"JetBrains Mono\",monospace;'>"
             f"{subtitle}</p>",
             unsafe_allow_html=True,

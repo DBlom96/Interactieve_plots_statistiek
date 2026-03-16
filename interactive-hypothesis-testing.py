@@ -5,6 +5,7 @@ from scipy.stats import norm
 
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.constants import *
 from dataclasses import dataclass
 
 # ----------------------------------
@@ -40,8 +41,6 @@ class TestRegions:
 @st.cache_data
 def generate_distributions(mu0, mu1, sigma, n, points=600):
     sample_std = sigma / np.sqrt(n)
-
-    center = (mu0 + mu1) / 2
     spread = abs(mu1 - mu0) + 4 * sample_std
 
     x = np.linspace(mu0 - spread, mu0 + spread, points)
@@ -92,7 +91,6 @@ def add_shaded_region(fig, x, y, mask, color, name, showlegend=True):
             y=y[mask],
             fill="tozeroy",
             fillcolor=css_to_rgba(color, 0.4),
-            line=dict(color="rgba(0,0,0,0)"),
             name=name,
             showlegend=showlegend
         )
@@ -115,13 +113,15 @@ def add_text(fig, text, x, y, color):
         y=y,
         text=text,
         showarrow=False,
-        font=dict(size=20, color=color)
+        font=dict(size=ANNOTATION_FONT_SIZE, color=color)
     )
 
 
 # ----------------------------------
 # PARAMETERS
 # ----------------------------------
+
+page_header("📊 Hypothesetoetsen", "Normale verdeling")
 
 st.title("📊 Hypothesetoetsen voor het gemiddelde $\\mu$ van een normale verdeling")
 with st.sidebar:
@@ -176,17 +176,7 @@ st.markdown(f"""
 # PLOTTING
 # -------------------------------
 
-H0_COLOR = "gold"
-H1_COLOR = "magenta"
-ACCEPTABLE_COLOR = "springgreen"
-CRITICAL_COLOR = "tomato"
-ALPHA_COLOR = CRITICAL_COLOR
-BETA_COLOR = "#a8dadc"
-
 fig = go.Figure()
-
-add_curve(fig, x, pdf0, H0_COLOR, name=r"H<sub>0</sub>", showlegend=False)
-add_curve(fig, x, pdf1, H1_COLOR, name=r"H<sub>1</sub>", showlegend=False)
 
 # mean lines
 
@@ -273,37 +263,34 @@ else:  # linkszijdig
     add_text(fig, "Kritiek gebied", (xmin + left) / 2, 2 * yline, CRITICAL_COLOR)
     add_text(fig, "Acceptatiegebied", (left + xmax) / 2, 2 * yline, ACCEPTABLE_COLOR)
 
+add_curve(fig, x, pdf0, H0_COLOR, name=r"H<sub>0</sub>", showlegend=False)
+add_curve(fig, x, pdf1, H1_COLOR, name=r"H<sub>1</sub>", showlegend=False)
+
 # --------------------------------------------------
 # LAYOUT
 # --------------------------------------------------
 if test_type == "tweezijdig":
-    title_text = f"Tweezijdige toets (H<sub>0</sub>: &mu; = {mu0} versus H<sub>1</sub>: &mu; &#8800; {mu0})"
+    title_text = f"Tweezijdige toets (<span style='color:gold;'>H<sub>0</sub>: &mu; = {mu0}</span> versus <span style='color:magenta;'>H<sub>1</sub>: &mu; &#8800; {mu0}</span>)"
 elif test_type == "linkszijdig":
     title_text = f"Linkszijdige toets (<span style='color:gold;'>H<sub>0</sub>: &mu; &#8805; {mu0}</span> versus <span style='color:magenta;'>H<sub>1</sub>: &mu; < {mu0}</span>)"
 elif test_type == "rechtszijdig":
-    title_text = f"Rechtszijdige toets (H<sub>0</sub>: &mu; &#8804; {mu0} versus H<sub>1</sub>: &mu; > {mu0})"
-fig.update_layout(
+    title_text = f"Rechtszijdige toets (<span style='color:gold;'>H<sub>0</sub>: &mu; &#8804; {mu0}</span> versus <span style='color:magenta;'>H<sub>1</sub>: &mu; > {mu0}</span>)"
 
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+fig.update_layout(
+    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     title=dict(
         text=title_text,
-        font=dict(size=35, family="JetBrains Mono, monospace", color="#f1faee")
+        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR)
     ),
-
     xaxis=dict(
-        title=dict(text="x", font=dict(size=25)),
-        tickfont=dict(size=25)
+        title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
-
     yaxis=dict(
-        title=dict(text="Kansdichtheidsfunctie", font=dict(size=25)),
-        tickfont=dict(size=25)
+        title=dict(text="Kansdichtheidsfunctie", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
-
-    legend=dict(font=dict(size=30), xanchor="right", yanchor="top"),
-
+    legend=dict(font=dict(size=AXIS_FONT_SIZE), xanchor="right", yanchor="top"),
     height=750
 )
 
@@ -313,7 +300,7 @@ st.plotly_chart(
     config=dict(displayModeBar=False)
 )
 
-explanation_title = "📚 Uitleg: hypothesetoetsen"
+explanation_title = "📚 Hypothesetoetsen"
 explanation_md=r"""
 # 📊 Hypothesetoetsen
 

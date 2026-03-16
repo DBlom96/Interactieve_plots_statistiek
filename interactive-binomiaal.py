@@ -2,8 +2,10 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import binom
+
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, page_header
+from utils.constants import *
 
 st.set_page_config(
     page_title="Visualisatie van de binomiale verdeling",
@@ -20,7 +22,7 @@ load_css()
 # PARAMETERS
 # ----------------------------------
 
-page_header("📊 Binomiale verdeling", "Kansverdelingen · Discreet")
+page_header("📊 Binomiale verdeling", "Discrete kansverdeling")
 with st.sidebar:
     st.header("Parameters")
     
@@ -48,7 +50,7 @@ fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode='markers',
-    marker=dict(color="gold"),
+    marker=dict(color=H0_COLOR),
     showlegend=False
 ))
 
@@ -57,25 +59,23 @@ for xi, yi in zip(x, y):
         x=[xi, xi],
         y=[0, yi],
         mode='lines',
-        line=dict(color='gold',width=2),
+        line=dict(color=H0_COLOR, width=2),
         showlegend=False
     ))
 
 fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     title=dict(
         text=(f"Binomiale verdeling met n = {n_slider} en p = {p_slider}"),
-        font=dict(size=40, family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
     ),
     xaxis=dict(
-        title=dict(text="Aantal successen k", font=dict(size=30)),
-        tickfont=dict(size=25)
+        title=dict(text="Aantal successen k", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
     yaxis = dict(
-        title=dict(text = "Kansfunctie P(X=k)", font=dict(size=30)),
-        tickfont=dict(size=25)
+        title=dict(text = "Kansfunctie P(X=k)", font=dict(size=AXIS_FONT_SIZE)),
+        tickfont=dict(size=TICK_FONT_SIZE)
     ),
     height=600,
 )

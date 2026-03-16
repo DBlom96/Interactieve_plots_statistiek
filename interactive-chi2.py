@@ -5,6 +5,7 @@ from scipy.stats import chi2
 
 from utils.explanation_utils import show_explanation
 from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.constants import *
 
 st.set_page_config(
     page_title="Visualisatie van de chikwadraatverdeling",
@@ -20,7 +21,7 @@ load_css()
 # PARAMETERS
 # ----------------------------------
 
-page_header("📊 Chikwadraatverdeling", "Hypothesetoetsen · Continu")
+page_header("📊 Chikwadraatverdeling", "Continue kansverdelingen")
 with st.sidebar:
     st.header("Parameters")
 
@@ -48,10 +49,7 @@ def draw_chi2_distribution(df):
 # --------------------------------
 
 x, y = draw_chi2_distribution(df)
-ACCEPTABLE_COLOR = "springgreen" # "neongreen"
-DIST_COLOR = "gold"
-P_VALUE_COLOR = css_to_rgba("#a8dadc", 0.4) # "cyan"
-CRITICAL_COLOR = "tomato" # "tomato red"
+P_VALUE_COLOR = css_to_rgba(BETA_COLOR, 0.4) # "cyan"
 CRITICAL_SHADE_COLOR = css_to_rgba(CRITICAL_COLOR, 0.4)
 
 fig = go.Figure()
@@ -60,24 +58,24 @@ fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode='lines',
-    line=dict(color=DIST_COLOR),
+    line=dict(color=H0_COLOR),
     showlegend=False
 ))
 
 if method == "Plot":
     fig.update_layout(
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title = dict(
             text=(f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}."),
-            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         xaxis = dict(
-            title=dict(text="x", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         yaxis = dict(
-            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         height=600
     )
@@ -94,7 +92,7 @@ if method == "Kritiek gebied":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
-        line=dict(color=DIST_COLOR, dash='dash'),
+        line=dict(color=H0_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -113,9 +111,9 @@ if method == "Kritiek gebied":
         x=[toetsingsgrootheid],
         y=[ylines * 2],
         mode='text',
-        marker=dict(color=DIST_COLOR, size=10),
+        marker=dict(color=H0_COLOR, size=ANNOTATION_FONT_SIZE),
         text=r"&#967;<sup>2</sup>",
-        textfont=dict(size=20, color=DIST_COLOR),
+        textfont=dict(size=ANNOTATION_FONT_SIZE, color=H0_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -142,7 +140,7 @@ if method == "Kritiek gebied":
         y=[ylines * 2.5],
         mode='text',
         text='Acceptatiegebied',
-        textfont=dict(color=ACCEPTABLE_COLOR, size=20),
+        textfont=dict(color=ACCEPTABLE_COLOR, size=ANNOTATION_FONT_SIZE),
         showlegend=False
     ))
 
@@ -151,7 +149,7 @@ if method == "Kritiek gebied":
         y=[ylines * 2.5],
         mode='text',
         text='Kritiek gebied',
-        textfont=dict(color=CRITICAL_COLOR, size=20),
+        textfont=dict(color=CRITICAL_COLOR, size=ANNOTATION_FONT_SIZE),
         showlegend=False
     ))
  
@@ -189,18 +187,18 @@ if method == "Kritiek gebied":
 
 
     fig.update_layout(
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title = dict(
             text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}.<br><sup>&#967;<sup>2</sup> = {toetsingsgrootheid:.4f} ligt in het " + ("kritieke gebied" if toetsingsgrootheid > grens else "acceptatiegebied") + ".</sup>",
-            font=dict(size=30, family="JetBrains Mono, monospace", color="#f1faee"),
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         xaxis = dict(
-            title=dict(text="x", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         yaxis = dict(
-            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         height=600
     )
@@ -218,7 +216,7 @@ if method == "p-waarde":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
-        line=dict(color=DIST_COLOR, dash='dash'),
+        line=dict(color=H0_COLOR, dash='dash'),
         showlegend=False
     ))
 
@@ -246,7 +244,7 @@ if method == "p-waarde":
         x=[toetsingsgrootheid, toetsingsgrootheid],
         y=[0, chi2.pdf(toetsingsgrootheid, df=df)],
         mode='lines',
-        line=dict(color=DIST_COLOR, dash='dash', width=3),
+        line=dict(color=H0_COLOR, dash='dash', width=3),
         showlegend=False
     ))
 
@@ -262,9 +260,9 @@ if method == "p-waarde":
         x=[toetsingsgrootheid],
         y=[ytext],
         mode='text',
-        marker=dict(color=DIST_COLOR, size=10),
+        marker=dict(color=H0_COLOR, size=10),
         text=r"&#967;<sup>2</sup>",
-        textfont=dict(size=30, color=DIST_COLOR),
+        textfont=dict(size=AXIS_FONT_SIZE, color=H0_COLOR),
         textposition="top center",
         showlegend=False
     ))
@@ -279,18 +277,18 @@ if method == "p-waarde":
     ))
 
     fig.update_layout(
-        font=dict(family="JetBrains Mono, monospace", color="#f1faee"),
+        font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title = dict(
             text=f"Chikwadraatverdeling met df = {df} {"vrijheidsgraden" if df > 1 else "vrijheidsgraad"}.",
-            font=dict(size=30,family="JetBrains Mono, monospace", color="#f1faee"),
+            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         xaxis = dict(
-            title=dict(text="x", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         yaxis = dict(
-            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=25)),
-            tickfont=dict(size=20),    
+            title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=AXIS_FONT_SIZE)),
+            tickfont=dict(size=TICK_FONT_SIZE),    
         ),
         height=600
     )
