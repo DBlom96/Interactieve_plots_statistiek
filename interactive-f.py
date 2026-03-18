@@ -52,7 +52,6 @@ def draw_f_distribution(df1, df2, xmax):
 xmax = f.ppf(0.99, dfn=df1, dfd=df2)
 x, y = draw_f_distribution(df1, df2, xmax)
 P_VALUE_COLOR = css_to_rgba(BETA_COLOR, 0.4) # "cyan"
-CRITICAL_COLOR = "tomato" # "tomato red"
 CRITICAL_SHADE_COLOR = css_to_rgba(CRITICAL_COLOR, 0.4)
 
 YTEXT = -0.2 * max(y)  # Position for the horizontal line
