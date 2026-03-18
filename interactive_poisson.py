@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 from scipy.stats import binom, poisson
 
 from utils.explanation_utils import show_explanation
@@ -95,6 +96,9 @@ apply_dark_style(
 x_max = k_max - 1
 ax_binom.set_xlim(-0.5, x_max + 0.5)
 ax_poisson.set_xlim(-0.5, x_max + 0.5)
+ax_binom.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+ax_poisson.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+
 
 plt.tight_layout(pad=2.0)
 st.pyplot(fig, use_container_width=True)
