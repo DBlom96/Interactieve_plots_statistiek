@@ -1,11 +1,10 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
 from scipy.stats import binom, poisson
 
 from utils.explanation_utils import show_explanation
-from utils.streamlit_utils import load_css, page_header
+from utils.streamlit_utils import load_css, page_header, apply_dark_style, stem_plot
 from utils.constants import *
 
 st.set_page_config(
@@ -19,165 +18,140 @@ st.set_page_config(
 # ----------------------------------
 load_css()
 
-# ------------------------------
+# ----------------------------------
 # PARAMETERS
-# ------------------------------
-
-page_header("📊 Connectie tussen de binomiale en Poissonverdeling", "Discrete kansverdelingen")
+# ----------------------------------
+page_header("📊 Binomiaal & Poisson", "Discrete kansverdelingen")
 
 with st.sidebar:
     st.header("Parameters")
+    lambda_input = st.number_input(r"$\lambda$:", min_value=0.1, value=1.0, step=0.5)
+    n_input      = st.number_input(r"Aantal Bernoulli-experimenten $n$:", min_value=1, value=20)
 
-    lambda_input = st.number_input(label="$\\lambda$", min_value=0.1, value=1.0)
-    n_input = st.number_input(label="Aantal Bernoulli-experimenten $n$", min_value=1, value=20)
+# ----------------------------------
+# COMPUTATIONS
+# ----------------------------------
+p_input = lambda_input / n_input
+k_max   = max(n_input + 1, int(lambda_input + 4 * np.sqrt(lambda_input)))
+k       = np.arange(0, k_max)
 
-# ------------------------------
-# SAMPLING
-# ------------------------------
+y_binom   = binom.pmf(k, n_input, p_input)
+y_poisson = poisson.pmf(k, lambda_input)
 
-# Limit maximum x-value to a reasonable value
-k_max = max(n_input + 1, int(lambda_input + 4 * np.sqrt(lambda_input))) 
+# ----------------------------------
+# STAT CARDS
+# ----------------------------------
+st.markdown(f"""
+<div class="stats-row-4">
+  <div class="stat-card alpha">
+    <span class="stat-label">Succeskans <span style="text-transform: lowercase"><i>p</i> = &lambda; / n</span></span>
+    <span class="stat-value">{p_input:.4f}</span>
+    <span class="stat-desc">Klein getal (zeldzame gebeurtenis)</span>
+  </div>
+  <div class="stat-card beta">
+    <span class="stat-label">Verwachtingswaarde binomiaal</span>
+    <span class="stat-value">{n_input * p_input:.2f}</span>
+    <span class="stat-desc"><i>n</i> &middot; <i>p</i> = &lambda;</span>
+  </div>
+  <div class="stat-card power">
+    <span class="stat-label">Verwachtingswaarde Poisson</span>
+    <span class="stat-value">{lambda_input:.2f}</span>
+    <span class="stat-desc">&lambda;</span>
+  </div>
+  <div class="stat-card bi">
+    <span class="stat-label">Max. afwijking</span>
+    <span class="stat-value">{np.max(np.abs(y_binom - y_poisson)):.4f}</span>
+    <span class="stat-desc">max|P<sub>binom</sub> &minus; P<sub>Poisson</sub>|</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-def draw_sample_binomial(n, lambda_val):
-    x = np.arange(0, k_max)  # Mogelijke uitkomsten
-    y = binom.pmf(x, n, lambda_val / n)  # Binomiale kansfunctie
-    return x, y
+# ----------------------------------
+# FIGURE
+# ----------------------------------
+fig, (ax_binom, ax_poisson) = plt.subplots(1, 2, figsize=(14, 5))
 
-def draw_sample_poisson(lambda_val):
-    x = np.arange(0, k_max)  # Mogelijke uitkomsten
-    y = poisson.pmf(x, lambda_val)  # Poisson-kansfunctie
-    return x, y
-
-# ------------------------------
-# PLOTTING
-# ------------------------------
-
-x_binom, y_binom = draw_sample_binomial(n_input, lambda_input)
-x_poisson, y_poisson = draw_sample_poisson(lambda_input)
-
-subtitle1 = f"Binomiaal(n = {n_input}, p = &#955; / n = {lambda_input / n_input:.2f})"
-subtitle2 = f"Poisson(&#955; = " + f"{lambda_input})"
-fig = make_subplots(rows=1, cols=2, subplot_titles=(subtitle1, subtitle2) )
-
-for annotation in fig['layout']['annotations']:
-    annotation['font'] = dict(size=TITLE_FONT_SIZE)
-    annotation['y'] += 0.1
-
-# Voeg naalddiagrammen toe voor de binomiale verdeling en de Poissonverdeling
-fig.add_trace(go.Scatter(x=x_binom, y=y_binom, mode='markers', marker=dict(color=H0_COLOR), showlegend=False), row=1, col=1)
-fig.add_trace(go.Scatter(x=x_poisson, y=y_poisson, mode='markers', marker=dict(color=H1_COLOR), showlegend=False), row=1, col=2)
-
-for xi, yi in zip(x_binom, y_binom):
-    fig.add_trace(go.Scatter(
-        x=[xi, xi],
-        y=[0, yi],
-        mode='lines',
-        line=dict(color=H0_COLOR, width=2),
-        showlegend=False
-    ), row=1, col=1)
-
-for xi, yi in zip(x_poisson, y_poisson):
-    fig.add_trace(go.Scatter(
-        x=[xi, xi],
-        y=[0, yi],
-        mode='lines',
-        line=dict(color=H1_COLOR, width=2),
-        showlegend=False
-    ), row=1, col=2)
-
-# Update the layout of the figure
-fig.update_layout(
-    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
-    height=600
+# --- Binomial ---
+stem_plot(ax_binom, k, y_binom, H0_COLOR)
+apply_dark_style(
+    fig=fig,
+    ax=ax_binom,
+    title=rf"Binomiaal$(n={n_input},\; p={p_input:.4f})$",
+    xlabel=r"Aantal successen $k$",
+    ylabel=r"Kansfunctie $P(X = k)$"
 )
 
-for (col, text) in [(1, "Aantal successen k"), (2, "Aantal gebeurtenissen k")]:
-    # Update de titel van de y-assen
-    fig.update_xaxes(
-        title_text=text,
-        title_font=dict(size=AXIS_FONT_SIZE),
-        tickfont=dict(size=TICK_FONT_SIZE),
-        row=1, col=col
-    )
+# --- Poisson ---
+stem_plot(ax_poisson, k, y_poisson, H1_COLOR)
+apply_dark_style(
+    fig=fig,
+    ax=ax_poisson,
+    title=rf"Poisson$(\lambda={lambda_input})$",
+    xlabel=r"Aantal gebeurtenissen $k$",
+    ylabel=r"Kansfunctie $P(X = k)$"
+)
 
-    # Update de titel van de y-assen
-    fig.update_yaxes(
-        title_text="Kansfunctie f(k)",
-        title_font=dict(size=AXIS_FONT_SIZE),
-        tickfont=dict(size=TICK_FONT_SIZE),
-        row=1, col=col
-    )
+# Shared x-axis range
+x_max = k_max - 1
+ax_binom.set_xlim(-0.5, x_max + 0.5)
+ax_poisson.set_xlim(-0.5, x_max + 0.5)
 
-st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+plt.tight_layout(pad=2.0)
+st.pyplot(fig, use_container_width=True)
+plt.close(fig)
 
+# ----------------------------------
+# EXPLANATION
+# ----------------------------------
 explanation_title = "📚 Connectie tussen de binomiale en Poissonverdeling"
-explanation_md=r"""
-# 📚 Connectie tussen de binomiale en Poissonverdeling
-
+explanation_markdown = r"""
 ## 📌 De binomiale verdeling in het kort
 
-De **binomiale verdeling** beschrijft de kansvariabele $X$ die het aantal successen telt in een vast aantal onafhankelijke Bernoulli-experimenten (*$n$*).
-Een Bernoulli-experiment is een kansexperiment met een uitkomstenruimte bestaande uit twee mogelijke uitkomsten (succes ($1$) of mislukking ($0$)).
-De succeskans bij elk afzonderlijk Bernoulli-experiment is constant en gelijk aan (*$p$*). De kansfunctie die de binomiale kansverdeling beschrijft is:
+De **binomiale verdeling** beschrijft de kansvariabele $X$ die het aantal successen telt in een vast
+aantal onafhankelijke Bernoulli-experimenten ($n$). De succeskans bij elk afzonderlijk experiment is
+constant en gelijk aan $p$. De kansfunctie is:
 
 $$
     P(X = k) = \binom{n}{k} \cdot p^k \cdot (1 - p)^{n - k}
 $$
 
-waarbij:
-- *$n$*: aantal onafhankelijke Bernoulli-experimenten   
-- *$p$*: succeskans per Bernoulli-experiment  
-- *$k$*: aantal successen  
-
 ---
 
 ## 📌 De Poissonverdeling in het kort
 
-De **Poissonverdeling** beschrijft het aantal gebeurtenissen gedurende een vaste meeteenheid (vaak tijd of ruimte), wanneer deze gebeurtenissen:
-- onafhankelijk van elkaar plaatsvinden,
-- met een constante gemiddelde snelheid ($\lambda$ per meeteenheid) optreden.
-
-De kansfunctie die de Poissonverdeling beschrijft is:
+De **Poissonverdeling** beschrijft het aantal gebeurtenissen gedurende een vaste meeteenheid wanneer
+deze gebeurtenissen onafhankelijk van elkaar plaatsvinden met een constante gemiddelde snelheid
+$\lambda$. De kansfunctie is:
 
 $$
     P(X = k) = \frac{\lambda^k \cdot e^{-\lambda}}{k!}
 $$
 
-waarbij:
-- *$$\lambda$$*: gemiddeld aantal gebeurtenissen  
-- *$k$*: aantal gebeurtenissen  
-
 ---
 
-## 🔗 De connectie tussen binomiaal en Poisson
+## 🔗 De connectie
 
 De **Poissonverdeling is een limietgeval van de binomiale verdeling**, onder de volgende voorwaarden:
-- *$n$* is groot  
-- *$p$* is klein  
-- *$\lambda = n \cdot p$* is constant
+- $n$ is groot
+- $p$ is klein
+- $\lambda = n \cdot p$ is constant
 
-In de limiet geldt dat de kansfunctie van de binomiale verdeling die van de Poissonverdeling benadert (dat wil zeggen, voor elke waarde van $k$ is de waarde van de kansfunctie bij benadering hetzelfde voor beide verdelingen): 
+In de limiet geldt:
+$$
+    \text{Binomiaal}\!\left(n,\, \frac{\lambda}{n}\right) \longrightarrow \text{Poisson}(\lambda)
+$$
 
-$$
-    \text{Binomiaal}(n, \frac{\lambda}{n}) \longrightarrow \text{Poisson}(\lambda)
-$$
+**Voorbeeld:** bij $n = 10.000$ producten en kans $p = 0.0002$ op een defect geldt
+$\lambda = n \cdot p = 2$. Het aantal defecten kan dan worden benaderd met Poisson$(\lambda = 2)$.
 
-**Voorbeeld:**  
-Bij 10.000 producten en een kans van 0.0002 op een defect geldt dat
-$$
-    \lambda = n \cdot p = 10.000 \cdot 0.0002 = 2.
-$$
-Dan kan het aantal defecten bij benadering worden gemodelleerd met een Poissonverdeling met $\lambda = 2$.
-
+Controleer dit voor jezelf door te kijken wat er gebeurt voor een specifieke $\lambda$ als je het aantal Bernoulli-experimenten $n$ verhoogt.
 ---
 
 ## ✅ Waarom deze benadering nuttig is
 
-- Wanneer het aantal experimenten $n$ groot wordt, zijn binomiaalco&euml;ffici&euml;nten $\binom{n}{k}$ heel lastig te berekenen.  
-- Kansen uitrekenen met de Poissonverdeling is wiskundig eenvoudiger.  
+- Voor grote $n$ zijn binomiaalcoëfficiënten $\binom{n}{k}$ lastig te berekenen.
+- Kansen uitrekenen met de Poissonverdeling is wiskundig eenvoudiger.
 - Veel praktische toepassingen voldoen aan de voorwaarden voor deze benadering.
 """
 
-# Show the explanation in the Streamlit app
-show_explanation(explanation_title, explanation_md)
-
+show_explanation(explanation_title, explanation_markdown)

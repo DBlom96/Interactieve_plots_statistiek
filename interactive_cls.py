@@ -117,13 +117,24 @@ st.markdown(f"""
 
 fig = go.Figure()
 
+# Draw the bins of the histogram
 fig.add_trace(go.Bar(
     x=bin_centers,
     y=counts,
     width=bin_width * 0.95,
     marker=dict(color=HISTOGRAM_BAR_COLOR, opacity=0.75),
     name="Steekproefgemiddelden",
+    showlegend=False
 ))
+
+# Draw the normal curve that best fits the histogram
+fig.add_trace(go.Scatter(
+    x=x_curve,
+    y=curve_y,
+    mode="lines",
+    line=dict(color=H0_COLOR, width=2.5, dash="dash"),
+    name=f"N(μ={true_mu:.2f}, σ/√n={true_sigma:.3f})",
+)) 
 
 obs = "observatie" if sample_size == 1 else "observaties"
 fig.update_layout(
