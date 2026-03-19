@@ -100,10 +100,10 @@ with st.sidebar:
 
     # ----- Manual input -----
     st.subheader("✏️ Handmatige invoer")
-    point_input = st.text_input("Voer een punt x, y in (voorbeeld: 2.5, 5.1)", value="0.0, 0.0")
+    point_input = st.text_input("Voer een punt $x$, $y$ in (voorbeeld: 2.5, 5.1)", value="0.0, 0.0")
     col1, col2 = st.columns(2, vertical_alignment="center")
-    add_point_button    = col1.button("➕ Punt toevoegen",         use_container_width=True)
-    remove_point_button = col2.button("🗑️ Laatste punt verwijderen", use_container_width=True)
+    add_point_button    = col1.button("➕ Punt toevoegen",         width="stretch")
+    remove_point_button = col2.button("🗑️ Laatste punt verwijderen", width="stretch")
 
     if add_point_button:
         try:
@@ -117,7 +117,7 @@ with st.sidebar:
         st.session_state["points"]["x"].pop()
         st.session_state["points"]["y"].pop()
 
-    if st.button("🗑️ Alles wissen", use_container_width=True):
+    if st.button("🗑️ Alles wissen", width="stretch"):
         st.session_state["points"] = {"x": [], "y": []}
 
     st.divider()
@@ -125,18 +125,18 @@ with st.sidebar:
     # ----- Interval toggles -----
     st.subheader("📐 Intervallen")
     show_ci = st.toggle(
-        "Betrouwbaarheidsinterval voor E[Y|X]",
+        "Betrouwbaarheidsinterval voor $E(Y|X)$",
         value=False,
         help="Toont het interval waarbinnen de gemiddelde Y-waarde voor een gegeven X valt."
     )
     show_pi = st.toggle(
-        "Voorspellingsinterval voor Y gegeven X",
+        "Voorspellingsinterval voor $Y | X$",
         value=False,
         help="Toont het interval waarbinnen een nieuwe individuele Y-waarde voor een gegeven X valt."
     )
 
     alpha_interval = st.number_input(
-        "Significantieniveau α",
+        "Significantieniveau $\\alpha$",
         min_value=0.01, max_value=0.20, value=0.05, step=0.01,
         help="Gebruik $\\alpha = 0.05$ voor een $95\%$-interval. Geldt voor zowel het betrouwbaarheids- als voorspellingsinterval."
     )
@@ -198,11 +198,11 @@ if n_points >= 2:
     <div class="stats-row-2">
         <div class="stat-card kritiek">
             <span class="stat-label">Regressievergelijking</span>
-            <span class="stat-value">Ŷ = {slope:.4f}X {sign} {abs(intercept):.4f}</span>
+            <span class="stat-value"><i>Ŷ</i> = {slope:.4f}<i>X</i> {sign} {abs(intercept):.4f}</span>
             <span class="stat-desc">Geschatte lineaire relatie</span>
         </div>
         <div class="stat-card beta">
-            <span class="stat-label">Pearson's r</span>
+            <span class="stat-label">Pearson's correlatiecoëfficiënt {to_lowercase(R_HTML)}</span>
             <span class="stat-value">{pearson_r:.4f}</span>
             <span class="stat-desc">Sterkte en richting van de lineaire samenhang</span>
         </div>
@@ -211,15 +211,15 @@ if n_points >= 2:
 
     # Row 2: CI and PI at x_mean — always shown, values filled in when available
     if n_points >= 3:
-        ci_label = f"{conf_pct_cards}%-betrouwbaarheidsinterval voor E(Y | X = x&#772;)"
-        pi_label = f"{conf_pct_cards}%-voorspellingsinterval voor Y | X = x&#772;"
+        ci_label = f"{conf_pct_cards}%-betrouwbaarheidsinterval voor <i>E(Y | X)</i>"
+        pi_label = f"{conf_pct_cards}%-voorspellingsinterval voor <i>Y | X</i>"
         ci_value = f"[{ci_lo_mean[0]:.4f},  {ci_hi_mean[0]:.4f}]"
         pi_value = f"[{pi_lo_mean[0]:.4f},  {pi_hi_mean[0]:.4f}]"
-        ci_desc  = f"Bij x&#772; = {x_mean_val:.4f} (&alpha; = {alpha_for_cards})"
-        pi_desc  = f"Bij x&#772; = {x_mean_val:.4f} (&alpha; = {alpha_for_cards})"
+        ci_desc  = f"Bij {to_lowercase(XBAR_HTML)} = {x_mean_val:.4f} ({to_lowercase(ALPHA_HTML)} = {alpha_for_cards})"
+        pi_desc  = f"Bij {to_lowercase(XBAR_HTML)} = {x_mean_val:.4f} ({to_lowercase(ALPHA_HTML)} = {alpha_for_cards})"
     else:
-        ci_label = "Betrouwbaarheidsinterval bij x&#772;"
-        pi_label = "Voorspellingsinterval bij x&#772;"
+        ci_label = f"Betrouwbaarheidsinterval bij {to_lowercase(XBAR_HTML)}"
+        pi_label = f"Voorspellingsinterval bij {to_lowercase(XBAR_HTML)}"
         ci_value = "—"
         pi_value = "—"
         ci_desc  = "Minimaal 3 datapunten nodig"
@@ -254,8 +254,8 @@ if n_points == 0:
             font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        xaxis=dict(title=dict(text="X", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
+        yaxis=dict(title=dict(text="Y", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
     )
 
 elif n_points == 1:
@@ -271,8 +271,8 @@ elif n_points == 1:
             text="Voeg minstens twee punten toe voor een regressielijn.", 
             font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR)),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
-        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE), gridcolor="rgba(168,218,220,0.08)", zerolinecolor="rgba(168,218,220,0.15)"),
+        xaxis=dict(title=dict(text="X", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
+        yaxis=dict(title=dict(text="Y", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
     )
 
 else:
@@ -334,24 +334,39 @@ else:
     fig.update_layout(
         font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         title=dict(
-            text=f"Regressielijn: Ŷ = {slope:.4f}X {'+' if intercept >= 0 else '-'} {abs(intercept):.4f} ", 
-            font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
+            text=f"Regressielijn: <i>Ŷ = </i>{slope:.4f}<i>X {'+ ' if intercept >= 0 else '- '}</i>{abs(intercept):.4f}", 
+            font=dict(size=2*TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
         ),
         height=600,
-        xaxis=dict(title=dict(text="X", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE)),
-        yaxis=dict(title=dict(text="Y", font=dict(size=AXIS_FONT_SIZE)), tickfont=dict(size=TICK_FONT_SIZE)),
-        legend=dict(font=dict(size=ANNOTATION_FONT_SIZE)),
+        xaxis=dict(title=dict(text=r"<i>X</i>", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
+        yaxis=dict(title=dict(text=r"<i>Y</i>", font=dict(size=2*AXIS_FONT_SIZE)), tickfont=dict(size=2*TICK_FONT_SIZE)),
+        legend=dict(font=dict(size=2*ANNOTATION_FONT_SIZE)),
     )
 
-st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+st.plotly_chart(fig, width="stretch", config=dict(displayModeBar=False))
 
 # ----------------------------------
 # POINTS TABLE
 # ----------------------------------
 
+df = pd.DataFrame(
+    {
+        "$X$": xcoords,
+        "$Y$": ycoords 
+    }
+)
+
+# Apply alignment styles
+styled_df = df.style.set_properties(**{'text-align': 'center'})  # Hide index if desired
+
 if n_points > 0:
     with st.expander("📋 Lijst met ingevoerde datapunten", expanded=False):
-        st.table({"X": xcoords, "Y": ycoords})
+        rows = ["| $X$ | $Y$ |", "|---|---|"]
+        for i in range(n_points):
+            rows.append(f"| {xcoords[i]} | {ycoords[i]} |")
+
+        st.markdown("\n".join(rows))
+
 
 # ----------------------------------
 # EXPLANATION
@@ -368,7 +383,7 @@ explanation_md = r"""
 De geschatte regressielijn heeft de vorm:
 
 $$
-\hat{Y} = b_0 + b_1 X
+    \hat{Y} = b_0 + b_1 X
 $$
 
 waarbij:
@@ -380,7 +395,7 @@ waarbij:
 De parameters $b_0$ en $b_1$ worden bepaald met de **kleinste-kwadratenmethode**: we minimaliseren de som van de kwadraten van de residuen (de verticale afstanden tussen de datapunten en de regressielijn):
 
 $$
-\min_{b_0, b_1} \sum_{i=1}^{n} \left(y_i - \hat{y}_i\right)^2
+    \min_{b_0, b_1} \sum_{i=1}^{n} \left(y_i - \hat{y}_i\right)^2
 $$
 
 De rode stippellijnen in de plot tonen deze residuen.
@@ -390,14 +405,14 @@ De rode stippellijnen in de plot tonen deze residuen.
 De **correlatiecoefficient van Pearson** geeft aan in hoeverre er lineaire samenhang is tussen de twee ratiovariabelen $X$ en $Y$:
 
 $$
-r^2 = \frac{\overline{xy} - \overline{x}\cdot\overline{y}}{\sqrt{(\overline{y^2} - \overline{y}^2) \cdot (\overline{x^2} - \overline{x}^2)}}
+    r^2 = \frac{\overline{xy} - \overline{x}\cdot\overline{y}}{\sqrt{(\overline{y^2} - \overline{y}^2) \cdot (\overline{x^2} - \overline{x}^2)}}
 $$
 
 - $r = -1$: het model heeft een perfecte negatieve lineaire samenhang,
 - $r = 0$: het model heeft geen lineaire samenhang,
 - $r = 1$: het model heeft een perfecte positieve lineaire samenhang.
 
-## 📐 Betrouwbaarheidsinterval voor E(Y|X)
+## 📐 Betrouwbaarheidsinterval voor $E(Y|X)$
 
 Het **betrouwbaarheidsinterval** (gouden band) toont de onzekerheid over de *gemiddelde* waarde van $Y$ voor een gegeven $X=x_0$.
 
@@ -418,7 +433,7 @@ waarbij
 - $Y_0 = b_0 + b_1 \cdot x_0$, en
 - $t = \text{InvT}(\text{area}=1 - \frac{\alpha}{2}, \text{df} = n - 1)$.
 
-## 🔮 Voorspellingsinterval voor Y gegeven X
+## 🔮 Voorspellingsinterval voor $Y | X$
 
 Het **voorspellingsinterval** (paarse band) is breder: het toont de onzekerheid over een *individuele nieuwe waarneming* van $Y$ voor een gegeven $X = x_0$.
 De variantie over een individuele waarneming is namelijk groter dan de variantie over een gemiddelde van meerdere waarnemingen, omdat in dat laatste geval uitschieters gedempt worden.

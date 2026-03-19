@@ -169,7 +169,7 @@ show_pdf = view_mode in ("PDF", "PDF + CDF")
 show_cdf = view_mode in ("CDF", "PDF + CDF")
 
 nrows = 2 if view_mode == "PDF + CDF" else 1
-fig, axes = plt.subplots(nrows, 1, figsize=(10, 5 * nrows), sharex=(nrows == 2))
+fig, axes = plt.subplots(nrows, 1, figsize=(10, 5 * nrows))
 fig.patch.set_facecolor(BG_COLOR)
 
 if nrows == 1:

@@ -159,7 +159,7 @@ def build_figure(mu, sigma, n, alpha, batch_size, frame_duration):
             font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
             xaxis=dict(
                 range=[mu - 4 * sigma, mu + 4 * sigma],
-                title=dict(text=r"x", font=dict(size=2*AXIS_FONT_SIZE)),
+                title=dict(text=r"<i>x</i>", font=dict(size=2*AXIS_FONT_SIZE)),
                 tickfont=dict(size=2*TICK_FONT_SIZE),
             ),
             yaxis=dict(
@@ -244,7 +244,7 @@ if generate:
     </div>
     """, unsafe_allow_html=True)
 
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+    st.plotly_chart(fig, width="stretch", config=dict(displayModeBar=False))
 
 else:
     n_label = f"$n={n}$" if batch_size == 1 else f"$n={n}$"

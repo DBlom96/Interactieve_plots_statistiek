@@ -1,8 +1,6 @@
 import tomllib
 from matplotlib.colors import to_rgb
 
-PLOT_TYPE="plt"
-
 def css_to_rgba(css_color, alpha = 0.4) -> str:
     """Converteert een CSS-kleur naar een rgba-string voor Plotly."""
     r, g, b = [int(c * 255) for c in to_rgb(css_color)]
@@ -34,7 +32,12 @@ VAR_HTML = f"{STD_HTML}<sup>2</sup>"
 LAMBDA_HTML = "<i>&lambda;</i>"
 N_HTML = "<i>n</i>"
 P_HTML = "<i>p</i>"
+R_HTML = "<i>r</i>"
+T_HTML = "<i>t</i>"
+XBAR_HTML = "<i>x&#772;</i>"
+DF_HTML = "df"
 ALPHA_HTML = "<i>&alpha;</i>"
+BETA_HTML = "<i>&beta;</i>"
 CHISQ_HTML = "<i>&chi;<sup>2</sup></i>"
 UNIF_WIDTH_HTML = "<i>b &minus; a</i>"
 
@@ -47,6 +50,8 @@ def to_uppercase(text):
 # ---------------------------------
 # COLORS
 # ---------------------------------
+
+PLOT_TYPE="plt"
 
 with open("./.streamlit/config.toml", "rb+") as f:
     config = tomllib.load(f)
@@ -81,5 +86,8 @@ REGRESSION_COLOR = ACCEPTABLE_COLOR
 RESIDUAL_COLOR   = CRITICAL_COLOR
 CI_COLOR         = H0_COLOR
 PI_COLOR         = H1_COLOR
+
+PLOT_TYPE="plotly"
+
 CI_FILL_COLOR    = css_to_rgba(CI_COLOR, 0.4)
 PI_FILL_COLOR    = css_to_rgba(PI_COLOR, 0.4)

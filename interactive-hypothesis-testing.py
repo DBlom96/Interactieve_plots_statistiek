@@ -93,19 +93,19 @@ st.markdown(f"""
 <div class="stats-row-3">
   <div class="stat-card alpha">
     <span class="stat-label">Type-I fout</span>
-    <span class="stat-value">&alpha; = {alpha:.4f}</span>
+    <span class="stat-value">{to_lowercase(ALPHA_HTML)} = {alpha:.4f}</span>
     <span class="stat-desc">Kans op onterecht verwerpen van H<sub>0</sub></span>
     <span class="stat-desc">(rood gearceerd gebied)</span>
   </div>
   <div class="stat-card beta">
     <span class="stat-label">Type-II fout</span>
-    <span class="stat-value">&beta; = {beta:.4f}</span>
+    <span class="stat-value">{to_lowercase(BETA_HTML)} = {beta:.4f}</span>
     <span class="stat-desc">Kans op onterecht accepteren van H<sub>0</sub></span>
     <span class="stat-desc">(blauw gearceerd gebied)</span>
   </div>
   <div class="stat-card acceptatie">
-    <span class="stat-label">Onderscheidend vermogen</span>
-    <span class="stat-value">1 &minus; &beta; = {power:.4f}</span>
+    <span class="stat-label">Onderscheidend vermogen (POWER)</span>
+    <span class="stat-value">1 &minus; {to_lowercase(BETA_HTML)} = {power:.4f}</span>
     <span class="stat-desc">Kans op correct verwerpen van H<sub>0</sub></span>
   </div>
 </div>
@@ -249,7 +249,7 @@ Bij een **tweezijdige toets** wordt de kans $\alpha$ gelijk verdeeld over beide 
 ## ❌ Type-I fout ($\alpha$)
  
 Een **type-I fout** treedt op wanneer we $H_0$ **verwerpen terwijl $H_0$ in werkelijkheid waar
-is**. Dit is een vals alarm — we concluderen ten onrechte dat er een effect is.
+is**. Dit is een vals alarm (vals positief) — we concluderen ten onrechte dat er een effect is.
  
 $$
     \alpha = P(\text{verwerp } H_0 \mid H_0 \text{ is waar})
@@ -264,7 +264,7 @@ kiezen (bijv. $0.05$ of $0.01$) houden we dit risico beperkt. In de grafiek is d
 ## ❌ Type-II fout ($\beta$)
  
 Een **type-II fout** treedt op wanneer we $H_0$ **accepteren terwijl $H_0$ in werkelijkheid
-niet waar is**. We missen een echt effect — een gemiste detectie.
+niet waar is**. We missen een echt effect (vals negatief) — een gemiste detectie.
  
 $$
     \beta = P(\text{accepteer } H_0 \mid H_1 \text{ is waar})
@@ -273,7 +273,17 @@ $$
 In de grafiek is dit het **blauw gearceerde oppervlak** onder de $H_1$-kromme binnen het
 acceptatiegebied. $\beta$ hangt af van hoe ver $\mu_1$ verwijderd is van $\mu_0$: hoe kleiner
 het werkelijke verschil, hoe moeilijker het te detecteren is en hoe groter $\beta$.
+
  
+Merk op dat er een tradeoff bestaat tussen $\alpha$ en $\beta$: 
+- hoe kleiner het significantieniveau $\alpha$, hoe strenger het criterium is om $H_0$ te verwerpen. 
+Je zult dus sneller geneigd zijn om $H_0$ aan te nemen.
+Aan de ene kant is dit positief, omdat je $H_0$ minder snel onterecht zult verwerpen (minder $H_0$ verwerpen terwijl $H_0$ waar is).
+De keerzijde is dat je ook vaker $H_0$ zult aannemen terwijl $H_1$ waar is, en daarmee dus de kans verhoogt op een type-II fout.
+Met andere woorden, $\beta$ wordt dan juist groter.
+
+De enige manier om beide tegelijk te verkleinen is een grotere steekproef $n$.
+
 ---
  
 ## ⚡ Onderscheidend vermogen ($1 - \beta$)
@@ -284,12 +294,7 @@ ook daadwerkelijk detecteert:
 $$
     \text{power} = 1 - \beta = P(\text{verwerp } H_0 \mid H_1 \text{ is waar})
 $$
- 
-Een goede toets heeft een hoog onderscheidend vermogen. Merk op dat $\alpha$ en $\beta$ met
-elkaar in spanning staan: als je $\alpha$ verkleint (strenger criterium), vergroot je doorgaans
-$\beta$ — en vice versa. De enige manier om beide tegelijk te verkleinen is een grotere
-steekproef $n$.
- 
+
 ---
  
 ## 📊 Overzichtstabel van uitkomsten
@@ -312,24 +317,81 @@ Deze kans willen we zo klein mogelijk hebben, oftewel we willen het onderscheidi
  
 | Parameter | Effect op $1 - \beta$ |
 |---|---|
-| Grotere $|\mu_1 - \mu_0|$ | Groter — effect is makkelijker te zien |
-| Grotere $\sigma$ | Kleiner — meer ruis maskeert het effect |
-| Grotere $n$ | Groter — meer data geeft preciezere schatting |
+| Grotere $\vert\mu_1 - \mu_0\vert$ | Groter — effect is makkelijker te zien |
+| Grotere $\sigma$ | Kleiner — meer ruis op data maakt onderscheiden van $H_0$ en $H_1$ lastiger |
+| Grotere $n$ | Groter — meer data geeft preciezere schatting van de daadwerkelijke $\mu$ |
 | Groter $\alpha$ | Groter — ruimer kritiek gebied, maar hogere kans op type-I fout |
  
 ---
  
 ## 🧮 Beslissingsregels
+
+### $z$-toets ($\sigma$ bekend)
  
-Bij bekende $\sigma$ is de toetsingsgrootheid $z = \dfrac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}$.
+Bij bekende $\sigma$ is de toetsingsgrootheid
+$$
+    Z = \dfrac{\bar{X} - \mu_0}{\sigma / \sqrt{n}}.
+$$
+
+Onder de nulhypothese $H_0$ is deze toetsingsgrootheid standaardnormaal verdeeld, dus $Z \sim N(0, 1)$.
+
+| Toetstype | Verwerp $H_0$ als |
+|---|---|
+| Tweezijdig ($H_1: \mu \neq \mu_0$) | $\vert Z\vert > z_{\alpha/2}$ |
+| Rechtszijdig ($H_1: \mu > \mu_0$) | $Z > z_{\alpha}$ |
+| Linkszijdig ($H_1: \mu < \mu_0$) | $Z < -z_{\alpha}$ |
  
-**Tweezijdig** ($H_1: \mu \neq \mu_0$): verwerp $H_0$ als $|z| > z_{\alpha/2}$
+waarbij $z_{\alpha}$ de waarde is waarvoor geldt dat
+$$
+    P(Z \ge z_{\alpha}) = \alpha.
+$$
+
+
+### $t$-toets ($\sigma$ onbekend)
+
+Bij onbekende $\sigma$ moeten we werken met de $t$-verdeling.
+Op basis van een steekproef van grootte $n$ moeten we eerst het steekproefgemiddelde $\bar{X}$ en de steekproefstandaardafwijking $S$ bepalen.
+De toetsingsgrootheid is in dat geval gelijk aan
+$$
+    T = \frac{\bar{X} - \mu_0}{S / \sqrt{n}}
+$$
+
+Onder de nulhypothese $H_0$ volgt deze toetsingsgrootheid een $t$-verdeling met df$=n-1$ vrijheidsgraden.
  
-**Rechtszijdig** ($H_1: \mu > \mu_0$): verwerp $H_0$ als $z > z_{\alpha}$
+| Toetstype | Verwerp $H_0$ als |
+|---|---|
+| Tweezijdig ($H_1: \mu \neq \mu_0$) | $\vert T\vert > t_{\alpha/2,\, n-1}$ |
+| Rechtszijdig ($H_1: \mu > \mu_0$) | $T > t_{\alpha,\, n-1}$ |
+| Linkszijdig ($H_1: \mu < \mu_0$) | $T < -t_{\alpha,\, n-1}$ |
  
-**Linkszijdig** ($H_1: \mu < \mu_0$): verwerp $H_0$ als $z < -z_{\alpha}$
+waarbij $t_{\alpha,\,n-1}$ de waarde is waarvoor geldt dat
+$$
+    P(T \ge t_{\alpha,\,n-1}) = \alpha.
+$$
+
+Deze waarde berekenen we als volgt
+$$
+    t_{\alpha/2,\,n-1} = \text{InvT}(\text{area}=1-\alpha/2, \text{df}=n-1).
+    t_{\alpha,\,n-1} = \text{InvT}(\text{area}=1-\alpha, \text{df}=n-1).
+$$
+
+## 🔢 Rekenvoorbeeld
+Een fabrikant beweert dat zijn producten gemiddeld $\mu_0 = 500$ gram wegen.
+We willen toetsen of het gemiddelde gewicht van zijn product significant hiervan afwijkt.
+Neem hierbij aan dat de standaardafwijking $\sigma$ onbekend is.
+
+Je trekt een steekproef van $n = 15$ en meet $\bar{x} = 492$ g en $s = 18$ g. Toets tweezijdig
+bij $\alpha = 0.05$.
+
+De geobserveerde toetsingsgrootheid $t$ is gelijk aan
+$$
+    t = \frac{492 - 500}{18 / \sqrt{15}} = \frac{-8}{4.65} = -1.72.
+$$
  
-waarbij $z_{\alpha} = \Phi^{-1}(1 - \alpha)$ de kritieke z-waarde is.
+De kritieke waarde is $t_{0.025,\,14} = \text{InvT}(\text{area}=1-\alpha/2=0.975, \text{df}=14) = 2.145$.
+Omdat $|-1.72| < 2.145$, wordt $H_0$ niet verworpen.
+
+Er is op basis van deze steekproefdata onvoldoende bewijs dat het gemiddelde gewicht significant afwijkt van 500 g.
 """
- 
+
 show_explanation(explanation_title, explanation_markdown)

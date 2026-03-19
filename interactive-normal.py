@@ -165,7 +165,7 @@ if show_pdf:
     apply_dark_style(
         fig=fig,
         ax=ax_pdf,
-        title=rf"Kansdichtheidsfunctie — $\mathcal{{N}}(\mu = {mu_val},\; \sigma = {sigma_val})$",
+        title=rf"Kansdichtheidsfunctie (PDF) — $\mathcal{{N}}(\mu = {mu_val},\; \sigma = {sigma_val})$",
         xlabel=r"$x$",
         ylabel=r"Kansdichtheid $f(x)$"
     )
@@ -178,7 +178,7 @@ if show_cdf:
     apply_dark_style(
         fig=fig,
         ax=ax_cdf,
-        title=rf"Cumulatieve verdelingsfunctie — $\mathcal{{N}}(\mu = {mu_val},\; \sigma = {sigma_val})$",
+        title=rf"Cumulatieve verdelingsfunctie (CDF) — $\mathcal{{N}}(\mu = {mu_val},\; \sigma = {sigma_val})$",
         xlabel=r"$x$",
         ylabel=r"Cumulatieve kans $F(x)$"
     )
@@ -199,8 +199,9 @@ explanation_markdown = r"""
 ## 📜 Wat is de normale verdeling?
 
 De **normale verdeling** (ook wel Gaussiaanse verdeling of belkromme) is de meest gebruikte continue
-kansverdeling in de statistiek. Ze is volledig bepaald door twee parameters: het **gemiddelde** $\mu$
-en de **standaardafwijking** $\sigma$.
+kansverdeling in de statistiek. Ze is volledig bepaald door twee parameters: 
+- het **gemiddelde** $\mu$
+- de **standaardafwijking** $\sigma$.
 
 De kansdichtheidsfunctie is:
 $$
@@ -210,16 +211,25 @@ $$
 ## 🔢 Eigenschappen
 
 - **Symmetrie**: de verdeling is symmetrisch rond $\mu$.
-- **Verwachtingswaarde**: $E[X] = \mu$
+- **Verwachtingswaarde**: $E(X) = \mu$
 - **Variantie**: $\text{Var}(X) = \sigma^2$
 - Het totale oppervlak onder de curve is altijd gelijk aan **1**.
 
 ## 📐 De 68-95-99.7 regel
 
 Een handige vuistregel voor de normale verdeling:
-- $P(\mu - \sigma \leq X \leq \mu + \sigma) \approx 68\%$
-- $P(\mu - 2\sigma \leq X \leq \mu + 2\sigma) \approx 95\%$
-- $P(\mu - 3\sigma \leq X \leq \mu + 3\sigma) \approx 99.7\%$
+- $68\%$ van de normale verdeling ligt binnen één standaardafwijking van het gemiddelde $\mu$: 
+$$
+    P(\mu - \sigma \leq X \leq \mu + \sigma) \approx 0.68.
+$$
+- $95\%$ van de normale verdeling ligt binnen twee standaardafwijkingen van het gemiddelde $\mu$: 
+$$
+    P(\mu - 2\sigma \leq X \leq \mu + 2\sigma) \approx 0.95.
+$$
+- $99.7\%$ van de normale verdeling ligt binnen drie standaardafwijkingen van het gemiddelde $\mu$: 
+$$
+    P(\mu - 3\sigma \leq X \leq \mu + 3\sigma) \approx 0.997.
+$$
 
 ## 📈 Cumulatieve verdelingsfunctie (CDF)
 

@@ -151,7 +151,7 @@ if method == "Kritiek gebied":
                 color=color, linewidth=1.5, linestyle="--", label=lbl)
     
     # Add annotation for the test statistics
-    ax.text(toets,  ytext, f"$f = {toets:.2f}$",
+    ax.text(toets,  ytext, f"$f$",
             ha="center", va="center", fontsize=ANNOTATION_FONT_SIZE,
             color=H0_COLOR, fontfamily="JetBrains Mono")
 

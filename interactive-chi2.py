@@ -152,8 +152,8 @@ if method == "Kritiek gebied":
     # Test statistic line
     ax.plot([toets, toets], [0, chi2.pdf(toets, df)],
             color=H0_COLOR, linewidth=1.5, linestyle=":",
-            label=rf"$\\chi^2 = {toets:.4f}$")
-    ax.text(toets,  ytext, f"$\\chi^2 = {toets:.2f}$",
+            label=rf"$\\chi^2$$")
+    ax.text(toets,  ytext, f"$\\chi^2$",
             ha="center", va="center", fontsize=ANNOTATION_FONT_SIZE,
             color=H0_COLOR, fontfamily="JetBrains Mono")
 
@@ -171,7 +171,7 @@ elif method == "p-waarde":
     # Lines
     ax.plot([toets, toets], [0, chi2.pdf(toets, df)],
             color=H0_COLOR,      linewidth=1.5, linestyle=":",
-            label=rf"$\chi^2 = {toets:.4f}$")
+            label=rf"$\chi^2$")
     ax.plot([grens, grens], [0, chi2.pdf(grens, df)],
             color=CRITICAL_COLOR, linewidth=1.5, linestyle="--",
             label=rf"$\chi^2_{{\mathrm{{crit}}}} = {grens:.4f}$")
@@ -204,7 +204,7 @@ elif method == "Kritiek gebied":
     )
     acceptable = (toets < grens) if grens is not None else False
     ax.text(0.35, 1.02,
-        rf"$\chi^2 = {toets:.4f}$ ligt in het ",
+        rf"$\chi^2$ ligt in het ",
         transform=ax.transAxes, ha="right", va="center",
         fontsize=TITLE_FONT_SIZE, 
         color=PLOT_FONT_COLOR,
@@ -332,7 +332,7 @@ Toetst of twee categorische variabelen samenhangen in een kruistabel.
  
 **Voorbeeld:** Aan een testpanel van 200 personen wordt gevraagd wat hun rookgedrag is en of ze last hebben van een longziekte.
 De wetenschappers willen onderzoeken mensen die roken meer kans hebben om last te hebben van een longziekte.
-De vraag is dus: zijn de variabelen **rookgedrag** en **longziekte** onafhankelijk?
+De vraag is dus: zijn de variabelen **rookgedrag** en **lijden aan een longziekte** onafhankelijk?
 
 De resultaten van het onderzoek (dus de **observed frequenties** $O_{{ij}}$) kunnen worden samengevat in onderstaande tabel:
 
@@ -384,7 +384,7 @@ Als we de waargenomen frequenties bekijken, zien we dat rokers relatief gezien v
 ## 🎯 Interpretatie: kritiek gebied en $p$-waarde
  
 ### Kritiek gebied
-Het kritieke gebied is het gedeelte van de verdeling dat zo onwaarschijnlijk is onder $H_0$,
+Het kritieke gebied is het gedeelte van de uitkomstenruimte dat heel onwaarschijnlijk is om waar te nemen onder $H_0$,
 dat je bereid bent $H_0$ te verwerpen. Bij de $\chi^2$-toets is dit altijd **rechtszijdig**.
 De reden hiervoor is
 
@@ -396,15 +396,15 @@ $$
  
 waarbij $g$ de oplossing is van: 
 $$
-    \chi^2\text{{cdf}}(\text{{lower}}=X, \text{{upper}}=10^{{99}}, \text{{df}}=1) = \frac{{\alpha}}{{2}}=0.025.
+    \chi^2\text{{cdf}}(\text{{lower}}=X, \text{{upper}}=10^{{99}}, \text{{df}}=df) = \frac{{\alpha}}{{2}}=0.025.
 $$
   
-### p-waarde
-De p-waarde is de kans om een $\chi^2$-waarde te observeren die **minstens zo extreem** is
+### $p$-waarde
+De $p$-waarde is de kans om een $\chi^2$-waarde te observeren die **minstens zo extreem** is
 als de gevonden toetsingsgrootheid, gegeven dat $H_0$ waar is:
  
 $$
-p = P(X^2 \geq \chi^2) = \chi^2\text{{cdf}}(\text{{lower}}=\chi^2, \text{{upper}}=10^{{99}}, \text{{df}}=df)
+    p = P(X^2 \geq \chi^2) = \chi^2\text{{cdf}}(\text{{lower}}=\chi^2, \text{{upper}}=10^{{99}}, \text{{df}}=df)
 $$
  
 - **Kleine p-waarde** ($p < \alpha$): het is onwaarschijnlijk dat we nog extremere data zouden waarnemen onder $H_0$ → verwerp $H_0$.

@@ -24,11 +24,11 @@ BG_COLOR = "#1a1f2e"
 # ----------------------------------
 # PARAMETERS
 # ----------------------------------
-page_header("📊 Student's t-verdeling", "Continue kansverdelingen")
+page_header("📊 Student's $t$-verdeling", "Continue kansverdelingen")
 
 with st.sidebar:
     st.header("Parameters")
-    df    = st.number_input(r"Aantal vrijheidsgraden (df):", min_value=1, max_value=100, value=1, step=1)
+    df    = st.number_input(r"Aantal vrijheidsgraden (df):", min_value=1, value=1, step=1)
     alpha = st.number_input(r"Significantieniveau $\alpha$:", min_value=1e-6, max_value=1.0, value=0.05)
 
 # ----------------------------------
@@ -53,23 +53,28 @@ reject  = abs(t_score) > t_crit
 st.markdown(f"""
 <div class="stats-row-3">
   <div class="stat-card bi">
-    <span class="stat-label">Kritieke waarden N(0,1)</span>
+    <span class="stat-label">Kritieke waarden <i>N</i>(0,1)</span>
     <span class="stat-value">&plusmn;{z_crit:.4f}</span>
     <span class="stat-desc">{conf_pct}%-betrouwbaarheidsinterval</span>
   </div>
   <div class="stat-card pi">
-    <span class="stat-label">Kritieke waarden t(df={df})</span>
+    <span class="stat-label">Kritieke waarden {to_lowercase(T_HTML)}({to_lowercase(DF_HTML)}={df})</span>
     <span class="stat-value">&plusmn;{t_crit:.4f}</span>
     <span class="stat-desc">{conf_pct}%-betrouwbaarheidsinterval</span>
   </div>
   <div class="stat-card beta">
-    <span class="stat-label">Verschil kritieke waarden</span>
-    <span class="stat-value">{t_crit - z_crit:.4f}</span>
+    <span class="stat-label">Betrouwbaarheid normale benadering</span>
+    <span class="stat-value">{(t.cdf(z_crit, df=df) - t.cdf(-z_crit, df=df)):.4f}</span>
     <span class="stat-desc"><i>t</i>-verdeling heeft bredere staarten</span>
-  </div>
+  </div>"
 </div>
 """, unsafe_allow_html=True)
 
+# text =   "<div class="stat-card beta">
+#     <span class="stat-label">Verschil kritieke waarden</span>
+#     <span class="stat-value">{t_crit - z_crit:.4f}</span>
+#     <span class="stat-desc"><i>t</i>-verdeling heeft bredere staarten</span>
+#   </div>"
 # ----------------------------------
 # HELPERS
 # ----------------------------------
@@ -108,7 +113,7 @@ ax.plot(x, t_pdf,      color=H1_COLOR, linewidth=2.5,
 apply_dark_style(
     fig=fig,
     ax=ax,
-    title=rf"Kansdichtheidsfuncties - $\mathcal{{N}}(0,1)$ en $t(\mathrm{{df}}={df})$",
+    title=rf"Kansdichtheidsfuncties - $\mathcal{{N}}(0,1)$ en $t($df$={df})$",
     xlabel=r"$x$",
     ylabel=r"Kansdichtheid $f(x)$"
 )
@@ -122,57 +127,157 @@ plt.close(fig)
 # ----------------------------------
 # EXPLANATION
 # ----------------------------------
-explanation_title = "📚 Student's t-verdeling"
+explanation_title = "📚 Student's $t$-verdeling"
 explanation_markdown = rf"""
 ## 📌 Wat laat de grafiek zien?
+ 
+De grafiek toont twee kansdichtheidsfuncties naast elkaar:
+ 
+- **Goud** — de standaardnormale verdeling $\mathcal{{N}}(0,1)$: symmetrisch, klokvormig, en
+  volledig bepaald door gemiddelde 0 en standaardafwijking 1.
+- **Magenta** — de $t$-verdeling met df $= {df}$ vrijheidsgraden: ook symmetrisch en klokvormig, maar met
+  **dikkere staarten** en een **lager piekpunt**. De $t$-verdeling is breder, omdat het gebruikt wordt indien ook de standaardafwijking $\sigma$ van een populatie onbekend is.
+  Deze moet dan met behulp van een steekproef geschat worden, wat toch nog meer onzekerheid leidt.
+  Het totale oppervlak onder beide krommen is gelijk aan 1 (het zijn kansverdelingen), dus wat de $t$-verdeling "verliest" in het midden
+  compenseert ze in de staarten.
+- **Betrouwbaarheid normale benadering** - we verliezen een klein beetje betrouwbaarheid als we de kritieke grenzen van de normale verdeling gebruikt in plaats van de $t$-verdeling. 
+Deze betrouwbaarheid is de kans dat de $t$-verdeling met df $={df}$ vrijheidsgraden een waarde tussen de kritieke grenzen van de normale verdeling aanneemt.
+ 
+De **stippellijnen** markeren de kritieke waarden: het punt waarbuiten je $H_0$ verwerpt.
+Het gekleurde oppervlak in de staarten is het kritieke gebied van grootte $\alpha$ ($\alpha/2$ in de linkerstaart en $\alpha/2$ in de rechterstaart).
+ 
+Merk op wat er visueel gebeurt als je df vergroot:
+- De $t$-verdeling schuift omhoog en de staarten worden dunner.
+- De kritieke waarden van $t$ naderen die van $z$.
+- Bij $\text{{df}} \geq 30$ zijn de krommen vrijwel niet meer van elkaar te onderscheiden. Dit is de reden waar de vuistregel van $n = 30$ op gebaseerd is.
 
-De $t$-verdeling ontstaat wanneer je het gemiddelde van een steekproef wilt vergelijken met een
-populatiegemiddelde, maar de **populatiestandaardafwijking $\sigma$ onbekend** is. Je schat $\sigma$
-dan met de steekproefstandaardafwijking $s$, wat extra onzekerheid introduceert. Die onzekerheid
-vertaalt zich naar **dikkere staarten**: extreme uitkomsten zijn waarschijnlijker dan onder de
-standaardnormale verdeling.
+⚠️ Technisch gezien zou je bij een onbekende standaardafwijking $\sigma$ altijd de $t$-verdeling moeten gebruiken (ook voor steekproefgroottes $n \ge 30$).
+De verschillen met de normale verdeling zijn echter dusdanig kleiner dat we de normale benadering kunnen gebruiken.
 
-Hoe kleiner $n$, hoe kleiner df $= n - 1$ en hoe dikker de staarten. Voor df $\geq 30$ is het
-verschil met $\mathcal{{N}}(0,1)$ verwaarloosbaar klein.
-
+ 
+De $t$-verdeling ontstaat omdat je $\sigma$ niet kent en schat met $s$. Die schatting heeft
+zelf ook variabiliteit — bij kleine $n$ is $s$ onbetrouwbaar en moeten de staarten dikker zijn
+om die extra onzekerheid te modelleren.
+ 
+---
+ 
 ## ❓ Wanneer gebruik je de $t$-verdeling?
-
-| Situatie | Gebruik |
-|---|---|
-| $\sigma$ bekend | $\mathcal{{N}}(0,1)$ |
-| $\sigma$ onbekend, $n \geq 30$ | Beide acceptabel |
-| $\sigma$ onbekend, $n < 30$ | $t$-verdeling verplicht |
-| Populatie niet normaal, $n < 30$ | Niet-parametrische toets |
-
+ 
+| Situatie | $\sigma$ | $n$ | Gebruik | Reden |
+|---|---|---|---|---|
+| Populatiestandaardafwijking is bekend | Bekend | Willekeurig | $\mathcal{{N}}(0,1)$ | Geen schattingsonzekerheid |
+| $\sigma$ onbekend, grote steekproef | Onbekend | $\geq 30$ | $t$ (of $z$ als benadering) | $s \approx \sigma$ bij grote $n$, maar $t$ is altijd correct |
+| $\sigma$ onbekend, kleine steekproef | Onbekend | $< 30$ | $t$ verplicht | $s$ is onbetrouwbaar; $t$ modelleert de extra onzekerheid |
+| Populatie sterk niet-normaal | Onbekend | $< 30$ | Niet-parametrische toets | Aanname normaliteit geschonden |
+ 
+> **Praktische vuistregel:** gebruik altijd de $t$-toets als $\sigma$ onbekend is. De $z$-toets
+> is alleen correct als $\sigma$ écht bekend is — wat in de praktijk zelden voorkomt.
+ 
+---
+ 
 ## 🧮 Toetsingsgrootheid
-
-Bij een $t$-toets ($H_0: \mu = \mu_0$ versus $H_1: \mu \neq \mu_0$) is de toetsingsgrootheid:
-
+ 
+Bij een éénsteekproef $t$-toets toets je $H_0: \mu = \mu_0$ versus een alternatieve hypothese.
+De toetsingsgrootheid is:
+ 
 $$
     t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}}
 $$
-
-We verwerpen $H_0$ als $|t| > t_{{\text{{crit}}}}$, waarbij:
-
+ 
+Onder $H_0$ volgt $t$ een $t$-verdeling met $\text{{df}} = n - 1$ vrijheidsgraden.
+De noemer $s / \sqrt{{n}}$ is de **standaardfout** van het steekproefgemiddelde: hoe nauwkeurig
+$\bar{{x}}$ het populatiegemiddelde schat.
+ 
+We verwerpen $H_0$ (tweezijdig) als $|t| > t_{{crit}}$, waarbij:
+ 
 $$
-    t_{{\text{{crit}}}} = t_{{1 - \alpha/2,\; \text{{df}}={df}}} = {t_crit:.4f}
+    t_{{\text{{crit}}}} = t_{{1-\alpha/2,\; \text{{df}}={df}}} = {t_crit:.4f}
 $$
-
-## 🔢 Rekenvoorbeeld
-
-$n = {n_ex}$ proefpersonen, toets of reactietijd verschilt van $\mu_0 = 300$ ms,
-met $\bar{{x}} = 312$ ms en $s = 24$ ms.
-
+ 
+---
+ 
+## 🔢 Rekenvoorbeeld — stap voor stap
+ 
+**Situatie:** $n = {n_ex}$ proefpersonen meten hun reactietijd. We toetsen of de gemiddelde
+reactietijd verschilt van $\mu_0 = 300$ ms, bij significantieniveau $\alpha = {alpha}$.
+ 
+Gemeten: $\bar{{x}} = 312$ ms, $s = 24$ ms.
+ 
+---
+ 
+**Stap 1 — Hypothesen opstellen:**
+ 
 $$
-    t = \frac{{312 - 300}}{{24 / \sqrt{{{n_ex}}}}}
-      = \frac{{12}}{{{24 / np.sqrt(n_ex):.4f}}}
-      = {t_score:.4f}
+H_0: \mu = 300 \quad \text{{versus}} \quad H_1: \mu \neq 300 \quad \text{{(tweezijdig)}}
 $$
-
-{"✅" if not reject else "❌"} $|t| = {abs(t_score):.4f}$
-{"<" if not reject else ">"} $t_{{\text{{crit}}}} = {t_crit:.4f}$
-$\;\Rightarrow\;$ $H_0$ **{"niet verwerpen" if not reject else "verwerpen"}**:
-{"geen" if not reject else "wel een"} significant verschil gevonden.
+ 
+---
+ 
+**Stap 2 — Standaardfout berekenen:**
+ 
+$$
+SE = \frac{{s}}{{\sqrt{{n}}}} = \frac{{24}}{{\sqrt{{{n_ex}}}}} = {24 / np.sqrt(n_ex):.4f} \text{{ ms.}}
+$$
+ 
+---
+ 
+**Stap 3 — Toetsingsgrootheid berekenen:**
+ 
+$$
+t = \frac{{\bar{{x}} - \mu_0}}{{\frac{{s}}{{\sqrt{{n}}}}}} = \frac{{312 - 300}}{{\frac{{24}}{{\sqrt{{{n_ex}}}}}}} \approx {t_score:.4f}.
+$$
+ 
+---
+ 
+**Stap 4 — Kritieke waarde opzoeken:**
+ 
+$$
+t_{{\text{{crit}}}} = t_{{1 - \alpha/2,\; n-1}} = t_{{1 - {alpha/2},\; {n_ex - 1}}} = {t_crit:.4f}.
+$$
+ 
+---
+ 
+**Stap 5 — $p$-waarde berekenen:**
+ 
+De p-waarde is de kans om een $t$ te observeren die minstens zo groot is als de gevonden waarde, gegeven dat $H_0$ waar is:
+ 
+$$
+    p = \text{{tcdf}}(\text{{lower}}={t_score:.4f}, \text{{upper}}=10^{{99}}, \text{{df}}={n_ex - 1}) = {(1 - t.cdf(abs(t_score), n_ex - 1)):.4f}.
+$$
+ 
+Omdat we tweezijdig toetsen, vergelijken we deze $p$-waarde met $\frac{{\alpha}}{{2}} = {alpha/2}$.
+Een kleine $p$-waarde ($p < $\frac{{\alpha}}{{2}}$) betekent dat de gevonden uitkomst onwaarschijnlijk is onder
+$H_0$. 
+Een grote $p$-waarde betekent **niet** dat $H_0$ waar is, alleen dat er onvoldoende
+bewijs is om haar te verwerpen.
+ 
+---
+ 
+**Stap 6 — Conclusie:**
+ 
+$$
+|t| = {abs(t_score):.4f} \quad {"<" if not reject else ">"} \quad t_{{\text{{crit}}}} = {t_crit:.4f}
+$$
+ 
+{"✅ $H_0$ **niet verwerpen**: er is onvoldoende bewijs dat de reactietijd verschilt van 300 ms." if not reject else "❌ $H_0$ **verwerpen**: er is voldoende bewijs dat de reactietijd significant verschilt van 300 ms."}
+ 
+---
+ 
+## 📏 Betrouwbaarheidsinterval
+ 
+Een $t$-toets en een betrouwbaarheidsinterval zijn twee kanten van dezelfde medaille.
+Het $(1 - \alpha)$-betrouwbaarheidsinterval voor $\mu$ is:
+ 
+$$
+\bar{{x}} \pm t_{{\text{{crit}}}} \cdot \frac{{s}}{{\sqrt{{n}}}}
+= 312 \pm {t_crit:.4f} \cdot {24 / np.sqrt(n_ex):.4f}
+= \left[{312 - t_crit * 24 / np.sqrt(n_ex):.2f},\; {312 + t_crit * 24 / np.sqrt(n_ex):.2f}\right] \text{{ ms}}
+$$
+ 
+{"✅ $\\mu_0 = 300$ ms **valt binnen** dit interval — consistent met het niet-verwerpen van $H_0$." if not reject else "❌ $\\mu_0 = 300$ ms **valt buiten** dit interval — consistent met het verwerpen van $H_0$."}
+ 
+> Het betrouwbaarheidsinterval geeft extra informatie die de toets niet geeft: niet alleen
+> *of* er een verschil is, maar ook *hoe groot* dat verschil plausibel is.
 """
 
 show_explanation(explanation_title, explanation_markdown)
