@@ -149,7 +149,6 @@ show_cdf = view_mode in ("CDF", "PDF + CDF")
 
 nrows = 2 if view_mode == "PDF + CDF" else 1
 fig, axes = plt.subplots(nrows, 1, figsize=(10, 5 * nrows))
-fig.patch.set_facecolor(BG_COLOR)
 
 if nrows == 1:
     axes = [axes]
@@ -161,7 +160,7 @@ ax_cdf = axes[1] if view_mode == "PDF + CDF" else (axes[0] if show_cdf else None
 if show_pdf:
     ax_pdf.plot(x, pdf_y, color=H0_COLOR, linewidth=2.5,
                 label=rf"$f(x)$ — $\mathcal{{N}}(\mu={mu_val},\, \sigma={sigma_val})$")
-    ax_pdf.axvline(mu_val, color=H0_COLOR, linewidth=1.0, linestyle="--", alpha=0.5)
+    ax_pdf.plot([mu_val, mu_val], [0, norm.pdf(mu_val, mu_val, sigma_val)], color=H0_COLOR, linewidth=1.0, linestyle="--", alpha=0.5)
     add_shading(ax_pdf, x, mu_val, sigma_val, show_mode, a_val, b_val, prob)
     apply_dark_style(
         fig=fig,

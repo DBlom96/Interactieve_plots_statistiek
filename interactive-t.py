@@ -1,31 +1,25 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
-
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 from scipy.stats import norm, t
+
 from utils.explanation_utils import show_explanation
-from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.streamlit_utils import load_css, page_header, apply_dark_style
 from utils.constants import *
 
-# ----------------------------------
-# PAGE CONFIG
-# ----------------------------------    
-
 st.set_page_config(
-    page_title="Visualisatie van Student's t-verdeling",
+    page_title="Student's t-verdeling",
     initial_sidebar_state="expanded",
     layout="wide"
 )
+
 # ----------------------------------
 # CSS
 # ----------------------------------
 load_css()
 
-
-
-# ----------------------------------
-# HELPERS
-# ----------------------------------
+BG_COLOR = "#1a1f2e"
 
 # ----------------------------------
 # PARAMETERS
@@ -34,32 +28,24 @@ page_header("📊 Student's t-verdeling", "Continue kansverdelingen")
 
 with st.sidebar:
     st.header("Parameters")
-
-    df = st.number_input(
-        label="Aantal vrijheidsgraden (df):",
-        min_value=1,
-        max_value=100,
-        value=1,
-        step=1
-    )
-    alpha = st.number_input(
-        label="Significantieniveau ($\\alpha$):",
-        min_value=1e-6,
-        value=0.05,
-        max_value=1.0
-    )
+    df    = st.number_input(r"Aantal vrijheidsgraden (df):", min_value=1, max_value=100, value=1, step=1)
+    alpha = st.number_input(r"Significantieniveau $\alpha$:", min_value=1e-6, max_value=1.0, value=0.05)
 
 # ----------------------------------
-# COMPUTATION
+# COMPUTATIONS
 # ----------------------------------
 confidence = 1 - alpha
 conf_pct   = int(100 * confidence)
-xmin, xmax = -4, 4
-x          = np.linspace(xmin, xmax, 1_000)
-normal_pdf = norm.pdf(x, loc=0, scale=1)
+x          = np.linspace(-4, 4, 1_000)
+normal_pdf = norm.pdf(x)
 t_pdf      = t.pdf(x, df=df)
 z_crit     = norm.ppf(1 - alpha / 2)
 t_crit     = t.ppf(1 - alpha / 2, df=df)
+
+# Example computation (rekenvoorbeeld)
+n_ex    = df + 1
+t_score = 12 / (24 / np.sqrt(n_ex))
+reject  = abs(t_score) > t_crit
 
 # ----------------------------------
 # STAT CARDS
@@ -68,208 +54,125 @@ st.markdown(f"""
 <div class="stats-row-3">
   <div class="stat-card bi">
     <span class="stat-label">Kritieke waarden N(0,1)</span>
-    <span class="stat-value bi">&plusmn;{z_crit:.4f}</span>
+    <span class="stat-value">&plusmn;{z_crit:.4f}</span>
     <span class="stat-desc">{conf_pct}%-betrouwbaarheidsinterval</span>
   </div>
   <div class="stat-card pi">
     <span class="stat-label">Kritieke waarden t(df={df})</span>
-    <span class="stat-value pi">&plusmn;{t_crit:.4f}</span>
+    <span class="stat-value">&plusmn;{t_crit:.4f}</span>
     <span class="stat-desc">{conf_pct}%-betrouwbaarheidsinterval</span>
   </div>
   <div class="stat-card beta">
     <span class="stat-label">Verschil kritieke waarden</span>
-    <span class="stat-value beta">{t_crit - z_crit:.4f}</span>
-    <span class="stat-desc">t-verdeling heeft bredere staarten</span>
+    <span class="stat-value">{t_crit - z_crit:.4f}</span>
+    <span class="stat-desc"><i>t</i>-verdeling heeft bredere staarten</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ----------------------------------
-# PLOT
+# HELPERS
 # ----------------------------------
-FILL_OPACITY = 0.15
+def fill_tails(ax, x, y, crit, color):
+    """Shade both tails beyond ±crit."""
+    for mask in [x < -crit, x > crit]:
+        ax.fill_between(x, y, where=mask, color=color, alpha=0.2)
 
-fig = go.Figure()
 
-# ── Shaded tails: normal ──
-mask_tail_normal_left = (x < -z_crit)
-mask_tail_normal_right = (x > z_crit)
-for mask in [mask_tail_normal_left, mask_tail_normal_right]:
-    fig.add_trace(go.Scatter(
-        x=x[mask], 
-        y=normal_pdf[mask],
-        fill="tozeroy",
-        fillcolor=css_to_rgba(H0_COLOR, alpha=FILL_OPACITY),
-        showlegend=False,
-    ))
+def crit_vlines(ax, x, pdf_func, crit, color, df=None):
+    """Draw dashed vertical lines at ±crit up to the PDF height."""
+    for xv in [-crit, crit]:
+        yv = pdf_func(xv) if df is None else pdf_func(xv, df)
+        ax.plot([xv, xv], [0, yv], color=color, linewidth=1.5, linestyle="--")
 
-# ── Shaded tails: t ──
-mask_tail_t_left = (x < -t_crit)
-mask_tail_t_right = (x > t_crit)
-for mask in [mask_tail_t_left, mask_tail_t_right]:
-    fig.add_trace(go.Scatter(
-        x=x[mask], y=t_pdf[mask],
-        fill="tozeroy",
-        fillcolor=css_to_rgba(H1_COLOR, alpha=FILL_OPACITY),
-        showlegend=False,
-    ))
+# ----------------------------------
+# FIGURE
+# ----------------------------------
+fig, ax = plt.subplots(figsize=(10, 5))
 
-# ── Critical value lines: normal ──
-for xv in [-z_crit, z_crit]:
-    fig.add_trace(go.Scatter(
-        x=[xv, xv], y=[0, norm.pdf(xv)],
-        mode="lines",
-        line=dict(color=H0_COLOR, width=1.5, dash="dash"),
-        showlegend=False,
-        hoverinfo="skip",
-    ))
+# Shaded tails
+fill_tails(ax, x, normal_pdf, z_crit, H0_COLOR)
+fill_tails(ax, x, t_pdf,      t_crit, H1_COLOR)
 
-# ── Critical value lines: t (only when df >= 3 to avoid very wide tails) ──
-if df >= 3:
-    for xv in [-t_crit, t_crit]:
-        fig.add_trace(go.Scatter(
-            x=[xv, xv], y=[0, t.pdf(xv, df=df)],
-            mode="lines",
-            line=dict(color=H1_COLOR, width=1.5, dash="dash"),
-            showlegend=False, 
-            hoverinfo="skip",
-        ))
+# Critical value lines
+crit_vlines(ax, x, norm.pdf, z_crit, H0_COLOR)
+if df >= 3:   # avoid very tall lines for low df
+    crit_vlines(ax, x, t.pdf, t_crit, H1_COLOR, df=df)
 
-# ── Normal distribution curve ──
-fig.add_trace(go.Scatter(
-    x=x, y=normal_pdf,
-    mode="lines",
-    line=dict(color=H0_COLOR, width=2.5),
-    name="Normale verdeling N(0,1)",
-    showlegend=False
-))
+# Curves
+ax.plot(x, normal_pdf, color=H0_COLOR, linewidth=2.5,
+        label=r"Normale verdeling $\mathcal{N}(0,1)$")
+ax.plot(x, t_pdf,      color=H1_COLOR, linewidth=2.5,
+        label=rf"$t$-verdeling $(\mathrm{{df}}={df})$")
 
-# ── t-distribution curve ──
-t_label = f"t-verdeling (df={df})"
-fig.add_trace(go.Scatter(
-    x=x, y=t_pdf,
-    mode="lines",
-    line=dict(color=H1_COLOR, width=2.5),
-    name=t_label,
-    showlegend=False
-))
-
-# ── Layout ──
-df_label = f"{df} {"vrijheidsgraad" if df == 1 else "vrijheidsgraden"}"
-fig.update_layout(
-    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
-    title=dict(
-        text=f"Kansdichtheidsfuncties van N(0,1) en t(df={df})",
-        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
-        x=0.03,
-    ),
-    xaxis=dict(
-        title="x",
-        range=[xmin, xmax],
-        title_font=dict(size=AXIS_FONT_SIZE),
-        tickfont=dict(size=TICK_FONT_SIZE),
-        zerolinecolor="#cccccc",
-    ),
-    yaxis=dict(
-        title="Kansdichtheid f(x)",
-        title_font=dict(size=AXIS_FONT_SIZE),
-        tickfont=dict(size=TICK_FONT_SIZE)
-    ),
-    height=600,
-    hovermode="x unified",
-    margin=dict(t=60, b=40, l=60, r=30),
+apply_dark_style(
+    fig=fig,
+    ax=ax,
+    title=rf"Kansdichtheidsfuncties - $\mathcal{{N}}(0,1)$ en $t(\mathrm{{df}}={df})$",
+    xlabel=r"$x$",
+    ylabel=r"Kansdichtheid $f(x)$"
 )
+ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.2f"))
 
-st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+
+plt.tight_layout(pad=2.0)
+st.pyplot(fig, width="stretch")
+plt.close(fig)
 
 # ----------------------------------
-# UITLEG
+# EXPLANATION
 # ----------------------------------
-
-explanation_title = "📚 Student's $t$-verdeling"
-explanation_md = f"""
-# 📊 Student's $t$-verdeling
-
-Deze interactieve webapp toont een vergelijking tussen de standaardnormale verdeling $N(0,1)$ en Student's $t$-verdeling met verschillende aantallen vrijheidsgraden (df = degrees of freedom).
-
+explanation_title = "📚 Student's t-verdeling"
+explanation_markdown = rf"""
 ## 📌 Wat laat de grafiek zien?
-De $t$-verdeling ontstaat wanneer je het gemiddelde van een steekproef wilt vergelijken met een populatiegemiddelde, maar de **populatiestandaardafwijking $\sigma$ onbekend** is.
-Je schat $\\sigma$ dan met de steekproefstandaardafwijking $s$ en die schatting bevat zelf ook weer onzekerheid omdat we met een steekproef werken.
 
-Die extra onzekerheid vertaalt zich direct naar een kansverdeling met **dikkere staarten**, oftewel een kansverdeling die breder is en waarbij extreme uitkomsten waarschijnlijker zijn dan in de standaardnormale verdeling.
-Hoe kleiner de steekproefgrootte $n$, hoe kleiner het aantal vrijheidsgraden ($n-1$) en dus hoe groter de onzekerheid en hoe dikker dus de staarten.
+De $t$-verdeling ontstaat wanneer je het gemiddelde van een steekproef wilt vergelijken met een
+populatiegemiddelde, maar de **populatiestandaardafwijking $\sigma$ onbekend** is. Je schat $\sigma$
+dan met de steekproefstandaardafwijking $s$, wat extra onzekerheid introduceert. Die onzekerheid
+vertaalt zich naar **dikkere staarten**: extreme uitkomsten zijn waarschijnlijker dan onder de
+standaardnormale verdeling.
 
-Wanneer het aantal vrijheidsgraden groot is (oftewel je werkt met een grotere steekproef), dan is er steeds minder onzekerheid en de $t$-verdeling benadert de standaardnormale verdeling $N(0,1)$.
-In de praktijk geldt dan ook dat bij $\\text{{df}} \geq 30$ het verschil verwaarloosbaar klein is (controleer dit voor jezelf door $\\text{{df}}=30$ in te vullen en te zien wat er gebeurt).
+Hoe kleiner $n$, hoe kleiner df $= n - 1$ en hoe dikker de staarten. Voor df $\geq 30$ is het
+verschil met $\mathcal{{N}}(0,1)$ verwaarloosbaar klein.
 
-## ❓ Wanneer gebruik je een $t$-verdeling in plaats van de normale verdeling?
+## ❓ Wanneer gebruik je de $t$-verdeling?
+
 | Situatie | Gebruik |
 |---|---|
-| $\sigma$ bekend | $N(0,1)$ |
-| $\sigma$ onbekend, $n \geq 30$ | Beide acceptabel, $t$-verdeling strikt genomen correct |
+| $\sigma$ bekend | $\mathcal{{N}}(0,1)$ |
+| $\sigma$ onbekend, $n \geq 30$ | Beide acceptabel |
 | $\sigma$ onbekend, $n < 30$ | $t$-verdeling verplicht |
-| Populatie niet normaal verdeeld, $n < 30$ | Geen van beide — gebruik niet-parametrische toets |
+| Populatie niet normaal, $n < 30$ | Niet-parametrische toets |
 
-Het aantal **vrijheidsgraden** is $\\text{{df}} = n - 1$, waarbij $n$ de steekproefgrootte is.
-Je verliest één vrijheidsgraad omdat je $\mu$ schat met $\\bar{{x}}$.
+## 🧮 Toetsingsgrootheid
 
-Je gebruikt de $t$-verdeling bij een $t$-toets, oftewel een hypothesetoets met
-$$
-    H_0: \\mu = \mu_0 \\text{{ versus }} H_1: \\mu \\neq \\mu_0.
-$$
+Bij een $t$-toets ($H_0: \mu = \mu_0$ versus $H_1: \mu \neq \mu_0$) is de toetsingsgrootheid:
 
-De bijbehorende toetsingsgrootheid (**t-score**) is te berekenen met
 $$
-    t = \\frac{{\\bar{{x}} - \\mu_0}}{{s / \\sqrt{{n}}}},
-$$ 
-waarbij
-
-- $\\bar{{x}}$ het steekproefgemiddelde,
-- $\\mu_0$ de hypothetische waarde,
-- $s$ de steekproefstandaardafwijking, en
-- $n$ de steekproefgrootte.
-
-De **toetsuitslag** kun je bepalen door de kritieke $t$-waarde $t_{{\\text{{crit}}}}$ bij een gegeven significantieniveau $\\alpha$ en aantal vrijheidsgraden $\\text{{df}} = {df}$ te berekenen:
-$$
-    t_{{\\text{{crit}}}}  = \\text{{tcdf}}(\\text{{opp}}=1-\\frac{{\\alpha}}{{2}}, \\text{{df}}={df}) = {t_crit:.4f}.
-$$
-We accepteren $H_0$ als de absolute waarde van de toetsingsgrootheid $t$ kleiner dan of gelijk aan de kritieke $t$-waarde is, en anders verwerpen we $H_0$:
-$$
-    |t| \\leq t_{{\\text{{crit}}}} = {t_crit:.4f} \\quad \\Rightarrow \\quad H_0 \\text{{ accepteren: geen significant verschil gevonden}}, \\\\
-    |t| > t_{{\\text{{crit}}}} = {t_crit:.4f} \\quad \\Rightarrow \\quad H_0 \\text{{ verwerpen: wel een significant verschil gevonden}}.
-$$
- 
----
- 
-## 🧮 Rekenvoorbeeld
- 
-Stel: je meet de reactietijd van {df + 1} proefpersonen en wil toetsen of het gemiddelde **verschilt** van $\\mu_0 = 300$ ms.
-
-| Eigenschap | Waarde |
-|------------|--------|
-| Steekproefgrootte: | $n = {df + 1}$, dus $\\text{{df}} = n - 1 = {df}$ |
-| Steekproefgemiddelde: | $\\bar{{x}} = 312$ ms |
-| Steekproefstandaardafwijking: | $s = 24$ ms |
-
-We voeren een hypothesetoets uit met 
-$$
-    H_0: \\mu = 300 \\text{{ versus }} H_1: \\mu \\neq 300.
+    t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}}
 $$
 
-**Bereken de toetsingsgrootheid:**
- 
+We verwerpen $H_0$ als $|t| > t_{{\text{{crit}}}}$, waarbij:
+
 $$
-    t = \\frac{{\\bar{{x}} - \\mu_0}}{{s / \\sqrt{{n}}}} = \\frac{{312 - 300}}{{24 / \\sqrt{{{df + 1}}}}} = \\frac{{12}}{{24 / {np.sqrt(df + 1):.4f}}} = \\frac{{12}}{{{24 / np.sqrt(df + 1):.4f}}} = {12 / (24 / np.sqrt(df + 1)):.4f}.
+    t_{{\text{{crit}}}} = t_{{1 - \alpha/2,\; \text{{df}}={df}}} = {t_crit:.4f}
 $$
- 
-**Vergelijk met kritieke waarde** bij $\\alpha = {alpha}$ en $\\text{{df}} = {df}$:
- 
+
+## 🔢 Rekenvoorbeeld
+
+$n = {n_ex}$ proefpersonen, toets of reactietijd verschilt van $\mu_0 = 300$ ms,
+met $\bar{{x}} = 312$ ms en $s = 24$ ms.
+
 $$
-    t_{{\\text{{crit}}}} = \\text{{tcdf}}(\\text{{opp}}=1-\\frac{{\\alpha}}{{2}}, \\text{{df}}={df}) = {t_crit:.4f}.
+    t = \frac{{312 - 300}}{{24 / \sqrt{{{n_ex}}}}}
+      = \frac{{12}}{{{24 / np.sqrt(n_ex):.4f}}}
+      = {t_score:.4f}
 $$
- 
-{"✅ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.4f}" + f" < {t_crit:.4f} \\qquad \\Rightarrow \\qquad H_0$ **niet verwerpen**: geen significant verschil gevonden." if abs(12 / (24 / np.sqrt(df + 1))) < t_crit else "❌ $|t| = " + f"{abs(12 / (24 / np.sqrt(df + 1))):.4f}" + f" > {t_crit:.4f}\\qquad \\Rightarrow \\qquad H_0$ **verwerpen**: wel een significant verschil gevonden."}
+
+{"✅" if not reject else "❌"} $|t| = {abs(t_score):.4f}$
+{"<" if not reject else ">"} $t_{{\text{{crit}}}} = {t_crit:.4f}$
+$\;\Rightarrow\;$ $H_0$ **{"niet verwerpen" if not reject else "verwerpen"}**:
+{"geen" if not reject else "wel een"} significant verschil gevonden.
 """
 
-# Call show_explanation for printing the explanation on the webapp
-show_explanation(explanation_title, explanation_md)
+show_explanation(explanation_title, explanation_markdown)

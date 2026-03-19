@@ -17,7 +17,7 @@ def css_to_rgba(css_color, alpha = 0.4) -> str:
 FONT_FAMILY = "JetBrains Mono"#, monospace"
 
 TITLE_FONT_SIZE = 16
-ANNOTATION_FONT_SIZE = 20
+ANNOTATION_FONT_SIZE = 10
 AXIS_FONT_SIZE = 13
 TICK_FONT_SIZE = 10
 BUTTON_FONT_SIZE = 20

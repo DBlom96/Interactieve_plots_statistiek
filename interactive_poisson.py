@@ -70,7 +70,7 @@ st.markdown(f"""
 # ----------------------------------
 # FIGURE
 # ----------------------------------
-fig, (ax_binom, ax_poisson) = plt.subplots(1, 2, figsize=(14, 5))
+fig, (ax_binom, ax_poisson) = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
 
 # --- Binomial ---
 stem_plot(ax_binom, k, y_binom, H0_COLOR)

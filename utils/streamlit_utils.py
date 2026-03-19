@@ -31,7 +31,7 @@ def page_header(title: str, subtitle: str = "") -> None:
 # ----------------------------------
 # MATPLOTLIB HELPERS
 # ----------------------------------
-def apply_dark_style(fig, ax, title=None, xlabel=None, ylabel=None):
+def apply_dark_style(fig, ax, title=None, suptitle=None, xlabel=None, ylabel=None):
     rcParams.update({
         "font.family": "monospace",
         "font.monospace": ["JetBrains Mono", "Courier New", "monospace"],
@@ -57,6 +57,10 @@ def apply_dark_style(fig, ax, title=None, xlabel=None, ylabel=None):
     if title:
         ax.set_title(title, fontsize=TITLE_FONT_SIZE, fontfamily=FONT_FAMILY,
                      color=PLOT_FONT_COLOR, pad=12)
+    
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=AXIS_FONT_SIZE, fontfamily=FONT_FAMILY,
+                     color=PLOT_FONT_COLOR)
     if xlabel:
         ax.set_xlabel(xlabel, fontsize=AXIS_FONT_SIZE, fontfamily=FONT_FAMILY,
                       color=PLOT_FONT_COLOR)

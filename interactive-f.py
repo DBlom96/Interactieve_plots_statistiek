@@ -1,18 +1,19 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
-from scipy.stats import f
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from scipy.stats import f as f_dist
 
 from utils.explanation_utils import show_explanation
-from utils.streamlit_utils import load_css, css_to_rgba, page_header
+from utils.streamlit_utils import load_css, page_header, apply_dark_style
 from utils.constants import *
 
-
 st.set_page_config(
-    page_title="Visualisatie van de F-verdeling",
+    page_title="F-verdeling",
     initial_sidebar_state="expanded",
     layout="wide"
 )
+
 # ----------------------------------
 # CSS
 # ----------------------------------
@@ -21,379 +22,255 @@ load_css()
 # ----------------------------------
 # PARAMETERS
 # ----------------------------------
-
 page_header("📊 F-verdeling", "Continue kansverdelingen")
+
 with st.sidebar:
     st.header("Parameters")
+    df1    = st.number_input(r"Aantal vrijheidsgraden $\text{df}_1$:", min_value=1, value=5)
+    df2    = st.number_input(r"Aantal vrijheidsgraden $\text{df}_2$:", min_value=1, value=5)
+    method = st.selectbox("Visualisatiemethode:", ["Plot", "Kritiek gebied", "p-waarde"])
 
-    df1 = st.number_input(label="Aantal vrijheidsgraden eerste steekproef ($\\text{{df}}_1$)", min_value=1, value=5)
-    df2 = st.number_input(label="Aantal vrijheidsgraden tweede steekproef ($\\text{{df}}_2$)", min_value=1, value=5)
-    method = st.selectbox(
-        label="Selecteer visualisatiemethode", 
-        options=["Plot", "Kritiek gebied", "p-waarde"]
-    )
-
+    alpha, toets = None, None
     if method != "Plot":
-        alpha = st.number_input("Significantieniveau $\\alpha$", min_value=0.001, value=0.05)
-        toetsingsgrootheid = st.number_input("Geobserveerde toetsingsgrootheid $f$", value=2.0)
+        alpha = st.number_input(r"Significantieniveau $\alpha$:", min_value=0.001, value=0.05)
+        toets = st.number_input(r"Toetsingsgrootheid $f$:", value=2.0, min_value=0.0)
 
-# --------------------------------
-# SAMPLING
-# --------------------------------
+# ----------------------------------
+# COMPUTATIONS
+# ----------------------------------
+x_max = f_dist.ppf(0.99, dfn=df1, dfd=df2)
+x     = np.linspace(1e-6, x_max, 10_000)
+y     = f_dist.pdf(x, df1, df2)
 
-def draw_f_distribution(df1, df2, xmax):
-    x = np.linspace(0, xmax, 10_000)
-    y = f.pdf(x, df1, df2)
-    return x, y
-
-# ------------------------
-# PRECOMPUTED VALUES
-# ------------------------
-xmax = f.ppf(0.99, dfn=df1, dfd=df2)
-x, y = draw_f_distribution(df1, df2, xmax)
-P_VALUE_COLOR = css_to_rgba(BETA_COLOR, 0.4) # "cyan"
-CRITICAL_SHADE_COLOR = css_to_rgba(CRITICAL_COLOR, 0.4)
-
-YTEXT = -0.2 * max(y)  # Position for the horizontal line
-YLINES = 1/2 * YTEXT
+linkergrens = rechtergrens = p_waarde = None
+inside_critical = False
 
 if method != "Plot":
-    linkergrens = f.ppf(q=alpha/2, dfn=df1, dfd=df2)
-    rechtergrens = f.ppf(q=1-alpha/2, dfn=df1, dfd=df2)
+    linkergrens   = f_dist.ppf(alpha / 2,       dfn=df1, dfd=df2)
+    rechtergrens  = f_dist.ppf(1 - alpha / 2,   dfn=df1, dfd=df2)
+    p_value_left  = f_dist.cdf(toets,            dfn=df1, dfd=df2)
+    p_value_right = 1 - f_dist.cdf(toets,        dfn=df1, dfd=df2)
+    p_waarde      = min(p_value_left, p_value_right)
+    inside_critical = (toets < linkergrens) or (toets > rechtergrens)
 
-    p_value_left = f.cdf(toetsingsgrootheid, dfn=df1, dfd=df2)
-    p_value_right = 1 - f.cdf(toetsingsgrootheid, dfn=df1, dfd=df2)
-    p_waarde = min(p_value_left, p_value_right)
+# ----------------------------------
+# STAT CARDS
+# ----------------------------------
+if method == "Kritiek gebied":
+    st.markdown(f"""
+    <div class="stats-row-3">
+      <div class="stat-card acceptatie">
+        <span class="stat-label">Acceptatiegebied</span>
+        <span class="stat-value">[{linkergrens:.4f}, {rechtergrens:.4f}]</span>
+        <span class="stat-desc">Middelste {int(100 * (1 - alpha))}% van de verdeling</span>
+      </div>
+      <div class="stat-card kritiek">
+        <span class="stat-label">Kritiek gebied</span>
+        <span class="stat-value">[0, {linkergrens:.4f}) en ({rechtergrens:.4f}, &infin;)</span>
+        <span class="stat-desc">Extreem grote of kleine variantieverhouding</span>
+      </div>
+      <div class="stat-card {"kritiek" if inside_critical else "acceptatie"}">
+        <span class="stat-label">Toetsingsgrootheid</span>
+        <span class="stat-value">f = {toets:.4f}</span>
+        <span class="stat-desc">Ligt {"wel" if inside_critical else "niet"} in het kritieke gebied</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    mask_acceptable = (linkergrens <= x) & (x <= rechtergrens)
-    mask_critical_left = (x < linkergrens)
-    mask_critical_right = (x > rechtergrens)
+elif method == "p-waarde":
+    significant = p_waarde < alpha / 2
+    st.markdown(f"""
+    <div class="stats-row-3">
+      <div class="stat-card bi">
+        <span class="stat-label">Toetsingsgrootheid</span>
+        <span class="stat-value">f = {toets:.4f}</span>
+        <span class="stat-desc">Ligt {"wel" if significant else "niet"} in het kritieke gebied</span>
+      </div>
+      <div class="stat-card pvalue">
+        <span class="stat-label">p-waarde</span>
+        <span class="stat-value">{p_waarde:.4f}</span>
+        <span class="stat-desc">min(<i>P(F &le; f), P(F &ge; f)</i>)</span>
+      </div>
+      <div class="stat-card kritiek">
+        <span class="stat-label">Significantieniveau</span>
+        <span class="stat-value">&alpha; = {alpha:.4f}</span>
+        <span class="stat-desc">Vastgestelde kans op type-I fout</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    inside_critical_region = (toetsingsgrootheid < linkergrens) or (toetsingsgrootheid > rechtergrens)
+# ----------------------------------
+# HELPERS
+# ----------------------------------
+def add_interval_bar(ax, x_max, linker, rechter, y):
+    """Coloured acceptance / critical bar just below the x-axis."""
+
+    segments = [
+        (0,       linker,   CRITICAL_COLOR,   ""),
+        (linker,  rechter,  ACCEPTABLE_COLOR, "Acceptatiegebied"),
+        (rechter, x_max,    CRITICAL_COLOR,   "Kritiek gebied"),
+    ]
+    for l, r, color, label in segments:
+        ax.plot([l, r], [bar_y, bar_y], color=color, linewidth=8,
+                solid_capstyle="butt", clip_on=False)
+        if label:
+            ax.text((l + r) / 2, bar_y - 2.8 * tick_h, label,
+                    ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+                    color=color, fontfamily="JetBrains Mono")
+
+    for xv in [0, linker, rechter, x_max]:
+        ax.plot([xv, xv], [bar_y - tick_h, bar_y + tick_h],
+                color=PLOT_FONT_COLOR, linewidth=1, clip_on=False)
 
 
+# ----------------------------------
+# FIGURE
+# ----------------------------------
+fig, ax = plt.subplots(figsize=(10, 5))
 
-# ------------------------
-# PLOTTING
-# ------------------------
-fig = go.Figure()
+bar_y  = -0.055 * max(y)
+tick_h = 0.018 * max(y)
+ytext = bar_y - 2.8 * tick_h
+plt.ylim(bottom=3*bar_y, top=1.1*max(y))
+
+# Base curve — always drawn
+ax.plot(x, y, color=H0_COLOR, linewidth=2.5,
+        label=rf"$F(\mathrm{{df}}_1={df1},\;\mathrm{{df}}_2={df2})$")
 
 if method == "Kritiek gebied":
-    # We toetsen altijd tweezijdig met de F-toets voor gelijke varianties
+    # Shade critical tails
+    ax.fill_between(x, y, where=(x <= linkergrens),  color=CRITICAL_COLOR,   alpha=0.2)
+    ax.fill_between(x, y, where=(x >= rechtergrens), color=CRITICAL_COLOR,   alpha=0.2)
 
-    # Teken stippellijnen om toetsingsgrootheid en kritieke grenzen aan te geven.
-    for (val, color) in [(toetsingsgrootheid, H0_COLOR), (linkergrens, CRITICAL_COLOR), (rechtergrens, CRITICAL_COLOR)]:
-        fig.add_trace(go.Scatter(
-            x=[val, val],
-            y=[0, f.pdf(val, dfn=df1, dfd=df2)],
-            mode='lines',
-            line=dict(color=color, dash='dash'),
-            showlegend=False
-        ))
-
-    # Arceer het kritieke gebied
-    for mask in [mask_critical_left, mask_critical_right]:
-        fig.add_trace(go.Scatter(
-            x=x[mask],
-            y=y[mask],
-            mode='lines',
-            fill='tozeroy',
-            fillcolor=CRITICAL_SHADE_COLOR,
-            showlegend=False
-        ))  
-
-    # Voeg tekst toe op positie van toetsingsgrootheid
-    fig.add_trace(go.Scatter(
-        x=[toetsingsgrootheid],
-        y=[YLINES * 2],
-        mode='text',
-        marker=dict(color=H0_COLOR, size=10),
-        text="f",
-        textfont=dict(size=ANNOTATION_FONT_SIZE, color=H0_COLOR),
-        textposition="top center",
-        showlegend=False
-    ))
-
-    # Voeg lijnen toe om de acceptatie- en kritieke gebieden aan te geven
-    for (l, r, color, text) in [
-        (0, linkergrens, CRITICAL_COLOR, ""),
-        (linkergrens, rechtergrens, ACCEPTABLE_COLOR, "Acceptatiegebied"),
-        (rechtergrens, xmax, CRITICAL_COLOR, "Kritiek gebied")
+    # Boundary lines
+    for xv, color, lbl in [
+        (linkergrens,  CRITICAL_COLOR,   rf"$f_{{\alpha/2}} = {linkergrens:.4f}$"),
+        (rechtergrens, CRITICAL_COLOR,   rf"$f_{{1-\alpha/2}} = {rechtergrens:.4f}$"),
+        (toets,        H0_COLOR,         rf"$f = {toets:.4f}$"),
     ]:
-        
-        fig.add_trace(go.Scatter(
-            x=[l, r],
-            y=[YLINES, YLINES],
-            mode='lines',
-            line=dict(color=color, width=10),
-            showlegend=False
-        ))
-
-        # Add text at position of regions
-        fig.add_trace(go.Scatter(
-            x=[(l + r) / 2],
-            y=[YLINES * 2.5],
-            mode='text',
-            text=text,
-            textfont=dict(color=color, size=ANNOTATION_FONT_SIZE),
-            showlegend=False
-        ))
- 
-    # -------------------------------
-    # STAT CARDS
-    # -------------------------------
-
-    st.markdown(f"""
-    <div class="stats-row-3" >
-        <div class="stat-card acceptatie">
-            <span class="stat-label">Acceptatiegebied</span>
-            <span class="stat-value">[{linkergrens:.4f}, {rechtergrens:.4f}]</span>
-            <span class="stat-desc">Kans op redelijke uitkomst (laagste {int(100*(1-alpha))}%)</span>
-        </div>
-        <div class="stat-card kritiek">
-            <span class="stat-label">Kritiek gebied</span>
-            <span class="stat-value">[0, {linkergrens:.4f}) en ({rechtergrens:.4f}, &infin;)</span>
-            <span class="stat-desc">Waarden die duiden op extreem groot verschil tussen de twee varianties</span>
-        </div>
-        <div class="stat-card bi">
-            <span class="stat-label">Toetsingsgrootheid</span>
-            <span class="stat-value">&chi;<sup>2</sup> = {toetsingsgrootheid:.4f}</span>
-            <span class="stat-desc">De toetsingsgrootheid ligt {"" if inside_critical_region else "niet"} in het kritieke gebied</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-if method == "p-waarde":
-    # Teken stippellijn om toetsingsgrootheid aan te geven.
-    fig.add_trace(go.Scatter(
-        x=[toetsingsgrootheid, toetsingsgrootheid],
-        y=[0, f.pdf(toetsingsgrootheid, dfn=df1, dfd=df2)],
-        mode='lines',
-        line=dict(color=H0_COLOR, dash='dash'),
-        showlegend=False
-    ))
-
-    # Arceer het gebied corresponderend met de p-waarde
-    if p_value_left < p_value_right:
-        mask = (x < toetsingsgrootheid)
-    else:
-        mask = (x > toetsingsgrootheid)
-
-    fig.add_trace(go.Scatter(
-        x=x[mask],
-        y=y[mask],
-        mode='lines',
-        fill='tozeroy',
-        fillcolor=P_VALUE_COLOR,
-        showlegend=False
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=[toetsingsgrootheid],
-        y=[YTEXT],
-        mode='text',
-        marker=dict(color=H0_COLOR, size=10),
-        text=r"f",
-        textfont=dict(size=ANNOTATION_FONT_SIZE, color=H0_COLOR),
-        textposition="top center",
-        showlegend=False
-    ))
-
-    # -------------------------------
-    # STAT CARDS
-    # -------------------------------
+        ax.plot([xv, xv], [0, f_dist.pdf(xv, df1, df2)],
+                color=color, linewidth=1.5, linestyle="--", label=lbl)
     
-    st.markdown(f"""
-    <div class="stats-row-3" >
-        <div class="stat-card bi">
-            <span class="stat-label">Toetsingsgrootheid</span>
-            <span class="stat-value">f = {toetsingsgrootheid:.4f}</span>
-            <span class="stat-desc">De toetsingsgrootheid ligt {"" if p_waarde < alpha / 2 else "niet"} in het kritieke gebied</span>
-        </div>
-        <div class="stat-card pvalue">
-            <span class="stat-label">p-waarde</span>
-            <span class="stat-value">{p_waarde:.4f}</span>
-            <span class="stat-desc">Kans op uitkomst {"&le;" if p_value_right > p_value_left else "&ge;"} f = {toetsingsgrootheid:.3f}</span>
-        </div>
-        <div class="stat-card kritiek">
-            <span class="stat-label">Significantieniveau</span>
-            <span class="stat-value">&alpha; = {alpha:.4f}</span>
-            <span class="stat-desc">Vastgestelde kans op type-I fout<br> (H<sub>0</sub> onterecht verwerpen)</span>
-        </div>
-        
-    </div>
-    """, unsafe_allow_html=True)
+    # Add annotation for the test statistics
+    ax.text(toets,  ytext, f"$f = {toets:.2f}$",
+            ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+            color=H0_COLOR, fontfamily="JetBrains Mono")
 
-# Draw the pdf of the F-distribution
-fig.add_trace(go.Scatter(
-    x=x,
-    y=y,
-    mode='lines',
-    line=dict(color=H0_COLOR),
-    showlegend=False
-))
+    add_interval_bar(ax, x_max, linkergrens, rechtergrens, y)
 
-fig.update_layout(
-    font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
-    title = dict(
-        text=(f"F-verdeling met df<sub>1</sub> = {df1} en df<sub>2</sub> = {df2} vrijheidsgraden."),
-        font=dict(size=TITLE_FONT_SIZE, family=FONT_FAMILY, color=PLOT_FONT_COLOR),
-    ),
-    xaxis = dict(
-        title=dict(text="x", font=dict(size=AXIS_FONT_SIZE)),
-        tickfont=dict(size=TICK_FONT_SIZE),    
-    ),
-    yaxis = dict(
-        title=dict(text="Kansdichtheidsfunctie f(x)", font=dict(size=AXIS_FONT_SIZE)),
-        tickfont=dict(size=TICK_FONT_SIZE),    
-    ),
-    height=600
-)
+elif method == "p-waarde":
+    # Shade the tail corresponding to the p-value
+    if p_value_left < p_value_right:
+        ax.fill_between(x, y, where=(x <= toets), color=BETA_COLOR,     alpha=0.25,
+                        label=rf"p-waarde $= {p_waarde:.4f}$")
+    else:
+        ax.fill_between(x, y, where=(x >= toets), color=BETA_COLOR,     alpha=0.25,
+                        label=rf"p-waarde $= {p_waarde:.4f}$")
 
-st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+    # Shade both critical tails
+    ax.fill_between(x, y, where=(x <= linkergrens),  color=CRITICAL_COLOR, alpha=0.25,
+                    label=rf"Kritiek gebied $(\alpha={alpha})$")
+    ax.fill_between(x, y, where=(x >= rechtergrens), color=CRITICAL_COLOR, alpha=0.25)
 
-explanation_title = "📚 De $F$-verdeling"
-explanation_md = fr"""
-# 📊 De $F$-verdeling
+    # Boundary lines
+    ax.plot([toets, toets], [0, f_dist.pdf(toets, df1, df2)],
+            color=H0_COLOR,      linewidth=1.5, linestyle=":",
+            label=rf"$f = {toets:.4f}$")
+    ax.plot([linkergrens,  linkergrens],  [0, f_dist.pdf(linkergrens,  df1, df2)],
+            color=CRITICAL_COLOR, linewidth=1.5, linestyle="--",
+            label=rf"$f_{{\alpha/2}} = {linkergrens:.4f}$")
+    ax.plot([rechtergrens, rechtergrens], [0, f_dist.pdf(rechtergrens, df1, df2)],
+            color=CRITICAL_COLOR, linewidth=1.5, linestyle="--",
+            label=rf"$f_{{1-\alpha/2}} = {rechtergrens:.4f}$")
+    
+    # Add annotation for the test statistics
+    ax.text(toets,  ytext, f"$f = {toets:.2f}$",
+            ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+            color=H0_COLOR, fontfamily="JetBrains Mono")
 
-De **$F$-verdeling** is een continue kansverdeling die optreedt als de verhouding van twee onafhankelijke, geschaalde $\chi^2$-verdelingen. Ze speelt een centrale rol bij de **toets voor gelijke varianties** van twee normaal verdeelde populaties.
 
-----
+# Title
+if method == "Plot":
+    apply_dark_style(
+        fig=fig, ax=ax,
+        title=rf"Kansdichtheidsfunctie — $F(\mathrm{{df}}_1={df1},\;\mathrm{{df}}_2={df2})$",
+        xlabel=r"$x$",
+        ylabel=r"Kansdichtheid $f(x)$"
+    )
+else:
+    apply_dark_style(fig=fig, ax=ax, xlabel=r"$x$", ylabel=r"Kansdichtheid $f(x)$")
+    ax.text(0.5, 1.02,
+            rf"$f = {toets:.4f}$ ligt in het ",
+            transform=ax.transAxes, ha="right", va="bottom",
+            fontsize=TITLE_FONT_SIZE, color=PLOT_FONT_COLOR,
+            fontfamily="JetBrains Mono")
+    ax.text(0.5, 1.02,
+            " kritieke gebied" if inside_critical else " acceptatiegebied",
+            transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=TITLE_FONT_SIZE,
+            color=CRITICAL_COLOR if inside_critical else ACCEPTABLE_COLOR,
+            fontfamily="JetBrains Mono")
 
+plt.tight_layout(pad=2.5)
+st.pyplot(fig, use_container_width=True)
+plt.close(fig)
+
+# ----------------------------------
+# EXPLANATION
+# ----------------------------------
+explanation_title = "📚 De F-verdeling"
+explanation_markdown = r"""
 ## 💡 Intuïtie
 
-De toetsingsgrootheid vergelijkt twee **steekproefvarianties**. Stel dat we twee normaal verdeelde populaties $X$ en $Y$ hebben, met parameters $(\mu_X, \sigma_X)$ en $(\mu_Y, \sigma_Y)$ die allevier onbekend zijn.
-
-voor beide populaties een steekproef $(x_1, x_2, \ldots, x_n)$ en $(y_1, y_2, \ldots, y_m)$, waarbij $n$ en $m$ positieve gehele getallen zijn die de steekproefgroottes aan duiden.
-
-Met behulp van de F-verdeling kunnen we een F-toets uitvoeren om te testen of de varianties gelijk zijn, oftewel $\sigma_X^2 = \sigma_Y^2$. De bijbehorende hypotheses van deze toets zijn dan ook
+De **$F$-verdeling** beschrijft de verhouding van twee onafhankelijke steekproefvarianties. Ze wordt
+gebruikt bij de **toets voor gelijke varianties** van twee onafhankelijke normaal verdeelde populaties:
 
 $$
-    H_0: \sigma_X^2 = \sigma_Y^2 \text{{ versus }} H_1: \sigma_X^2 = \sigma_Y^2.
+    H_0: \sigma_1^2 = \sigma_2^2 \quad \text{versus} \quad H_1: \sigma_1^2 \neq \sigma_2^2
 $$
 
-Om de hypothesetoets uit te voeren nemen we twee steekproeven, een uit de populatie $X$ en een uit de populatie $Y$.
-Deze steekproeven noteren we met $(X_1, X_2, \ldots, X_n)$ en $(Y_1, Y_2, \ldots, Y_m)$, waarbij $n$ en $m$ positieve gehele getallen zijn die de steekproefgroottes aan duiden. We beginnen door eerst de steekproefvarianties te berekenen, met behulp van de bekende formules:
-
+De toetsingsgrootheid is:
 $$
-    S_X^2 = \frac{{(X_1-\bar{{X}})^2 + \ldots + (X_n - \bar{{X}})^2}}{{n-1}}
-    S_Y^2 = \frac{{(Y_1-\bar{{Y}})^2 + \ldots + (Y_m - \bar{{Y}})^2}}{{m-1}}
+    F = \frac{S_1^2}{S_2^2}
 $$
 
-De toetsingsgrootheid die hoort bij deze hypothesetoets is
-$$
-    F = \frac{{S_1^2}}{{S_2^2}},
-$$
-oftewel de breuk van deze twee steekproefvarianties.
+Onder $H_0$ volgt $F$ een $F(\text{df}_1, \text{df}_2)$-verdeling met $\text{df}_i = n_i - 1$.
 
-⚠️ Merk hierbij het volgende op:
-- $F \approx 1$: de varianties lijken op elkaar — consistent met $H_0$.
-- $F$ ligt veraf van $1$: één steekproef is veel meer gespreid dan de andere — bewijs tegen $H_0$.
+- $F \approx 1$: varianties lijken op elkaar — consistent met $H_0$.
+- $F$ ver van $1$: één steekproef is veel meer gespreid — bewijs tegen $H_0$.
 
-Onder de nulhypothese $H_0$ volgt deze toetsingsgrootheid de F(n-1, m-1)-verdeling, oftewel de $F$-verdeling met $\text{{df}}_1 = n-1$ en $\\text{{df}}_2 = m-1$ vrijheidsgraden. Omdat de $F$-verdeling rechtsscheef is en altijd positief, is de **tweezijdige toets asymmetrisch**: de linker- en rechtergrens liggen niet even ver van het midden.
+## 📌 Eigenschappen
 
----
+- Altijd positief ($F \geq 0$) en rechtsscheef.
+- Verwachtingswaarde: $E[F] = \dfrac{\text{df}_2}{\text{df}_2 - 2}$ (voor $\text{df}_2 > 2$).
+- De toets is **tweezijdig**: zowel een te hoge als een te lage $f$-waarde leidt tot verwerping.
 
-## 🧪 Hypothesen & beslissingsregels
-
-| | |
-|---|---|
-| **$H_0$** | $\sigma_1^2 = \sigma_2^2$ |
-| **$H_1$** | $\sigma_1^2 \neq \sigma_2^2$ |
-
-De toets is altijd **tweezijdig**: zowel een te hoge als een te lage $f$-waarde geeft aanleiding tot verwerping.
+## 🧪 Beslissingsregels
 
 **Via het kritieke gebied** — verwerp $H_0$ als:
-$$f < F_{{\alpha/2;\, \text{{df}}_1,\, \text{{df}}_2}} \quad \text{{of}} \quad f > F_{{1-\alpha/2;\, \text{{df}}_1,\, \text{{df}}_2}}$$
-
-**Via de $p$-waarde** — verwerp $H_0$ als:
-$$p = \min\left(P(F \leq f),\; P(F \geq f)\right) < \alpha / 2$$
-
----
-
-## 🎨 Over de visualisatie
-
-| Methode | Wat zie je? |
-|---|---|
-| **Plot** | De kansdichtheidsfunctie $f(x)$ met de gekozen vrijheidsgraden $\text{{df}}_1 = {df1}$ en $\text{{df}}_2 = {df2}$. |
-| **Kritiek gebied** | Het acceptatiegebied (groen) en de kritieke gebieden (rood) bij significantieniveau $\alpha$. |
-| **$p$-waarde** | Het gearceerde oppervlak onder de curve corresponderend met de kans op een uitkomst minstens zo extreem als de geobserveerde $f$. |
-
----
-
-## 🔢 Rekenvoorbeeld: precisie van twee sluipschuttersteams
-
-Een defensie-onderzoeker wil weten of twee sluipschutterteams — **Team Alpha** en **Team Bravo** — even consistent schieten. Beide teams voeren $10$ oefenschoten uit op een doelwit op $300$ meter. De **afwijking ten opzichte van het middelpunt** (in cm) wordt geregistreerd. De onderzoeker wil bij een significantieniveau van $\alpha = 0.05$ toetsen of de spreiding in beide teams gelijk is.
-
-De gemeten afwijkingen zijn:
-
-| | Metingen (cm) |
-|---|---|
-| **Team Alpha** ($n = 10$) | $12, 15, 10, 14, 13, 16, 11, 14, 12, 13$ |
-| **Team Bravo** ($m = 10$) | $9, 22, 7, 18, 25, 6, 20, 11, 19, 8$ |
-
-### **Stap 1 — Hypothesen opstellen:**
-
 $$
-    H_0: \sigma_A^2 = \sigma_B^2 \quad \text{{versus}} \quad H_1: \sigma_A^2 \neq \sigma_B^2.
+    f < F_{\alpha/2;\,\text{df}_1,\,\text{df}_2}
+    \quad\text{of}\quad
+    f > F_{1-\alpha/2;\,\text{df}_1,\,\text{df}_2}
 $$
 
-### **Stap 2 — Steekproefvarianties berekenen:**
-
-De steekproefgemiddelden zijn $\bar{{x}}_A = 13.0$ en $\bar{{x}}_B = 14.5$. De steekproefvarianties bedragen:
-
+**Via de p-waarde** — verwerp $H_0$ als:
 $$
-    s_A^2 = \frac{{(12-13)^2 + (15-13)^2 + \ldots + (13-13)^2}}{{9}} = \frac{{30}}{{9}} \approx 3.3333, \\
-    s_B^2 = \frac{{(9-14.5)^2 + (22-14.5)^2 + \ldots + (8-14.5)^2}}{{9}} = \frac{{432.5}}{{9}} \approx 48.0556.
+    p = \min\!\bigl(P(F \leq f),\; P(F \geq f)\bigr) < \alpha/2
 $$
 
-### **Stap 3 — Toetsingsgrootheid berekenen:**
+## 🔢 Rekenvoorbeeld
+
+Twee sluipschutterteams ($n = m = 10$) schieten op een doelwit. De steekproefvarianties zijn
+$s_A^2 \approx 3.33$ en $s_B^2 \approx 48.06$, dus:
 
 $$
-    f = \frac{{s_A^2}}{{s_B^2}} = \frac{{3.3333}}{{48.0556}} \approx 0.0694.
+    f = \frac{s_A^2}{s_B^2} = \frac{3.33}{48.06} \approx 0.069
 $$
 
-### **Stap 4 — Toetsuitslag bepalen** bij $\alpha = 0.05$ en $\text{{df}}_1 = \text{{df}}_2 = 9$:
-
-- **Methode 1: kritieke gebied**
-
-    - Voor het berekenen van de linkergrens, los op:
-    $$
-        \text{{Fcdf}}(\text{{lower}} = 0, \text{{upper}} = X, \text{{df}}_1 = 9, \text{{df}}_1 = 9) = \alpha/2 \quad \Rightarrow \quad X \approx 0.2484.
-    $$
-    - Voor het berekenen van de rechtergrens, los op:
-    $$
-        \text{{Fcdf}}(\text{{lower}} = X, \text{{upper}} = \infty, \text{{df}}_1 = 9, \text{{df}}_1 = 9) = \alpha/2 \quad \Rightarrow \quad X \approx 4.0260.
-    $$
-
-    Het kritieke gebied wordt dus gegeven door $[0, 0.2484)$ en $(4.0260, \infty)$. De geobserveerde toetsingsgrootheid $f \approx 0.0694 < 0.2484$, oftewel de toetsingsgrootheid ligt **in het (linker)kritieke gebied**.
-
-- **Methode 2: de $p$-waarde**
-
-    - Voor het berekenen van de $p$-waarde, bereken de **kleinste** waarde van de linkeroverschrijdingskans en de rechteroverschrijdingskans:
-        - Linkeroverschrijdingskans (kans op een kleinere waarde dan $f \approx 0.0694$):
-        $$
-            P(F \leq f) = \text{{Fcdf}}(\text{{lower}} = 0, \text{{upper}} = f = 0.0694, \text{{df}}_1 = 9, \text{{df}}_1 = 9) \approx 2.4733 \cdot 10^{{-4}}.
-        $$
-
-        - Rechteroverschrijdingskans (kans op een grotere waarde dan $f \approx 0.0694$):
-    
-    $$
-        P(F \geq f) = \text{{Fcdf}}(\text{{lower}} = f = 0.0694, \text{{upper}} = 10^{{99}}, \text{{df}}_1 = 9, \text{{df}}_1 = 9) \approx 0.9998.
-    $$
-
-    De $p$-waarde is het minimum van deze twee waarden, dus $p \approx 2.4733 \cdot 10^{{-4}}$.
-
-### **Stap 5 — Beslissing:**
-
-- **Methode 1: kritieke gebied**
-    - De toetsingsgrootheid $f \approx 0.0694$ ligt **in het kritieke gebied**, dus we verwerpen $H_0$.
-
-- **Methode 2: de $p$-waarde**
-    - De $p \approx 2.4733 \cdot 10^{{-4}}$ is (veel) kleiner dan $\alpha / 2 = 0.025$ (want we toetsen tweezijdig!), dus we verwerpen $H_0$.
-
-Er is op basis van deze steekproeven voldoende statistisch bewijs om te concluderen dat de schietprecisie van Team Alpha en Team Bravo **significant verschilt** op het 5%-significantieniveau. Team Bravo schiet gemiddeld even ver, maar met een veel grotere spreiding.
+Bij $\alpha = 0.05$ en $\text{df}_1 = \text{df}_2 = 9$: kritiek gebied $[0,\, 0.248) \cup (4.026,\, \infty)$.
+Omdat $f \approx 0.069 < 0.248$ verwerpen we $H_0$ — de spreiding van de twee teams verschilt
+significant.
 """
 
-show_explanation(explanation_title, explanation_md)
-
+show_explanation(explanation_title, explanation_markdown)

@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm
+
 from utils.streamlit_utils import load_css, page_header
 from utils.explanation_utils import show_explanation
 from utils.constants import *
@@ -17,165 +18,110 @@ st.set_page_config(
 # ----------------------------------
 load_css()
 
-def write_header(text, font_size):
-    st.markdown(f'<p style="font-size:{font_size}px;">{text}</p>', unsafe_allow_html=True)
-
-# --------------------------------------------------
+# ----------------------------------
 # PARAMETERS
-# --------------------------------------------------
-page_header("📊 Betrouwbaarheidsintervallen", "Schatten · Populatiegemiddelde mu")
+# ----------------------------------
+page_header("📊 Betrouwbaarheidsintervallen", "Schatten · Populatiegemiddelde μ")
 
 with st.sidebar:
     st.header("Parameters")
+    mu             = st.number_input(r"Populatiegemiddelde $\mu$:", value=0)
+    sigma          = st.number_input(r"Populatiestandaardafwijking $\sigma$:", min_value=0.01, value=2.0)
+    n              = st.number_input(r"Steekproefgrootte $n$:", min_value=2, value=30)
+    alpha          = st.number_input(r"Significantieniveau $\alpha$:", min_value=0.01, max_value=0.10, value=0.05)
+    frame_duration = st.number_input("Frame duur (ms):", min_value=100, value=500)
+    batch_size     = st.number_input("Aantal steekproeven:", min_value=1, max_value=1000, value=100)
+    generate       = st.button("Steekproeven trekken")
 
-    mu = st.number_input("Populatiegemiddelde ($\\mu$)", value=0)
-    sigma = st.number_input("Populatiestandaarddeviatie $\\sigma$", min_value=0.01, value=2.0)
-    n = st.number_input("Steekproefgrootte $n$", min_value=2, value=30)
-    alpha = st.number_input("Significantieniveau $\\alpha$", 0.01, 0.10, 0.05)
-    frame_duration = st.number_input("Frame duur (ms)", min_value=100, value=500)
-    batch_size = st.number_input("Aantal steekproeven", min_value=1, value=100, max_value=1000)
-    generate = st.button("Steekproeven trekken")
+st.markdown(f"""
+In deze simulatie worden betrouwbaarheidsintervallen bepaald voor het populatiegemiddelde
+$\\mu$ van $N(\\mu, \\sigma)$ met bekende $\\sigma$. Bij een betrouwbaarheidsniveau van
+$1 - \\alpha = {(1 - alpha):.2f}$ verwachten we dat ongeveer **{(1 - alpha):.0%} van de intervallen**
+het werkelijke populatiegemiddelde $\\mu$ bevat.
 
-st.write("""In deze simulatie worden betrouwbaarheidsintervallen bepaald voor het populatiegemiddelde $\\mu$ van een normale verdeling $N(\\mu = ?, \\sigma)$ met bekende standaardafwijking $\\sigma$.
-Als we een steekproef van grootte $n$ trekken uit deze kansverdeling en het steekproefgemiddelde $\\bar{x}$ berekenen, kunnen we een betrouwbaarheidsinterval construeren dat met een bepaalde betrouwbaarheidsniveau ($1 - \\alpha$) het werkelijke populatiegemiddelde $\\mu$ bevat.
-Als we het proces van steekproeftrekking en intervalconstructie herhalen, kunnen we zien dat bij een betrouwbaarheidsniveau van bijvoorbeeld 0.95 ($\\alpha = 0.05$) geldt dat ongeveer 95% van de intervallen het werkelijke populatiegemiddelde $\\mu$ zullen bevatten, wat inzicht geeft in het concept van betrouwbaarheidsintervallen en hun interpretatie.
-         
-Merk op: normaal gesproken weet je natuurlijk niet wat $\\mu$ is en wil je daarover uitspraken doen op basis van je steekproef. 
-In deze simulatie is $\\mu$ echter bekend om het concept van betrouwbaarheidsintervallen en betrouwbaarheidsniveau ($1 - \\alpha$) beter te kunnen illustreren.""")
+> **Let op:** in de praktijk is $\\mu$ onbekend en is het hele idee van betrouwbaarheidsinterval dat we met een bepaalde mate van zekerheid iets over $\\mu$ willen kunnen zeggen.
+Als we data verzamelen, gaan we er echter vanuit dat er een echte $\\mu$ bestaat en dat de data uit een normale verdeling komt met dat gemiddelde $\\mu$.
+Hier is $\\mu$ bekend om het concept van betrouwbaarheidsintervallen te illustreren.
+""")
 
-# --------------------------------------------------
+# ----------------------------------
 # HELPERS
-# --------------------------------------------------
-
-def make_traces_for_frame(intervals, means, contains, current_sample, current_xbar, mu):
+# ----------------------------------
+def make_traces(intervals, means, contains, sample, xbar, mu):
     traces = []
 
+    # Invisible anchor to fix axis range
     traces.append(go.Scatter(
-        x=[0],
-        y=[1],
-        mode="markers",
-        marker=dict(size=9, color=OBSERVATION_COLOR, opacity=0),
+        x=[mu - 4 * sigma, mu + 4 * sigma], y=[1, 1],
+        mode="markers", marker=dict(opacity=0), showlegend=False,
+    ))
+
+    # Raw sample observations
+    traces.append(go.Scatter(
+        x=sample, y=[-1] * len(sample),
+        mode="markers", marker=dict(size=8, color=OBSERVATION_COLOR),
         showlegend=False,
     ))
 
+    # Current sample mean
     traces.append(go.Scatter(
-        x=current_sample,
-        y=[-1] * len(current_sample),
-        mode="markers",
-        marker=dict(size=9, color=OBSERVATION_COLOR),
+        x=[xbar], y=[-1],
+        mode="markers", marker=dict(size=14, color=SAMPLE_MEAN_COLOR),
         showlegend=False,
     ))
 
-    traces.append(go.Scatter(
-        x=[current_xbar],
-        y=[-1],
-        mode="markers",
-        marker=dict(size=14, color=SAMPLE_MEAN_COLOR),
-        showlegend=False,
-    ))
-
+    # Last 10 confidence intervals
     for i, (l, r) in enumerate(intervals[:10]):
-        if (l, r) == (mu, mu):
-            traces.append(go.Scatter(
-                x=[mu, mu], y=[i, i], mode="markers",
-                marker=dict(size=0, opacity=0),
-                showlegend=False,
-            ))
-            traces.append(go.Scatter(
-                x=[mu], y=[i], mode="markers",
-                marker=dict(size=0, opacity=0),
-                showlegend=False,
-            ))
+        if (l, r) == (mu, mu):       # placeholder — not yet drawn
+            traces += [
+                go.Scatter(x=[mu, mu], y=[i, i], mode="markers",
+                           marker=dict(size=0, opacity=0), showlegend=False),
+                go.Scatter(x=[mu], y=[i], mode="markers",
+                           marker=dict(size=0, opacity=0), showlegend=False),
+            ]
         else:
             color = ACCEPTABLE_COLOR if contains[i] else CRITICAL_COLOR
-            traces.append(go.Scatter(
-                x=[l, r], y=[i, i], mode="lines",
-                line=dict(color=color, width=3),
-                showlegend=False,
-            ))
-            traces.append(go.Scatter(
-                x=[means[i]], y=[i], mode="markers",
-                marker=dict(size=9, color=BETA_COLOR),
-                showlegend=False,
-            ))
-
+            traces += [
+                go.Scatter(x=[l, r], y=[i, i], mode="lines",
+                           line=dict(color=color, width=3), showlegend=False),
+                go.Scatter(x=[means[i]], y=[i], mode="markers",
+                           marker=dict(size=9, color=SAMPLE_MEAN_COLOR), showlegend=False),
+            ]
     return traces
 
 
-def make_stat_card_annotations(count_contains, total, alpha):
-    """Four styled stat cards: accent stripe on top + card body."""
-    total_miss = total - count_contains
-    coverage   = count_contains / total * 100
-    expected   = (1 - alpha) * 100
-
-    cards = [
-        dict(x=0.12, label="BEVAT \u03bc", value=f"{count_contains} / {total}", color=ACCEPTABLE_COLOR, border=ACCEPTABLE_COLOR),
-        dict(x=0.35, label="BEVAT \u03bc NIET", value=f"{total_miss} / {total}", color=CRITICAL_COLOR, border=CRITICAL_COLOR),
-        dict(x=0.75, label=F"PERCENTAGE (VERWACHT: {expected:.0f}%)", value=f"{coverage:.1f}%", color=BETA_COLOR, border=BETA_COLOR)
-    ]
-
-    card_annotations = []
-    for card in cards:
-        # ── Card body ──
-        body = (
-            f"<span style='font-size:25px;color:#bbb;letter-spacing:5px;padding=5;'>{card['label']}</span>"
-            f"<br><b><span style='font-size:25px;color:{card['color']};'>{card['value']}</span></b>"
-        )
-        if "sub" in card:
-            body += f"<br><span style='font-size:25px;color:#bbb';>{card['sub']}</span>"
-
-        card_annotations.append(dict(
-            x=card["x"], y=1.35,
-            xref="paper", yref="paper",
-            text=body,
-            font=dict(size=TITLE_FONT_SIZE),
-            showarrow=False,
-            xanchor="center", 
-            yanchor="top",
-            align="center",
-            bgcolor="#1d3557",
-            bordercolor=card["border"],
-            borderwidth=3,
-            borderpad=30
-        ))
-    return card_annotations
-
-
-def make_annotations_for_frame(intervals, means, contains, mu, count_contains, total, alpha):
+def make_annotations(intervals, means, contains, mu):
     annotations = []
-
-    # Interval value labels
     for j, (l, r) in enumerate(intervals[:10]):
         if (l, r) == (mu, mu):
             continue
         color = ACCEPTABLE_COLOR if contains[j] else CRITICAL_COLOR
         annotations += [
-            dict(x=means[j], y=-j + 0.38, xref="x", text=f"x\u0304={means[j]:.2f}",
-                 showarrow=False, font=dict(color=SAMPLE_MEAN_COLOR, size=ANNOTATION_FONT_SIZE), xanchor="center", bgcolor=None, bordercolor=None),
-            dict(x=l, y=-j + 0.38, text=f"{l:.2f}",
-                 showarrow=False, font=dict(color=color, size=ANNOTATION_FONT_SIZE), xanchor="center", bgcolor=None, bordercolor=None),
-            dict(x=r, y=-j + 0.38, text=f"{r:.2f}",
-                 showarrow=False, font=dict(color=color, size=ANNOTATION_FONT_SIZE), xanchor="center", bgcolor=None, bordercolor=None),
+            dict(x=means[j], y=j + 0.40, xanchor="center", xref="x", yref="y",
+                 text=f"{means[j]:.2f}", showarrow=False,
+                 font=dict(color=SAMPLE_MEAN_COLOR, size=10+ANNOTATION_FONT_SIZE,
+                           family=FONT_FAMILY)),
+            dict(x=l, y=j + 0.40, xref="x",  xanchor="right",
+                 text=f"{l:.2f}", showarrow=False,
+                 font=dict(color=color, size=10+ANNOTATION_FONT_SIZE,
+                           family=FONT_FAMILY)),
+            dict(x=r, y=j + 0.40, xref="x",  xanchor="left",
+                 text=f"{r:.2f}", showarrow=False,
+                 font=dict(color=color, size=10+ANNOTATION_FONT_SIZE, 
+                           family=FONT_FAMILY)),
         ]
+    return annotations
 
-    # Stat cards
-    card_annotations = make_stat_card_annotations(count_contains, total, alpha)
-    return annotations + card_annotations
-
-@st.cache_data
-def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
+def build_figure(mu, sigma, n, alpha, batch_size, frame_duration):
     z  = norm.ppf(1 - alpha / 2)
     se = sigma / np.sqrt(n)
-
-    x_range = [mu - 4 * sigma, mu + 4 * sigma]
-    y_range  = [-4, 10]
 
     all_samples = [np.random.normal(mu, sigma, n) for _ in range(batch_size)]
     all_xbars   = [s.mean() for s in all_samples]
 
     intervals_history = [(mu, mu)] * 10
-    means_history     = [mu] * 10
-    contains_history  = [False] * 10
+    means_history     = [mu]       * 10
+    contains_history  = [False]    * 10
     count_contains    = 0
 
     frames = []
@@ -189,20 +135,14 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
             count_contains += 1
 
         intervals_history = [(left, right)] + intervals_history[:9]
-        means_history     = [xbar] + means_history[:9]
-        contains_history  = [hit]  + contains_history[:9]
+        means_history     = [xbar]          + means_history[:9]
+        contains_history  = [hit]           + contains_history[:9]
 
-        total       = k + 1
-        traces      = make_traces_for_frame(intervals_history, means_history,
-                                            contains_history, all_samples[k], xbar, mu)
-        annotations = make_annotations_for_frame(intervals_history, means_history,
-                                                  contains_history, mu,
-                                                  count_contains, total, alpha)
+        traces      = make_traces(intervals_history, means_history,
+                                  contains_history, all_samples[k], xbar, mu)
+        annotations = make_annotations(intervals_history, means_history,
+                                       contains_history, mu)
 
-        if k == 0:
-            first_annotations = annotations
-
-        # st.write(annotations)
         frames.append(go.Frame(
             data=traces,
             name=str(k),
@@ -213,66 +153,152 @@ def build_animated_figure(mu, sigma, n, alpha, batch_size, frame_duration):
         data=frames[0].data,
         frames=frames,
         layout=go.Layout(
-            xaxis=dict(range=x_range, title="Populatiegemiddelde \u03bc", title_font=dict(size=AXIS_FONT_SIZE, family=FONT_FAMILY), tickfont=dict(size=TICK_FONT_SIZE, family=FONT_FAMILY)),
-            yaxis=dict(range=y_range, autorange="reversed",showticklabels=False),
-            height=800,
-            margin=dict(t=200),
-            annotations=first_annotations,
+            font=dict(family=FONT_FAMILY, color=PLOT_FONT_COLOR),
+            xaxis=dict(
+                range=[mu - 4 * sigma, mu + 4 * sigma],
+                title=dict(text=r"x", font=dict(size=2*AXIS_FONT_SIZE)),
+                tickfont=dict(size=2*TICK_FONT_SIZE),
+            ),
+            yaxis=dict(
+                range=[-4, 10],
+                autorange="reversed",
+                tickfont=dict(size=2*TICK_FONT_SIZE),
+                showticklabels=False,
+            ),
+            height=700,
+            annotations=frames[0].layout.annotations,
             shapes=[dict(
-                type="line", x0=mu, x1=mu, y0=y_range[0]+3, y1=y_range[1]-1,
-                line=dict(color=H0_COLOR, dash="dash")
+                type="line",
+                x0=mu, x1=mu, y0=-3, y1=9,
+                line=dict(color=H0_COLOR, dash="dash", width=1.5),
             )],
             updatemenus=[dict(
                 type="buttons",
                 pad=dict(t=20, r=20, b=20, l=20),
                 showactive=False,
-                y=0.25,
-                x=0.9,
+                y=0.15, x=0.95,
                 xanchor="center",
                 direction="left",
+                font=dict(size=BUTTON_FONT_SIZE, family=FONT_FAMILY),
                 buttons=[
                     dict(
-                        label="\u25b6 Speel",
+                        label="▶ Speel",
                         method="animate",
                         args=[None, dict(
                             frame=dict(duration=frame_duration, redraw=True),
                             fromcurrent=True,
                             transition=dict(duration=0),
-                        )]
+                        )],
                     ),
                     dict(
-                        label="\u23f8 Pauze",
+                        label="⏸ Pauze",
                         method="animate",
                         args=[[None], dict(
                             frame=dict(duration=0, redraw=False),
                             mode="immediate",
                             transition=dict(duration=0),
-                        )]
+                        )],
                     ),
                 ],
-                font=dict(
-                    size=BUTTON_FONT_SIZE,        # Font size for button labels
-                ),
-            )]
-        )
+            )],
+        ),
     )
 
-    return fig
+    return fig, count_contains
 
 
-# --------------------------------------------------
+# ----------------------------------
 # RENDER
-# --------------------------------------------------
-
+# ----------------------------------
+conf_pct = int((1 - alpha) * 100)
 st.subheader(
-    f"{(1 - alpha):.0%}-betrouwbaarheidsinterval voor het populatiegemiddelde $\\mu$, gegeven $\\sigma = {sigma}$ en $n={n}$."
+    f"{conf_pct}%-betrouwbaarheidsinterval voor $\\mu$, gegeven $\\sigma={sigma}$ en $n={n}$."
 )
 
 if generate:
-    fig = build_animated_figure(mu, sigma, n, alpha, int(batch_size), frame_duration)
+    fig, count_contains = build_figure(mu, sigma, n, alpha, int(batch_size), frame_duration)
+    total      = int(batch_size)
+    total_miss = total - count_contains
+    coverage   = count_contains / total * 100
+
+    st.markdown(f"""
+    <div class="stats-row-3">
+      <div class="stat-card acceptatie">
+        <span class="stat-label">Bevat <span style="text-transform: lowercase"">&mu;</span></span>
+        <span class="stat-value">{count_contains} / {total}</span>
+        <span class="stat-desc">Verwacht: {conf_pct}%</span>
+      </div>
+      <div class="stat-card kritiek">
+        <span class="stat-label">Bevat <span style="text-transform: lowercase"">&mu;</span> niet</span>
+        <span class="stat-value">{total_miss} / {total}</span>
+        <span class="stat-desc">Verwacht: {int(alpha * 100)}%</span>
+      </div>
+      <div class="stat-card beta">
+        <span class="stat-label">Werkelijk percentage</span>
+        <span class="stat-value">{coverage:.1f}%</span>
+        <span class="stat-desc">Verwacht: {conf_pct}%</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+
 else:
-    if batch_size > 1:
-        st.info(f"Klik op **Steekproeven trekken** in de sidebar om {batch_size} steekproeven te trekken van grootte $n={n}$.")
-    else:
-        st.info(f"Klik op **Steekproeven trekken** in de sidebar om 1 steekproef te trekken van grootte $n={n}$.")
+    n_label = f"$n={n}$" if batch_size == 1 else f"$n={n}$"
+    amount  = "1 steekproef" if batch_size == 1 else f"{batch_size} steekproeven"
+    st.info(f"Klik op **Steekproeven trekken** in de sidebar om {amount} te trekken van grootte {n_label}.")
+
+# ----------------------------------
+# EXPLANATION
+# ----------------------------------
+explanation_title = "📚 Betrouwbaarheidsintervallen"
+explanation_markdown = r"""
+## 📜 Wat is een betrouwbaarheidsinterval?
+
+Een **betrouwbaarheidsinterval** (ook wel als **confidence interval**) is een interval dat — bij herhaalde steekproeftrekking — met
+een bepaalde kans $1 - \alpha$ het werkelijke populatiegemiddelde $\mu$ bevat.
+
+Bij bekende $\sigma$ wordt het $(1-\alpha)$-betrouwbaarheidsinterval voor $\mu$ gegeven door:
+
+$$
+    \bar{X} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}
+$$
+
+waarbij $z_{\alpha/2}$ de kritieke grenswaarde is waarvoor bij een standaardnormaal verdeelde kansvariabele $Z \sim N(0, 1)$ geldt dat
+$$
+    P(Z \ge z_{\alpha/2}) = \alpha/2.
+$$
+
+Merk op dat de grenzen van een betrouwbaarheidsinterval ook kansvariabelen zijn (omdat het steekproefgemiddelde $\bar{X}$ een kansvariabele is)! 
+Zodra je een steekproef hebt getrokken, kun je een realisatie van deze grenzen bepalen aan de hand van het geobserveerde steekproefgemiddelde $\bar{x}$:
+
+$$
+    \bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}.
+$$
+
+## ⚠️ Veelgemaakte misvatting
+
+In wetenschappelijke literatuur zie je geregeld dat er bijvoorbeeld een 95%-betrouwbaarheidsinterval wordt gerapporteerd.
+Dit is een realisatie van de kansvariabele gebaseerd op de steekproefdata die is verzameld in het onderzoek.
+
+Vaak wordt dit als volgt geïnterpreteerd: met kans $0.95$ valt het echte populatiegemiddelde $\mu$ in *dit specifieke interval*.
+Dit is echter niet juist: omdat $\mu$ en de grenzen van het gerapporteerde interval vaststaande getallen zijn, is er geen sprake van onzekerheid.
+Het gerapporteerde interval bevat $\mu$ wel of niet.
+De concepten "onbekendheid" en "onzekerheid" zijn dus subtiel verschillend en worden om die reden ook vaak met elkaar verward.
+
+De correcte interpretatie is: als we heel vaak achter elkaar een steekproef trekken en het bijbehorende betrouwbaarheidsinterval opstellen, zal **95% van de zo
+geconstrueerde intervallen** $\mu$ bevatten.
+Dit komt op hetzelfde neer als dat de kans dat een **arbitrair gekozen steekproef** het echte populatiegemiddelde $\mu$ bevat is $1 - \alpha = 0.95$.
+
+$$
+    P(\bar{X} - z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}} \leq \mu \leq \bar{X} + z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}) = 0.95.
+$$
+
+## 🔢 Invloed van de parameters
+
+- **Grotere $n$**: smaller interval (meer precisie).
+- **Grotere $\sigma$**: breder interval (meer spreiding in de populatie).
+- **Kleinere $\alpha$**: breder interval (hogere betrouwbaarheid vereist een groter net).
+"""
+
+show_explanation(explanation_title, explanation_markdown)
