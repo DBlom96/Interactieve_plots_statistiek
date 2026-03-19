@@ -101,14 +101,14 @@ else:
 st.markdown(f"""
 <div class="stats-row-2">
   <div class="stat-card alpha">
-    <span class="stat-label">Gemiddelde</span>
+    <span class="stat-label">Gemiddelde van steekproefgemiddelden</span>
     <span class="stat-value">{all_means.mean():.4f}</span>
-    <span class="stat-desc">Steeds dichter bij &mu; = {true_mu:.4f} (als n &rightarrow; &#8734;)</span>
+    <span class="stat-desc">Steeds dichter bij {to_lowercase(MEAN_HTML)} = {true_mu:.4f} (als <i>n &rightarrow; &#8734;</i>)</span>
   </div>
   <div class="stat-card beta">
-    <span class="stat-label">Standaardafwijking</span>
+    <span class="stat-label">Standaardafwijking van steekproefgemiddelden</span>
     <span class="stat-value">{all_means.std():.4f}</span>
-    <span class="stat-desc">Steeds dichter bij &sigma; / &radic;n = {true_sigma:.4f} (als n &rightarrow; &#8734;)</span>
+    <span class="stat-desc">Steeds dichter bij {to_lowercase(STD_HTML)} / &radic;<i>n</i> = {true_sigma:.4f} (als <i>n &rightarrow; &#8734;</i>)</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -117,7 +117,6 @@ st.markdown(f"""
 # FIGURE
 # ----------------------------------
 fig, ax = plt.subplots(figsize=(10, 5))
-fig.patch.set_facecolor(BG_COLOR)
 
 # Histogram bars
 ax.bar(

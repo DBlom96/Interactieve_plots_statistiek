@@ -31,7 +31,11 @@ H1_HTML = "H<sub>0</sub>"
 MEAN_HTML = "<i>&mu;</i>"
 STD_HTML = "<i>&sigma;</i>"
 VAR_HTML = f"{STD_HTML}<sup>2</sup>"
-CHISQ_HTML = "&chi;<sup>2</sup>"
+LAMBDA_HTML = "<i>&lambda;</i>"
+N_HTML = "<i>n</i>"
+P_HTML = "<i>p</i>"
+ALPHA_HTML = "<i>&alpha;</i>"
+CHISQ_HTML = "<i>&chi;<sup>2</sup></i>"
 UNIF_WIDTH_HTML = "<i>b &minus; a</i>"
 
 def to_lowercase(text):

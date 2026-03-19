@@ -5,7 +5,7 @@ import matplotlib.ticker as mticker
 from scipy.stats import binom
 
 from utils.explanation_utils import show_explanation
-from utils.streamlit_utils import load_css, page_header, apply_dark_style
+from utils.streamlit_utils import load_css, page_header, apply_dark_style, stem_plot, get_highlighted, add_cdf_markers
 from utils.constants import *
 
 st.set_page_config(
@@ -32,7 +32,7 @@ with st.sidebar:
     st.divider()
     st.header("Kansberekening")
     show_mode = st.selectbox(
-        "Arceer gebied:",
+        "Highlight kansen:",
         [r"Geen", r"P(X ≤ b)", r"P(X ≥ a)", r"P(a ≤ X ≤ b)"]
     )
 
@@ -76,12 +76,12 @@ st.markdown(f"""
   <div class="stat-card alpha">
     <span class="stat-label">Verwachtingswaarde</span>
     <span class="stat-value">{mu_val:.2f}</span>
-    <span class="stat-desc"><i>n</i> &middot; <i>p</i></span>
+    <span class="stat-desc">{to_lowercase(N_HTML)} &middot; {to_lowercase(P_HTML)}</span>
   </div>
   <div class="stat-card beta">
-    <span class="stat-label">Variantie <span style="text-transform: lowercase">&sigma;&sup2;</span></span>
+    <span class="stat-label">Variantie</span>
     <span class="stat-value">{sigma_val**2:.4f}</span>
-    <span class="stat-desc"><i>n</i> &middot; <i>p</i> &middot; (1 &minus; <i>p</i>)</span>
+    <span class="stat-desc">{to_lowercase(N_HTML)} &middot; {to_lowercase(P_HTML)} &middot; (1 &minus; {to_lowercase(P_HTML)})</span>
   </div>
   <div class="stat-card power">
     <span class="stat-label">Kans</span>
@@ -94,39 +94,7 @@ st.markdown(f"""
 # ----------------------------------
 # HELPERS
 # ----------------------------------
-def stem_plot(ax, k, y, color, highlighted=None, highlight_color=None):
-    """Draw a stem (needle) plot, optionally highlighting a subset of k values."""
-    for xi, yi in zip(k, y):
-        c = highlight_color if (highlighted is not None and xi in highlighted) else color
-        ax.plot([xi, xi], [0, yi], color=c, linewidth=1.8)
-        ax.scatter(xi, yi, color=c, s=40, zorder=3)
 
-
-def get_highlighted(mode, lo, hi, k):
-    """Return the set of k values that fall inside the selected region."""
-    if mode == r"P(X ≤ b)" and hi is not None:
-        return set(k[k <= hi])
-    elif mode == r"P(X ≥ a)" and lo is not None:
-        return set(k[k >= lo])
-    elif mode == r"P(a ≤ X ≤ b)" and lo is not None and hi is not None and lo <= hi:
-        return set(k[(k >= lo) & (k <= hi)])
-    return None
-
-
-def add_cdf_markers(ax, k, cdf_y, mode, lo, hi):
-    """Mark the queried CDF value(s) with a dot and dashed drop-lines."""
-    points = []
-    if mode == r"P(X ≤ b)" and hi is not None:
-        points = [(hi, cdf_y[hi])]
-    elif mode == r"P(X ≥ a)" and lo is not None:
-        points = [(lo, cdf_y[lo])]
-    elif mode == r"P(a ≤ X ≤ b)" and lo is not None and hi is not None:
-        points = [(lo, cdf_y[lo]), (hi, cdf_y[hi])]
-
-    # for xv, yv in points:
-    #     ax.plot([xv, xv], [0, yv], color=H0_COLOR, linewidth=1.2, linestyle=":")
-    #     ax.plot([k[0], xv], [yv, yv], color=H0_COLOR, linewidth=1.2, linestyle="-")
-        # ax.scatter([xv], [yv], color=H0_COLOR, s=55, zorder=5)
 
 # ----------------------------------
 # FIGURE

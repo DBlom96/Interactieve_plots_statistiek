@@ -72,8 +72,31 @@ def apply_dark_style(fig, ax, title=None, suptitle=None, xlabel=None, ylabel=Non
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_fontfamily(FONT_FAMILY)
 
-def stem_plot(ax, k, y, color):
-    """Draw a stem (needle) plot manually."""
-    ax.scatter(k, y, color=color, s=40, zorder=3)
+def stem_plot(ax, k, y, color, highlighted=None, highlight_color=None):
+    """Draw a stem (needle) plot, optionally highlighting a subset of k values."""
     for xi, yi in zip(k, y):
-        ax.plot([xi, xi], [0, yi], color=color, linewidth=1.8)
+        c = highlight_color if (highlighted is not None and xi in highlighted) else color
+        ax.plot([xi, xi], [0, yi], color=c, linewidth=1.8)
+        ax.scatter(xi, yi, color=c, s=40, zorder=3)
+
+
+def get_highlighted(mode, lo, hi, k):
+    """Return the set of k values that fall inside the selected region."""
+    if mode == r"P(X ≤ b)" and hi is not None:
+        return set(k[k <= hi])
+    elif mode == r"P(X ≥ a)" and lo is not None:
+        return set(k[k >= lo])
+    elif mode == r"P(a ≤ X ≤ b)" and lo is not None and hi is not None and lo <= hi:
+        return set(k[(k >= lo) & (k <= hi)])
+    return None
+
+
+def add_cdf_markers(ax, k, cdf_y, mode, lo, hi):
+    """Mark the queried CDF value(s) with a dot and dashed drop-lines."""
+    points = []
+    if mode == r"P(X ≤ b)" and hi is not None:
+        points = [(hi, cdf_y[hi])]
+    elif mode == r"P(X ≥ a)" and lo is not None:
+        points = [(lo, cdf_y[lo])]
+    elif mode == r"P(a ≤ X ≤ b)" and lo is not None and hi is not None:
+        points = [(lo, cdf_y[lo]), (hi, cdf_y[hi])]

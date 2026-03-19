@@ -67,11 +67,11 @@ if method == "Kritiek gebied":
       <div class="stat-card kritiek">
         <span class="stat-label">Kritiek gebied</span>
         <span class="stat-value">[0, {linkergrens:.4f}) en ({rechtergrens:.4f}, &infin;)</span>
-        <span class="stat-desc">Extreem grote of kleine variantieverhouding</span>
+        <span class="stat-desc">Extreem grote of kleine ratio's in varianties</span>
       </div>
       <div class="stat-card {"kritiek" if inside_critical else "acceptatie"}">
         <span class="stat-label">Toetsingsgrootheid</span>
-        <span class="stat-value">f = {toets:.4f}</span>
+        <span class="stat-value"><i>f</i> = {toets:.4f}</span>
         <span class="stat-desc">Ligt {"wel" if inside_critical else "niet"} in het kritieke gebied</span>
       </div>
     </div>
@@ -83,13 +83,13 @@ elif method == "p-waarde":
     <div class="stats-row-3">
       <div class="stat-card bi">
         <span class="stat-label">Toetsingsgrootheid</span>
-        <span class="stat-value">f = {toets:.4f}</span>
+        <span class="stat-value"><i>f</i> = {toets:.4f}</span>
         <span class="stat-desc">Ligt {"wel" if significant else "niet"} in het kritieke gebied</span>
       </div>
       <div class="stat-card pvalue">
         <span class="stat-label">p-waarde</span>
         <span class="stat-value">{p_waarde:.4f}</span>
-        <span class="stat-desc">min(<i>P(F &le; f), P(F &ge; f)</i>)</span>
+        <span class="stat-desc">Minimum van <i>P(F &le; f)</i> en <i>P(F &ge; f)</i></span>
       </div>
       <div class="stat-card kritiek">
         <span class="stat-label">Significantieniveau</span>
@@ -114,8 +114,8 @@ def add_interval_bar(ax, x_max, linker, rechter, y):
         ax.plot([l, r], [bar_y, bar_y], color=color, linewidth=8,
                 solid_capstyle="butt", clip_on=False)
         if label:
-            ax.text((l + r) / 2, bar_y - 2.8 * tick_h, label,
-                    ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+            ax.text((l + r) / 2, ytext, label,
+                    ha="center", va="center", fontsize=ANNOTATION_FONT_SIZE,
                     color=color, fontfamily="JetBrains Mono")
 
     for xv in [0, linker, rechter, x_max]:
@@ -130,8 +130,7 @@ fig, ax = plt.subplots(figsize=(10, 5))
 
 bar_y  = -0.055 * max(y)
 tick_h = 0.018 * max(y)
-ytext = bar_y - 2.8 * tick_h
-plt.ylim(bottom=3*bar_y, top=1.1*max(y))
+ytext = bar_y - 3.8 * tick_h
 
 # Base curve — always drawn
 ax.plot(x, y, color=H0_COLOR, linewidth=2.5,
@@ -153,10 +152,11 @@ if method == "Kritiek gebied":
     
     # Add annotation for the test statistics
     ax.text(toets,  ytext, f"$f = {toets:.2f}$",
-            ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+            ha="center", va="center", fontsize=ANNOTATION_FONT_SIZE,
             color=H0_COLOR, fontfamily="JetBrains Mono")
 
     add_interval_bar(ax, x_max, linkergrens, rechtergrens, y)
+    plt.ylim(bottom=3*bar_y, top=1.1*max(y))
 
 elif method == "p-waarde":
     # Shade the tail corresponding to the p-value
@@ -175,7 +175,7 @@ elif method == "p-waarde":
     # Boundary lines
     ax.plot([toets, toets], [0, f_dist.pdf(toets, df1, df2)],
             color=H0_COLOR,      linewidth=1.5, linestyle=":",
-            label=rf"$f = {toets:.4f}$")
+            label=rf"$f$")
     ax.plot([linkergrens,  linkergrens],  [0, f_dist.pdf(linkergrens,  df1, df2)],
             color=CRITICAL_COLOR, linewidth=1.5, linestyle="--",
             label=rf"$f_{{\alpha/2}} = {linkergrens:.4f}$")
@@ -184,10 +184,11 @@ elif method == "p-waarde":
             label=rf"$f_{{1-\alpha/2}} = {rechtergrens:.4f}$")
     
     # Add annotation for the test statistics
-    ax.text(toets,  ytext, f"$f = {toets:.2f}$",
-            ha="center", va="top", fontsize=ANNOTATION_FONT_SIZE,
+    ax.text(toets,  1/2*ytext, f"$f$",
+            ha="center", va="center", fontsize=ANNOTATION_FONT_SIZE,
             color=H0_COLOR, fontfamily="JetBrains Mono")
 
+    plt.ylim(bottom=2*bar_y, top=1.1*max(y))
 
 # Title
 if method == "Plot":
@@ -197,19 +198,59 @@ if method == "Plot":
         xlabel=r"$x$",
         ylabel=r"Kansdichtheid $f(x)$"
     )
-else:
-    apply_dark_style(fig=fig, ax=ax, xlabel=r"$x$", ylabel=r"Kansdichtheid $f(x)$")
-    ax.text(0.5, 1.02,
-            rf"$f = {toets:.4f}$ ligt in het ",
-            transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=TITLE_FONT_SIZE, color=PLOT_FONT_COLOR,
-            fontfamily="JetBrains Mono")
-    ax.text(0.5, 1.02,
-            " kritieke gebied" if inside_critical else " acceptatiegebied",
-            transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=TITLE_FONT_SIZE,
-            color=CRITICAL_COLOR if inside_critical else ACCEPTABLE_COLOR,
-            fontfamily="JetBrains Mono")
+elif method == "Kritiek gebied":
+    apply_dark_style(
+        fig=fig, ax=ax,
+        xlabel=r"$x$",
+        ylabel=r"Kansdichtheid $f(x)$"
+    )
+    acceptable = linkergrens <= toets and toets <= rechtergrens if linkergrens is not None and rechtergrens is not None else False
+    ax.text(0.35, 1.02,
+        rf"$f = {toets:.4f}$ ligt in het ",
+        transform=ax.transAxes, ha="right", va="center",
+        fontsize=TITLE_FONT_SIZE, 
+        color=PLOT_FONT_COLOR,
+        fontfamily="JetBrains Mono"
+    )
+    ax.text(0.36, 1.016,
+        f"{'acceptatiegebied' if acceptable else 'kritieke gebied'}",
+        transform=ax.transAxes, ha="left", va="center",
+        fontsize=TITLE_FONT_SIZE,
+        color=ACCEPTABLE_COLOR if acceptable else CRITICAL_COLOR,
+        fontfamily="JetBrains Mono"
+    )
+elif method == "p-waarde":
+    apply_dark_style(
+        fig=fig, ax=ax,
+        xlabel=r"$x$",
+        ylabel=r"Kansdichtheid $f(x)$"
+    )
+    acceptable = (p_waarde > alpha / 2)
+    ax.text(0.6, 1.02,
+        rf"De $p$-waarde die hoort bij $f = {toets:.4f}$ is",
+        transform=ax.transAxes, ha="right", va="center",
+        fontsize=TITLE_FONT_SIZE, 
+        color=PLOT_FONT_COLOR,
+        fontfamily="JetBrains Mono"
+    )
+    ax.text(0.615, 1.02,
+        f"{'groter' if p_waarde > alpha else 'kleiner'}",
+        transform=ax.transAxes, ha="left", va="center",
+        fontsize=TITLE_FONT_SIZE,
+        color=ACCEPTABLE_COLOR if p_waarde > alpha else CRITICAL_COLOR,
+        fontfamily="JetBrains Mono"
+    )
+    if p_waarde > alpha:
+        xshift=0.72
+    else:
+        xshift=0.735
+    ax.text(xshift, 1.02,
+        f"dan $\\frac{{\\alpha}}{{2}} = {alpha/2}$.",
+        transform=ax.transAxes, ha="left", va="center",
+        fontsize=TITLE_FONT_SIZE,
+        color=PLOT_FONT_COLOR,
+        fontfamily="JetBrains Mono"
+    )
 
 plt.tight_layout(pad=2.5)
 st.pyplot(fig, use_container_width=True)
@@ -218,41 +259,47 @@ plt.close(fig)
 # ----------------------------------
 # EXPLANATION
 # ----------------------------------
-explanation_title = "📚 De F-verdeling"
+explanation_title = "📚 De $F$-verdeling"
 explanation_markdown = r"""
 ## 💡 Intuïtie
 
 De **$F$-verdeling** beschrijft de verhouding van twee onafhankelijke steekproefvarianties. Ze wordt
-gebruikt bij de **toets voor gelijke varianties** van twee onafhankelijke normaal verdeelde populaties:
+gebruikt bij de **toets voor gelijke varianties** van twee onafhankelijke normaal verdeelde populaties $X$ en $Y$:
 
 $$
-    H_0: \sigma_1^2 = \sigma_2^2 \quad \text{versus} \quad H_1: \sigma_1^2 \neq \sigma_2^2
+    H_0: \sigma_X^2 = \sigma_Y^2 \quad \text{versus} \quad H_1: \sigma_X^2 \neq \sigma_Y^2
 $$
+
+Om te toetsen bekijken we twee onafhankelijke steekproeven. De eerste steekproef wordt getrokken uit populatie $X$ en de tweede uit populatie $Y$.
+De steekproefgroottes van beide steekproeven zijn gelijk aan $n$ en $m$, oftewel $n$ en $m$ zijn positieve gehele getallen.
+
+Van deze steekproeven wordt de steekproefvarianties $S_X^2$ en $S_Y^2$ bepaald.
 
 De toetsingsgrootheid is:
 $$
-    F = \frac{S_1^2}{S_2^2}
+    F = \frac{S_X^2}{S_Y^2}
 $$
 
-Onder $H_0$ volgt $F$ een $F(\text{df}_1, \text{df}_2)$-verdeling met $\text{df}_i = n_i - 1$.
+Onder $H_0$ volgt $F$ een $F(\text{df}_1, \text{df}_2)$-verdeling met $\text{df}_1 = n - 1$ (aantal vrijheidsgraden in de steekproef van $X$) en $\text{df}_2 = m - 1$ (aantal vrijheidsgraden in de steekproef van $Y$).
 
 - $F \approx 1$: varianties lijken op elkaar — consistent met $H_0$.
-- $F$ ver van $1$: één steekproef is veel meer gespreid — bewijs tegen $H_0$.
+- $F$ is véél kleiner dan $1$: de variantie in de steekproef van $X$ is véél kleiner dan de variantie in de steekproef van $Y$ — bewijs tegen $H_0$.
+- $F$ is véél groter dan $1$: de variantie in de steekproef van $X$ is véél groter dan de variantie in de steekproef van $Y$ — bewijs tegen $H_0$.
 
 ## 📌 Eigenschappen
 
 - Altijd positief ($F \geq 0$) en rechtsscheef.
-- Verwachtingswaarde: $E[F] = \dfrac{\text{df}_2}{\text{df}_2 - 2}$ (voor $\text{df}_2 > 2$).
+- Verwachtingswaarde: $E[F] = \dfrac{\text{df}_2}{\text{df}_2 - 2}$ (als $\text{df}_2 > 2$).
 - De toets is **tweezijdig**: zowel een te hoge als een te lage $f$-waarde leidt tot verwerping.
 
 ## 🧪 Beslissingsregels
 
 **Via het kritieke gebied** — verwerp $H_0$ als:
-$$
-    f < F_{\alpha/2;\,\text{df}_1,\,\text{df}_2}
-    \quad\text{of}\quad
-    f > F_{1-\alpha/2;\,\text{df}_1,\,\text{df}_2}
-$$
+- $f < F_{\alpha/2;\,\text{df}_1,\,\text{df}_2} = \text{Fcdf}(\text{lower}=0, \text{upper}=\alpha/2, \text{df}_1=n-1, \text{df}_2=m-1)$
+
+of 
+
+- $f > F_{1-\alpha/2;\,\text{df}_1,\,\text{df}_2} = \text{Fcdf}(\text{lower}=1-\alpha/2, \text{upper}=10^{99}, \text{df}_1=n-1, \text{df}_2=m-1)$
 
 **Via de p-waarde** — verwerp $H_0$ als:
 $$
