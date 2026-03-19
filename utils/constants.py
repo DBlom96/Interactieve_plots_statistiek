@@ -22,6 +22,23 @@ AXIS_FONT_SIZE = 13
 TICK_FONT_SIZE = 10
 BUTTON_FONT_SIZE = 20
 
+# ---------------------------------
+# FREQUENTLY USED NOTATION IN HTML
+# ---------------------------------
+
+H0_HTML = "H<sub>0</sub>"
+H1_HTML = "H<sub>0</sub>"
+MEAN_HTML = "<i>&mu;</i>"
+STD_HTML = "<i>&sigma;</i>"
+VAR_HTML = f"{STD_HTML}<sup>2</sup>"
+CHISQ_HTML = "&chi;<sup>2</sup>"
+UNIF_WIDTH_HTML = "<i>b &minus; a</i>"
+
+def to_lowercase(text):
+    return f"<span style='text-transform: lowercase'>{text}</span>"
+
+def to_uppercase(text):
+    return f"<span style='text-transform: uppercase'>{text}</span>"
 
 # ---------------------------------
 # COLORS

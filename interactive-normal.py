@@ -72,17 +72,17 @@ prob_label = f"<i>{show_mode}</i>" if show_mode != "Geen" else "Geen gebied gese
 st.markdown(f"""
 <div class="stats-row-4">
   <div class="stat-card alpha">
-    <span class="stat-label">Gemiddelde <span style="text-transform: lowercase"">&mu;</span></span>
+    <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
     <span class="stat-value">{mu_val:.2f}</span>
     <span class="stat-desc">Centrum van de verdeling</span>
   </div>
   <div class="stat-card beta">
-    <span class="stat-label">Standaardafwijking <span style="text-transform: lowercase"">&sigma;</span></span>
+    <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
     <span class="stat-value">{sigma_val:.2f}</span>
     <span class="stat-desc">Spreiding om het gemiddelde</span>
   </div>
   <div class="stat-card power">
-    <span class="stat-label">Variantie <span style="text-transform: lowercase"">&sigma;<sup>2</sup></span></span>
+    <span class="stat-label">Variantie {to_lowercase(VAR_HTML)}</span>
     <span class="stat-value">{sigma_val**2:.2f}</span>
     <span class="stat-desc">Kwadraat van de spreiding</span>
   </div>

@@ -94,19 +94,19 @@ st.markdown(f"""
   <div class="stat-card alpha">
     <span class="stat-label">Type-I fout</span>
     <span class="stat-value">&alpha; = {alpha:.4f}</span>
-    <span class="stat-desc">Kans op onterecht verwerpen van H&#8320;</span>
+    <span class="stat-desc">Kans op onterecht verwerpen van H<sub>0</sub></span>
     <span class="stat-desc">(rood gearceerd gebied)</span>
   </div>
   <div class="stat-card beta">
     <span class="stat-label">Type-II fout</span>
     <span class="stat-value">&beta; = {beta:.4f}</span>
-    <span class="stat-desc">Kans op onterecht accepteren van H&#8320;</span>
+    <span class="stat-desc">Kans op onterecht accepteren van H<sub>0</sub></span>
     <span class="stat-desc">(blauw gearceerd gebied)</span>
   </div>
   <div class="stat-card acceptatie">
     <span class="stat-label">Onderscheidend vermogen</span>
     <span class="stat-value">1 &minus; &beta; = {power:.4f}</span>
-    <span class="stat-desc">Kans op correct verwerpen van H&#8320;</span>
+    <span class="stat-desc">Kans op correct verwerpen van H<sub>0</sub></span>
   </div>
 </div>
 """, unsafe_allow_html=True)

@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm
+from collections import deque
 
 from utils.streamlit_utils import load_css, page_header
 from utils.explanation_utils import show_explanation
@@ -71,7 +72,7 @@ def make_traces(intervals, means, contains, sample, xbar, mu):
     ))
 
     # Last 10 confidence intervals
-    for i, (l, r) in enumerate(intervals[:10]):
+    for i, (l, r) in enumerate(intervals):
         if (l, r) == (mu, mu):       # placeholder — not yet drawn
             traces += [
                 go.Scatter(x=[mu, mu], y=[i, i], mode="markers",
@@ -92,9 +93,11 @@ def make_traces(intervals, means, contains, sample, xbar, mu):
 
 def make_annotations(intervals, means, contains, mu):
     annotations = []
-    for j, (l, r) in enumerate(intervals[:10]):
+    for j, (l, r) in enumerate(intervals):
         if (l, r) == (mu, mu):
             continue
+        if j == 1:
+            break
         color = ACCEPTABLE_COLOR if contains[j] else CRITICAL_COLOR
         annotations += [
             dict(x=means[j], y=j + 0.40, xanchor="center", xref="x", yref="y",
@@ -112,31 +115,31 @@ def make_annotations(intervals, means, contains, mu):
         ]
     return annotations
 
+@st.cache_data
 def build_figure(mu, sigma, n, alpha, batch_size, frame_duration):
     z  = norm.ppf(1 - alpha / 2)
     se = sigma / np.sqrt(n)
+    num_intervals = 10
 
     all_samples = [np.random.normal(mu, sigma, n) for _ in range(batch_size)]
-    all_xbars   = [s.mean() for s in all_samples]
+    all_xbars   = np.array([s.mean() for s in all_samples])
+    lefts = all_xbars - z * se
+    rights = all_xbars + z * se
+    hits = (lefts <= mu) & (mu <= rights)
+    count_contains = hits.cumsum()[-1]
 
-    intervals_history = [(mu, mu)] * 10
-    means_history     = [mu]       * 10
-    contains_history  = [False]    * 10
-    count_contains    = 0
+    intervals_history = deque([(mu, mu)] * num_intervals, maxlen=num_intervals)
+    means_history     = deque([mu]       * num_intervals, maxlen=num_intervals)
+    contains_history  = deque([False]    * num_intervals, maxlen=num_intervals)
 
     frames = []
 
     for k in range(batch_size):
         xbar  = all_xbars[k]
-        left  = xbar - z * se
-        right = xbar + z * se
-        hit   = left <= mu <= right
-        if hit:
-            count_contains += 1
 
-        intervals_history = [(left, right)] + intervals_history[:9]
-        means_history     = [xbar]          + means_history[:9]
-        contains_history  = [hit]           + contains_history[:9]
+        intervals_history.appendleft((lefts[k], rights[k]))
+        means_history.appendleft(xbar)
+        contains_history.appendleft(hits[k])
 
         traces      = make_traces(intervals_history, means_history,
                                   contains_history, all_samples[k], xbar, mu)
@@ -224,12 +227,12 @@ if generate:
     st.markdown(f"""
     <div class="stats-row-3">
       <div class="stat-card acceptatie">
-        <span class="stat-label">Bevat <span style="text-transform: lowercase"">&mu;</span></span>
+        <span class="stat-label">Bevat {to_lowercase(MEAN_HTML)}</span>
         <span class="stat-value">{count_contains} / {total}</span>
         <span class="stat-desc">Verwacht: {conf_pct}%</span>
       </div>
       <div class="stat-card kritiek">
-        <span class="stat-label">Bevat <span style="text-transform: lowercase"">&mu;</span> niet</span>
+        <span class="stat-label">Bevat niet {to_lowercase(MEAN_HTML)}</span>
         <span class="stat-value">{total_miss} / {total}</span>
         <span class="stat-desc">Verwacht: {int(alpha * 100)}%</span>
       </div>
