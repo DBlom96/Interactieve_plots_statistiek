@@ -228,7 +228,7 @@ else:
     ax_poisson.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
 
 plt.tight_layout(pad=2.0)
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig, width="stretch")
 plt.close(fig)
 
 

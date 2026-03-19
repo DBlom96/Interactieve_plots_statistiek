@@ -208,7 +208,7 @@ if show_cdf:
     ax_cdf.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.2f"))
 
 plt.tight_layout(pad=2.0)
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig, width="stretch")
 plt.close(fig)
 
 # ----------------------------------

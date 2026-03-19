@@ -253,7 +253,7 @@ elif method == "p-waarde":
     )
 
 plt.tight_layout(pad=2.5)
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig, width="stretch")
 plt.close(fig)
 
 # ----------------------------------

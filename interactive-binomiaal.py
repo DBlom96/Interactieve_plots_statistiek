@@ -156,7 +156,7 @@ if show_cdf:
     )
 
 plt.tight_layout(pad=2.0)
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig, width="stretch")
 plt.close(fig)
 
 # ----------------------------------
