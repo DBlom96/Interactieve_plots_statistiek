@@ -33,7 +33,7 @@ with st.sidebar:
     st.header("Kansberekening")
     show_mode = st.selectbox(
         "Arceer gebied:",
-        [r"Geen", r"P(X ≤ b)", r"P(X ≥ a)", r"P(a ≤ X ≤ b)"]
+        [r"Geen", r"P(X ≤ b)", r"P(X ≥ a)", r"P(a ≤ X ≤ b)", r"Grenswaarde zoeken"]
     )
 
     a_val, b_val, prob = None, None, None
@@ -53,6 +53,24 @@ with st.sidebar:
             prob = norm.cdf(b_val, loc=mu_val, scale=sigma_val) - norm.cdf(a_val, loc=mu_val, scale=sigma_val)
         else:
             st.warning(r"$a$ moet kleiner zijn dan $b$.")
+    elif show_mode == r"Grenswaarde zoeken":
+        prob = st.number_input("Oppervlakte (Area):", min_value=0.01, max_value=0.99, value=0.95, step=0.01)
+        tail = st.selectbox("Staart:", ["links", "rechts", "midden"])
+
+        if tail == "links":
+            x_val = norm.ppf(prob, loc=mu_val, scale=sigma_val)
+            st.write(f"Grenswaarde: ${x_val:.4f}$")
+            # Tip: Arceer P(X <= x_val) in je plot
+
+        elif tail == "rechts":
+            x_val = norm.ppf(1 - prob, loc=mu_val, scale=sigma_val)
+            st.write(f"Grenswaarde: ${x_val:.4f}$")
+            # Tip: Arceer P(X >= x_val) in je plot
+
+        elif tail == "midden":
+            lower = norm.ppf((1 - prob) / 2, loc=mu_val, scale=sigma_val)
+            upper = norm.ppf(1 - (1 - prob) / 2, loc=mu_val, scale=sigma_val)
+            st.write(f"Grenswaarden: $[{lower:.4f}, {upper:.4f}]$")
 
     st.divider()
     view_mode = st.selectbox(label="Weergave:", options=["PDF", "CDF", "PDF + CDF"])
@@ -69,30 +87,31 @@ cdf_y   = norm.cdf(x, loc=mu_val, scale=sigma_val)
 # STAT CARDS
 # ----------------------------------
 prob_label = f"<i>{show_mode}</i>" if show_mode != "Geen" else "Geen gebied geselecteerd"
+
 st.markdown(f"""
 <div class="stats-row-4">
-  <div class="stat-card alpha">
+<div class="stat-card alpha">
     <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
     <span class="stat-value">{mu_val:.2f}</span>
     <span class="stat-desc">Centrum van de verdeling</span>
-  </div>
-  <div class="stat-card beta">
+</div>
+<div class="stat-card beta">
     <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
     <span class="stat-value">{sigma_val:.2f}</span>
     <span class="stat-desc">Spreiding om het gemiddelde</span>
-  </div>
-  <div class="stat-card power">
+</div>
+<div class="stat-card power">
     <span class="stat-label">Variantie {to_lowercase(VAR_HTML)}</span>
     <span class="stat-value">{sigma_val**2:.2f}</span>
     <span class="stat-desc">Kwadraat van de spreiding</span>
-  </div>
-  <div class="stat-card bi">
+</div>
+<div class="stat-card bi">
     <span class="stat-label">Kans</span>
     <span class="stat-value">{f"{prob:.4f}" if prob is not None else "&mdash;"}</span>
     <span class="stat-desc">{prob_label}</span>
-  </div>
 </div>
-""", unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)    
 
 def add_shading(ax, x, mu, sigma, mode, a, b, prob):
     """Fill the selected probability region on a PDF axes."""
@@ -114,6 +133,25 @@ def add_shading(ax, x, mu, sigma, mode, a, b, prob):
                         color=FILL_COLOR, label=rf"$P({a:.2f} \leq X \leq {b:.2f}) = {prob:.4f}$")
         ax.plot([a, a], [0, norm.pdf(a, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
         ax.plot([b, b], [0, norm.pdf(b, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
+    elif mode == r"Grenswaarde zoeken" and prob is not None:
+        if tail == "links":
+            x_val = norm.ppf(prob, loc=mu, scale=sigma)
+            mask = x[x <= x_val]
+            ax.fill_between(mask, norm.pdf(mask, mu, sigma), color=FILL_COLOR)
+            ax.plot([x_val, x_val], [0, norm.pdf(x_val, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
+        elif tail == "rechts":
+            x_val = norm.ppf(1 - prob, loc=mu, scale=sigma)
+            mask = x[x >= x_val]
+            ax.fill_between(mask, norm.pdf(mask, mu, sigma), color=FILL_COLOR)
+            ax.plot([x_val, x_val], [0, norm.pdf(x_val, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
+        elif tail == "midden":
+            lower = norm.ppf((1 - prob) / 2, loc=mu, scale=sigma)
+            upper = norm.ppf(1 - (1 - prob) / 2, loc=mu, scale=sigma)
+            mask = x[(x >= lower) & (x <= upper)]
+            ax.fill_between(mask, norm.pdf(mask, mu, sigma), color=FILL_COLOR)
+
+            ax.plot([lower, lower], [0, norm.pdf(lower, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
+            ax.plot([upper, upper], [0, norm.pdf(upper, mu, sigma)], color=H0_COLOR, linewidth=1.4, linestyle=":")
 
 
 def add_cdf_markers(ax, mu, sigma, mode, a, b):
