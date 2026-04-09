@@ -93,12 +93,12 @@ if show_mode != r"Grenswaarde zoeken":
         <div class="stats-row-3">
             <div class="stat-card alpha">
                 <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
-                <span class="stat-value">{mu_val:.2f}</span>
+                <span class="stat-value">{mu_val:.4f}</span>
                 <span class="stat-desc">Centrum van de verdeling</span>
             </div>
             <div class="stat-card beta">
                 <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
-                <span class="stat-value">{sigma_val:.2f}</span>
+                <span class="stat-value">{sigma_val:.4f}</span>
                 <span class="stat-desc">Spreiding om het gemiddelde</span>
             </div>
             <div class="stat-card bi">
