@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from scipy.stats import norm
@@ -58,19 +59,18 @@ with st.sidebar:
         tail = st.selectbox("Staart:", ["links", "rechts", "midden"])
 
         if tail == "links":
-            x_val = norm.ppf(prob, loc=mu_val, scale=sigma_val)
-            st.write(f"Grenswaarde: ${x_val:.4f}$")
+            bounds = [-math.inf, norm.ppf(prob, loc=mu_val, scale=sigma_val)]
+            st.write(f"Grenswaarde: ${bounds[1]:.4f}$")
             # Tip: Arceer P(X <= x_val) in je plot
 
         elif tail == "rechts":
-            x_val = norm.ppf(1 - prob, loc=mu_val, scale=sigma_val)
-            st.write(f"Grenswaarde: ${x_val:.4f}$")
+            bounds = [norm.ppf(1 - prob, loc=mu_val, scale=sigma_val), math.inf]
+            st.write(f"Grenswaarde: ${bounds[0]:.4f}$")
             # Tip: Arceer P(X >= x_val) in je plot
 
         elif tail == "midden":
-            lower = norm.ppf((1 - prob) / 2, loc=mu_val, scale=sigma_val)
-            upper = norm.ppf(1 - (1 - prob) / 2, loc=mu_val, scale=sigma_val)
-            st.write(f"Grenswaarden: $[{lower:.4f}, {upper:.4f}]$")
+            bounds = [norm.ppf((1 - prob) / 2, loc=mu_val, scale=sigma_val), norm.ppf(1 - (1 - prob) / 2, loc=mu_val, scale=sigma_val)]
+            st.write(f"Grenswaarden: $[{bounds[0]:.4f}, {bounds[1]:.4f}]$")
 
     st.divider()
     view_mode = st.selectbox(label="Weergave:", options=["PDF", "CDF", "PDF + CDF"])
@@ -88,30 +88,52 @@ cdf_y   = norm.cdf(x, loc=mu_val, scale=sigma_val)
 # ----------------------------------
 prob_label = f"<i>{show_mode}</i>" if show_mode != "Geen" else "Geen gebied geselecteerd"
 
-st.markdown(f"""
-<div class="stats-row-4">
-<div class="stat-card alpha">
-    <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
-    <span class="stat-value">{mu_val:.2f}</span>
-    <span class="stat-desc">Centrum van de verdeling</span>
-</div>
-<div class="stat-card beta">
-    <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
-    <span class="stat-value">{sigma_val:.2f}</span>
-    <span class="stat-desc">Spreiding om het gemiddelde</span>
-</div>
-<div class="stat-card power">
-    <span class="stat-label">Variantie {to_lowercase(VAR_HTML)}</span>
-    <span class="stat-value">{sigma_val**2:.2f}</span>
-    <span class="stat-desc">Kwadraat van de spreiding</span>
-</div>
-<div class="stat-card bi">
-    <span class="stat-label">Kans</span>
-    <span class="stat-value">{f"{prob:.4f}" if prob is not None else "&mdash;"}</span>
-    <span class="stat-desc">{prob_label}</span>
-</div>
-</div>
-""", unsafe_allow_html=True)    
+if show_mode != r"Grenswaarde zoeken":
+    st.markdown(f"""
+        <div class="stats-row-3">
+            <div class="stat-card alpha">
+                <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
+                <span class="stat-value">{mu_val:.2f}</span>
+                <span class="stat-desc">Centrum van de verdeling</span>
+            </div>
+            <div class="stat-card beta">
+                <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
+                <span class="stat-value">{sigma_val:.2f}</span>
+                <span class="stat-desc">Spreiding om het gemiddelde</span>
+            </div>
+            <div class="stat-card bi">
+                <span class="stat-label">Kans</span>
+                <span class="stat-value">{f"{prob:.4f}" if prob is not None else "&mdash;"}</span>
+                <span class="stat-desc">{prob_label}</span>
+            </div>
+            
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    grenswaarden = f"{bounds[1]:.4f}" if tail == "links" else f"{bounds[0]:.4f}" if tail == "rechts" else f"[{bounds[0]:.4f}, {bounds[1]:.4f}]" if tail == "midden" else "&mdash;"
+    st.markdown(f"""
+        <div class="stats-row-4">
+            <div class="stat-card alpha">
+                <span class="stat-label">Gemiddelde {to_lowercase(MEAN_HTML)}</span>
+                <span class="stat-value">{mu_val:.4f}</span>
+                <span class="stat-desc">Centrum van de verdeling</span>
+            </div>
+            <div class="stat-card beta">
+                <span class="stat-label">Standaardafwijking {to_lowercase(STD_HTML)}</span>
+                <span class="stat-value">{sigma_val:.4f}</span>
+                <span class="stat-desc">Spreiding om het gemiddelde</span>
+            </div>
+            <div class="stat-card bi">
+                <span class="stat-label">Kans</span>
+                <span class="stat-value">{f"{prob:.4f}" if prob is not None else "&mdash;"}</span>
+                <span class="stat-desc">{prob_label}</span>
+            </div>
+            <div class="stat-card acceptatie">
+                <span class="stat-label">{"Grenswaarden" if tail == "midden" else "Grenswaarde"}</span>
+                <span class="stat-value">{grenswaarden}</span>
+                <span class="stat-desc">{"Grenswaarden" if tail == "midden" else "Grenswaarde"} met tail = {tail}</span>
+            </div>
+        """, unsafe_allow_html=True)
 
 def add_shading(ax, x, mu, sigma, mode, a, b, prob):
     """Fill the selected probability region on a PDF axes."""
