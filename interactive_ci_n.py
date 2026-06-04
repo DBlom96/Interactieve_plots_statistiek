@@ -115,7 +115,7 @@ def make_annotations(intervals, means, contains, mu):
         ]
     return annotations
 
-@st.cache_data
+# @st.cache_data
 def build_figure(mu, sigma, n, alpha, batch_size, frame_duration):
     z  = norm.ppf(1 - alpha / 2)
     se = sigma / np.sqrt(n)
