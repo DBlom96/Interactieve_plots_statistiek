@@ -39,16 +39,16 @@ with st.sidebar:
     lo_val, hi_val, prob = None, None, None
 
     if show_mode == r"P(X ≤ b)":
-        hi_val = st.number_input(r"$b$:", min_value=0, max_value=n_val, value=min(n_val, int(n_val * p_val)))
+        hi_val = st.number_input(r"$b$:", min_value=0, max_value=n_val)
         prob   = binom.cdf(hi_val, n_val, p_val)
 
     elif show_mode == r"P(X ≥ a)":
-        lo_val = st.number_input(r"$a$:", min_value=0, max_value=n_val, value=max(0, int(n_val * p_val)))
+        lo_val = st.number_input(r"$a$:", min_value=0, max_value=n_val)
         prob   = 1 - binom.cdf(lo_val - 1, n_val, p_val)
 
     elif show_mode == r"P(a ≤ X ≤ b)":
-        lo_val = st.number_input(r"$a$:", min_value=0, max_value=n_val, value=max(0, int(n_val * p_val) - 2))
-        hi_val = st.number_input(r"$b$:", min_value=0, max_value=n_val, value=min(n_val, int(n_val * p_val) + 2))
+        lo_val = st.number_input(r"$a$:", min_value=0, max_value=n_val)
+        hi_val = st.number_input(r"$b$:", min_value=0, max_value=n_val)
         if lo_val <= hi_val:
             prob = binom.cdf(hi_val, n_val, p_val) - binom.cdf(lo_val - 1, n_val, p_val)
         else:
