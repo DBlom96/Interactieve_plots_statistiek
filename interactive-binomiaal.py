@@ -27,7 +27,7 @@ page_header("📊 Binomiale verdeling", "Discrete kansverdeling")
 with st.sidebar:
     st.header("Parameters")
     n_val = st.number_input(r"Aantal Bernoulli-experimenten $n$:", min_value=1, value=20)
-    p_val = st.slider(r"Succeskans $p$:", min_value=0.0, max_value=1.0, value=0.5, step=0.0001)
+    p_val = st.number_input(r"Succeskans $p$:", min_value=0.0000, max_value=1.0000, value=0.5000, step=0.0001)
 
     st.divider()
     st.header("Kansberekening")
