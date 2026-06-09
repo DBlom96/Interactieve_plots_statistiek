@@ -27,7 +27,7 @@ page_header("📊 Binomiale verdeling", "Discrete kansverdeling")
 with st.sidebar:
     st.header("Parameters")
     n_val = st.number_input(r"Aantal Bernoulli-experimenten $n$:", min_value=1, value=20)
-    p_val = st.slider(r"Succeskans $p$:", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
+    p_val = st.slider(r"Succeskans $p$:", min_value=0.0, max_value=1.0, value=0.5, step=0.0001)
 
     st.divider()
     st.header("Kansberekening")
@@ -188,7 +188,7 @@ waarbij $\binom{n}{k} = \dfrac{n!}{k!\,(n-k)!}$ de binomiaalcoëfficiënt is.
 ## 📈 Verwachtingswaarde en standaardafwijking
 
 $$
-    E[X] = n \cdot p \qquad \sigma(X) = \sqrt{n \cdot p \cdot (1 - p)}
+    E(X) = n \cdot p \qquad \sigma(X) = \sqrt{n \cdot p \cdot (1 - p)}
 $$
 
 ## 🎯 Voorbeeld
