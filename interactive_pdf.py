@@ -23,14 +23,14 @@ load_css()
 # ----------------------------------
 # PARAMETERS
 # ----------------------------------
-page_header("📉 Van Discreet naar Continu", "Statistiek · Kansdichtheid (PDF)")
+page_header("📉 Verschil: discrete en continue kansvariabelen", "Statistiek · Kansdichtheid (PDF)")
 
 with st.sidebar:
     st.header("Parameters")
 
     dist_type = st.selectbox(
         "Type verdeling:", 
-        ["Normale verdeling", "Uniforme verdeling", "Chi-kwadraatverdeling", "F-verdeling", "Eigen functie (Custom)"]
+        ["Normale verdeling", "Uniforme verdeling", "Chikwadraatverdeling", "F-verdeling", "Eigen functie (Custom)"]
     )
     
     # Dynamische parameters per verdeling
@@ -158,17 +158,19 @@ prob_interval = get_prob(a_val, b_val) if a_val <= b_val else 0.0
 # ----------------------------------
 # STAT CARDS
 # ----------------------------------
+
+kans_interval = f"$P({a_val:.2f} \\leq X \\leq {b_val:.2f})$"
 st.markdown(f"""
 <div class="stats-row-2">
   <div class="stat-card alpha">
-    <span class="stat-label">Kans op één specifiek punt ($P(X = x_0)$)</span>
+    <span class="stat-label"><i>P</i>(<i>X=x</i><sub>0</sub>):</span>
     <span class="stat-value">0.0000</span>
-    <span class="stat-desc">Elk individueel punt heeft een oneindig kleine waarschijnlijkheid in een continue ruimte.</span>
+    <span class="stat-desc">Elke losse uitkomst heeft een oneindig kleine waarschijnlijkheid bij een continue variabele.</span>
   </div>
   <div class="stat-card beta">
-    <span class="stat-label">Kans in interval [{a_val:.2f}, {b_val:.2f}]</span>
+    <span class="stat-label"><i>P</i>({a_val:.2f}&le;<i>X</i>&le;{b_val:.2f})</span>
     <span class="stat-value">{prob_interval:.4f}</span>
-    <span class="stat-desc">Berekend als de oppervlakte onder de dichtheidsfunctie (de integraal).</span>
+    <span class="stat-desc">Groene oppervlakte onder de kansdichtheidsfunctie (de integraal).</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -218,7 +220,7 @@ ax2.grid(False) # Voorkom dubbele roosterlijnen
 apply_dark_style(
     fig=fig,
     ax=ax1,
-    xlabel=r"Continue Variabele $X$",
+    xlabel=r"Continue kansvariabele $X$",
     ylabel="",
 )
 
@@ -239,20 +241,21 @@ plt.close(fig)
 # ----------------------------------
 # EXPLANATION
 # ----------------------------------
-explanation_title = "📉 Achtergrond: Waarom $P(X=x)=0$ en toch een kans?"
+explanation_title = "📉 Achtergrond: waarom $P(X=x)=0$ niet hetzelfde is als 'onmogelijk'?"
 explanation_markdown = r"""
-## 🧠 Het Intuïtie-probleem
+## 🧠 Het intuïtie-probleem
 
 Wanneer we fysieke grootheden meten, werken we met **continue variabelen**. 
 Als je meet op oneindig veel decimalen, is de kans dat iemand *exact* een specifieke waarde aanneemt gelijk aan **nul**. 
 
-## 📐 De Dubbele As: Frequentie vs. Dichtheid
+## 📐 Van frequenties naar dichtheden
+We kunnen een kansdichtheidsfunctie bekijken door eerst een grote steekproef uit de kansverdeling te nemen, en daarvan een histogram te maken.
 
-1. **Linker As (Frequentie):** Dit laat het *absolute aantal* waarnemingen in de steekproef zien per bakje (histogram). Dit hangt af van je steekproefgrootte $n$.
-2. **Rechter As (Dichtheid $f(x)$):** Dit is de theoretische kansdichtheid. De waarde op deze as is *geen* kans, maar een dichtheid (waardes kunnen > 1 zijn). 
-3. **De Koppeling:** Door beide assen te combineren zie je direct dat het histogram (geteld in aantal) naadloos meebeweegt met de theoretische dichtheidskromme.
+1. **Linkeras (frequentie):** dit laat het *absolute aantal* waarnemingen in de steekproef zien per bin (histogram). Dit hangt af van je steekproefgrootte $n$.
+2. **Rechteras (dichtheid):** Dit is de theoretische kansdichtheid. De waarde op deze as is *geen* kans, maar een dichtheid (waardes kunnen groter dan 1 zijn). 
+3. **De koppeling tussen beide assen:** door beide assen te combineren zie je direct dat het histogram (geteld in aantal) bij een grote steekproef nadert aan de theoretische dichtheid (frequentie per eenheid van binbreedte).
 
-## 🧮 De Kracht van de Integraal
+## 🧮 Kansen uitrekenen met behulp van een integraal
 
 Omdat de kans op elk *los* punt nul is, berekenen we kansen altijd over een *interval* $[a, b]$. 
 De kans is exact de **oppervlakte** onder de kromme op dat interval:
